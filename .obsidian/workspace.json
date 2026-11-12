@@ -1,0 +1,226 @@
+{
+  "main": {
+    "id": "f3c47ae71ace36f3",
+    "type": "split",
+    "children": [
+      {
+        "id": "48316169793582a6",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "7dbc362d75ef2a51",
+            "type": "leaf",
+            "state": {
+              "type": "empty",
+              "state": {},
+              "icon": "lucide-file",
+              "title": "New tab"
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "vertical"
+  },
+  "left": {
+    "id": "bc67077237113f63",
+    "type": "split",
+    "children": [
+      {
+        "id": "85672b0f193de8be",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "9f5e934208e494ad",
+            "type": "leaf",
+            "state": {
+              "type": "file-explorer",
+              "state": {
+                "sortOrder": "alphabetical",
+                "autoReveal": false,
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-folder-closed",
+              "title": "Files"
+            }
+          },
+          {
+            "id": "7b7908f04f4dc9de",
+            "type": "leaf",
+            "state": {
+              "type": "search",
+              "state": {
+                "query": "",
+                "matchingCase": false,
+                "explainSearch": false,
+                "collapseAll": false,
+                "extraContext": false,
+                "sortOrder": "alphabetical"
+              },
+              "icon": "lucide-search",
+              "title": "Search"
+            }
+          },
+          {
+            "id": "424b37370a352191",
+            "type": "leaf",
+            "state": {
+              "type": "bookmarks",
+              "state": {
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-bookmark",
+              "title": "Bookmarks"
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "horizontal",
+    "width": 300
+  },
+  "right": {
+    "id": "5a6d0aaa59403c28",
+    "type": "split",
+    "children": [
+      {
+        "id": "48602c99b4e0a955",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "27c0b2013b8949ff",
+            "type": "leaf",
+            "state": {
+              "type": "backlink",
+              "state": {
+                "collapseAll": false,
+                "extraContext": false,
+                "sortOrder": "alphabetical",
+                "showSearch": false,
+                "searchQuery": "",
+                "backlinkCollapsed": false,
+                "unlinkedCollapsed": true
+              },
+              "icon": "links-coming-in",
+              "title": "Backlinks"
+            }
+          },
+          {
+            "id": "a544f2b4f1a31566",
+            "type": "leaf",
+            "state": {
+              "type": "outgoing-link",
+              "state": {
+                "linksCollapsed": false,
+                "unlinkedCollapsed": true
+              },
+              "icon": "links-going-out",
+              "title": "Outgoing links"
+            }
+          },
+          {
+            "id": "30abb06b1d3929a9",
+            "type": "leaf",
+            "state": {
+              "type": "tag",
+              "state": {
+                "sortOrder": "frequency",
+                "useHierarchy": true,
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-tags",
+              "title": "Tags"
+            }
+          },
+          {
+            "id": "e557d99f3e913733",
+            "type": "leaf",
+            "state": {
+              "type": "all-properties",
+              "state": {
+                "sortOrder": "frequency",
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-archive",
+              "title": "All properties"
+            }
+          },
+          {
+            "id": "c5329f6c32ced5aa",
+            "type": "leaf",
+            "state": {
+              "type": "outline",
+              "state": {
+                "followCursor": false,
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-list",
+              "title": "Outline"
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "horizontal",
+    "width": 300,
+    "collapsed": true
+  },
+  "left-ribbon": {
+    "hiddenItems": {
+      "switcher:Open quick switcher": false,
+      "graph:Open graph view": false,
+      "canvas:Create new canvas": false,
+      "daily-notes:Open today's daily note": false,
+      "templates:Insert template": false,
+      "command-palette:Open command palette": false,
+      "bases:Create new base": false
+    }
+  },
+  "active": "7dbc362d75ef2a51",
+  "lastOpenFiles": [
+    "src/components/SupportContact.tsx",
+    "supabase/migrations/20261112000001_create_cat_profiles.sql",
+    "supabase/migrations",
+    "src/app/dashboard/page.tsx",
+    "src/app/dashboard",
+    "src/app/icon.svg",
+    "src/components/AuthModal.tsx",
+    "src/lib/auth-context.tsx",
+    "src/components/ThemeProvider.tsx",
+    "src/components/Scheduler.tsx",
+    "src/components/Footer.tsx",
+    "src/components/BookingForm.tsx",
+    "node_modules/@typescript/typescript-darwin-arm64/README.md",
+    "node_modules/@types/react/README.md",
+    "node_modules/csstype/README.md",
+    "node_modules/typescript/vendor/vscode-jsonrpc/README.md",
+    "node_modules/typescript/README.md",
+    "node_modules/mqtt/README.md",
+    "node_modules/mqtt/LICENSE.md",
+    "node_modules/mqtt/CONTRIBUTING.md",
+    "node_modules/fsevents/README.md",
+    "node_modules/concat-stream/node_modules/readable-stream/README.md",
+    "node_modules/concat-stream/node_modules/readable-stream/GOVERNANCE.md",
+    "node_modules/concat-stream/node_modules/readable-stream/CONTRIBUTING.md",
+    "node_modules/concat-stream/readme.md",
+    "node_modules/@babel/runtime/README.md",
+    "node_modules/@types/node/README.md",
+    "node_modules/@types/ws/README.md",
+    "node_modules/@types/readable-stream/README.md",
+    "node_modules/worker-factory/README.md",
+    "node_modules/fast-unique-numbers/README.md",
+    "node_modules/broker-factory/README.md",
+    "node_modules/worker-timers-worker/README.md",
+    "node_modules/worker-timers-broker/README.md",
+    "node_modules/smart-buffer/docs/ROADMAP.md",
+    "node_modules/smart-buffer/docs/README_v3.md",
+    "node_modules/smart-buffer/docs/CHANGELOG.md",
+    "node_modules/@supabase/phoenix/priv/static/phoenix.png",
+    "node_modules/@supabase/phoenix/priv/static/phoenix-orange.png"
+  ]
+}
