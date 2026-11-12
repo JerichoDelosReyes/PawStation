@@ -4,7 +4,7 @@ import { ThemeProvider } from "@/components/ThemeProvider";
 import { AuthProvider } from "@/lib/auth-context";
 
 export const metadata: Metadata = {
-  title: "PawStation - Gentle Care, Built Around Your Cat",
+  title: "PawStation",
   description:
     "PawStation is an ESP32-powered smart cat feeding and watering station with real-time IoT monitoring. Automated dry kibble, fresh water replenishment, and digital scale monitoring.",
   icons: {

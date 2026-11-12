@@ -4,7 +4,7 @@ import { motion } from "framer-motion";
 import Link from "next/link";
 import { PawOutlineIcon } from "./Icons";
 import TickerBand from "./TickerBand";
-import IsometricStation from "./IsometricStation";
+import PrototypeHeroFigure from "./PrototypeHeroFigure";
 import { useAuth } from "@/lib/auth-context";
 
 export default function Hero() {
@@ -101,9 +101,8 @@ export default function Hero() {
               )}
               <a
                 href="#why-cat-care"
-                className="inline-flex items-center justify-center gap-2 rounded-full px-6 py-3 bg-white dark:bg-navy-card text-navy dark:text-[#F0F4FA] border border-[#D8E4F2] dark:border-white/[0.12] hover:bg-[#EBF3FA] dark:hover:bg-[#1A263D] text-[13px] font-semibold tracking-tight transition-all duration-150 active:scale-[0.98] shadow-sm"
+                className="inline-flex items-center justify-center rounded-full px-6 py-3 bg-white dark:bg-navy-card text-navy dark:text-[#F0F4FA] border border-[#D8E4F2] dark:border-white/[0.12] hover:bg-[#EBF3FA] dark:hover:bg-[#1A263D] text-[13px] font-semibold tracking-tight transition-all duration-150 active:scale-[0.98] shadow-sm"
               >
-                <PawOutlineIcon className="w-4 h-4 text-navy dark:text-[#F0F4FA]" />
                 <span>Explore Hardware</span>
               </a>
             </motion.div>
@@ -144,9 +143,9 @@ export default function Hero() {
             </motion.div>
           </div>
 
-          {/* Right Column: Tactile 3D Isometric Hardware Representation */}
-          <div className="lg:col-span-6 xl:col-span-6 relative flex items-center justify-center pt-4 lg:pt-0">
-            <IsometricStation />
+          {/* Right Column: Physical Hardware Prototype & 3D Schematic Figure */}
+          <div className="lg:col-span-6 xl:col-span-6 relative flex items-center justify-center pt-2 lg:pt-0">
+            <PrototypeHeroFigure />
           </div>
         </div>
       </div>
