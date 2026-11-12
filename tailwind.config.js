@@ -9,22 +9,36 @@ module.exports = {
   theme: {
     extend: {
       colors: {
+        forest: {
+          canvas: '#0B0F0B',
+          card: '#131A14',
+          surface: '#162017',
+          border: 'rgba(255, 255, 255, 0.08)',
+        },
+        lime: {
+          DEFAULT: '#D4F66C',
+          hover: '#C6EC57',
+          glow: 'rgba(212, 246, 108, 0.25)',
+        },
+        sage: {
+          DEFAULT: '#8FA391',
+          muted: '#7A8F7D',
+          dark: '#2A3B2D',
+        },
         canvas: {
-          light: '#F5F5F7',
-          dark: '#121214',
+          light: '#F4F6F4',
+          dark: '#0B0F0B',
         },
         card: {
           light: '#FFFFFF',
-          dark: '#1C1C1E',
-        },
-        surface: {
-          dark: '#2C2C2E',
+          dark: '#131A14',
         },
         accent: {
           amber: '#E67E22',
           azure: '#0284C7',
           forest: '#16A34A',
           crimson: '#DC2626',
+          lime: '#D4F66C',
         },
       },
       fontFamily: {
@@ -52,6 +66,8 @@ module.exports = {
       borderRadius: {
         apple: '12px',
         'apple-lg': '16px',
+        'apple-2xl': '24px',
+        'apple-3xl': '32px',
       },
       keyframes: {
         ticker: {

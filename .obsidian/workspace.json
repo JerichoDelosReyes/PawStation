@@ -183,6 +183,7 @@
   },
   "active": "7dbc362d75ef2a51",
   "lastOpenFiles": [
+    "src/components/CtaSection.tsx",
     "src/components/SupportContact.tsx",
     "supabase/migrations/20261112000001_create_cat_profiles.sql",
     "supabase/migrations",
@@ -194,7 +195,6 @@
     "src/components/ThemeProvider.tsx",
     "src/components/Scheduler.tsx",
     "src/components/Footer.tsx",
-    "src/components/BookingForm.tsx",
     "node_modules/@typescript/typescript-darwin-arm64/README.md",
     "node_modules/@types/react/README.md",
     "node_modules/csstype/README.md",

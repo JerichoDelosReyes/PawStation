@@ -35,18 +35,24 @@ export default function FAQ() {
   const [openIndex, setOpenIndex] = useState<number | null>(null);
 
   return (
-    <section id="faq" className="py-20 md:py-28 bg-white dark:bg-[#121214] transition-colors duration-200">
+    <section
+      id="faq"
+      className="py-24 md:py-32 bg-[#0B0F0B] border-t border-white/[0.04] transition-colors duration-200"
+    >
       <div className="section-container">
-        <div className="text-center mb-14">
-          <span className="inline-block text-[11px] font-semibold tracking-[0.04em] uppercase text-accent-amber mb-3">
+        <div className="text-center mb-16 max-w-2xl mx-auto">
+          <span className="inline-block text-[12px] font-semibold tracking-[0.05em] uppercase text-[#D4F66C] mb-3">
             Technical FAQ
           </span>
-          <h2 className="text-[clamp(1.5rem,3.5vw,2.25rem)] font-bold tracking-tight text-[#18181B] dark:text-[#F4F4F5]">
+          <h2 className="text-[clamp(1.75rem,3.5vw,2.75rem)] font-bold tracking-tight text-white leading-tight">
             Frequently Asked Questions
           </h2>
+          <p className="text-[15px] md:text-[16px] text-[#8FA391] mt-3">
+            Essential specifications on electrical isolation, servo mechanics, and MQTT cloud telemetry.
+          </p>
         </div>
 
-        <div className="max-w-3xl mx-auto divide-y divide-black/[0.06] dark:divide-white/[0.08]">
+        <div className="max-w-3xl mx-auto divide-y divide-white/[0.08]">
           {faqItems.map((item, i) => {
             const isOpen = openIndex === i;
             return (
@@ -56,15 +62,15 @@ export default function FAQ() {
                   className="w-full flex items-start justify-between gap-4 py-5 text-left group"
                   aria-expanded={isOpen}
                 >
-                  <span className="text-[15px] font-medium text-[#18181B] dark:text-[#F4F4F5] group-hover:text-accent-amber dark:group-hover:text-accent-amber transition-colors">
+                  <span className="text-[15px] font-medium text-white group-hover:text-[#D4F66C] transition-colors">
                     {item.q}
                   </span>
                   <motion.div
                     animate={{ rotate: isOpen ? 180 : 0 }}
                     transition={{ duration: 0.2 }}
-                    className="shrink-0 mt-0.5"
+                    className="shrink-0 mt-0.5 text-[#8FA391] group-hover:text-[#D4F66C] transition-colors"
                   >
-                    <ChevronDownIcon className="w-4 h-4 text-[#71717A] dark:text-[#A1A1AA]" />
+                    <ChevronDownIcon className="w-4 h-4" />
                   </motion.div>
                 </button>
                 <AnimatePresence initial={false}>
@@ -76,7 +82,7 @@ export default function FAQ() {
                       transition={{ duration: 0.25, ease: "easeInOut" }}
                       className="overflow-hidden"
                     >
-                      <p className="text-[13px] leading-relaxed text-[#71717A] dark:text-[#A1A1AA] pb-5">
+                      <p className="text-[14px] leading-relaxed text-[#8FA391] pb-6">
                         {item.a}
                       </p>
                     </motion.div>
