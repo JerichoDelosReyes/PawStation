@@ -9,36 +9,35 @@ module.exports = {
   theme: {
     extend: {
       colors: {
-        forest: {
-          canvas: '#0B0F0B',
-          card: '#131A14',
-          surface: '#162017',
-          border: 'rgba(255, 255, 255, 0.08)',
+        periwinkle: {
+          DEFAULT: '#4A72B8',
+          hover: '#3C5F9C',
+          light: '#608BD6',
+          glow: 'rgba(74, 114, 184, 0.25)',
         },
-        lime: {
-          DEFAULT: '#D4F66C',
-          hover: '#C6EC57',
-          glow: 'rgba(212, 246, 108, 0.25)',
-        },
-        sage: {
-          DEFAULT: '#8FA391',
-          muted: '#7A8F7D',
-          dark: '#2A3B2D',
+        blush: '#F4B8B8',
+        navy: {
+          DEFAULT: '#1C2942',
+          muted: '#637594',
+          lightMuted: '#8EA0BC',
+          card: '#131C2D',
+          dark: '#0B111B',
+          deep: '#0D1524',
         },
         canvas: {
-          light: '#F4F6F4',
-          dark: '#0B0F0B',
+          light: '#EBF3FA',
+          dark: '#0B111B',
         },
         card: {
           light: '#FFFFFF',
-          dark: '#131A14',
+          dark: '#131C2D',
         },
         accent: {
-          amber: '#E67E22',
+          amber: '#4A72B8',
+          blue: '#4A72B8',
           azure: '#0284C7',
-          forest: '#16A34A',
+          forest: '#2563EB',
           crimson: '#DC2626',
-          lime: '#D4F66C',
         },
       },
       fontFamily: {

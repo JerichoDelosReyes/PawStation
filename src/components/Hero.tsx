@@ -2,7 +2,7 @@
 
 import { motion } from "framer-motion";
 import Link from "next/link";
-import { PawIcon, ScaleIcon, WaterDropIcon, KibbleIcon, SignalIcon, ShieldIcon } from "./Icons";
+import { PawIcon, PawOutlineIcon, StarIcon } from "./Icons";
 import TickerBand from "./TickerBand";
 import { useAuth } from "@/lib/auth-context";
 
@@ -10,262 +10,373 @@ export default function Hero() {
   const { user, openAuthModal } = useAuth();
 
   return (
-    <section className="relative min-h-[100dvh] flex flex-col justify-between pt-24 md:pt-28 overflow-hidden bg-[#0B0F0B] transition-colors duration-200">
-      {/* Background ambient gradient glow */}
-      <div className="absolute top-20 left-1/2 -translate-x-1/2 w-[800px] h-[400px] bg-[radial-gradient(ellipse_at_center,rgba(212,246,108,0.12)_0%,transparent_70%)] blur-[80px] pointer-events-none" />
+    <section className="relative min-h-[100dvh] lg:h-[100dvh] lg:max-h-[100dvh] flex flex-col justify-between pt-16 md:pt-16 overflow-hidden bg-canvas-light dark:bg-canvas-dark transition-colors duration-200">
+      {/* Background ambient periwinkle gradient glow */}
+      <div className="absolute top-10 left-1/2 -translate-x-1/2 w-[700px] h-[350px] bg-[radial-gradient(ellipse_at_center,rgba(74,114,184,0.12)_0%,transparent_70%)] blur-[70px] pointer-events-none" />
 
-      {/* Main Hero Header & Headline */}
-      <div className="section-container relative z-10 text-center max-w-4xl mx-auto pt-6 pb-8">
-        {/* Subtle pill tag */}
-        <motion.div
-          initial={{ opacity: 0, y: 12 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.45, ease: "easeOut" }}
-          className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#131A14] border border-white/[0.08] shadow-[0_0_16px_rgba(212,246,108,0.1)] mb-6 text-[12px] font-medium text-[#D4F66C]"
-        >
-          <span className="w-1.5 h-1.5 rounded-full bg-[#D4F66C]" />
-          <span>Feline IoT Feeder &amp; Digital Scale Station</span>
-          <span className="w-1.5 h-1.5 rounded-full bg-[#D4F66C]" />
-        </motion.div>
-
-        {/* Headline: Line 1 White, Line 2 Muted Sage */}
-        <motion.h1
-          initial={{ opacity: 0, y: 16 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.55, delay: 0.1, ease: "easeOut" }}
-          className="text-[clamp(2.5rem,5.5vw,4.5rem)] font-bold tracking-tight leading-[1.08] mb-6 text-balance"
-        >
-          <span className="text-white block">Automated care</span>
-          <span className="text-[#8FA391] block">for your cat&apos;s daily flow</span>
-        </motion.h1>
-
-        {/* Subtitle */}
-        <motion.p
-          initial={{ opacity: 0, y: 16 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.55, delay: 0.2, ease: "easeOut" }}
-          className="text-[16px] md:text-[18px] text-[#8FA391] max-w-2xl mx-auto leading-relaxed mb-8"
-        >
-          Stress-free automated dry kibble dispensing, fresh water replenishment,
-          and precision gram-level health monitoring built on open hardware.
-        </motion.p>
-
-        {/* Dual Action Buttons */}
-        <motion.div
-          initial={{ opacity: 0, y: 16 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.3, ease: "easeOut" }}
-          className="flex flex-wrap items-center justify-center gap-4"
-        >
-          {user ? (
-            <Link
-              href="/dashboard"
-              className="inline-flex items-center justify-center gap-2 px-7 py-3.5 rounded-full bg-[#D4F66C] text-[#0C120C] text-[14px] font-bold tracking-tight shadow-[0_0_24px_rgba(212,246,108,0.3)] hover:bg-[#C6EC57] transition-all active:scale-[0.98]"
+      {/* Middle Hero Content: vertically centered in available space */}
+      <div className="section-container relative w-full flex-1 flex flex-col justify-center py-4 md:py-6 lg:py-6 my-auto">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-8 items-center">
+          {/* Left Column: Text & Actions */}
+          <div className="lg:col-span-7 flex flex-col items-start text-left z-10">
+            {/* Top Pill Badge */}
+            <motion.div
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.45, ease: "easeOut" }}
+              className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white dark:bg-navy-card border border-[#D8E4F2] dark:border-white/[0.08] shadow-[0_1px_3px_rgba(28,41,66,0.04)] mb-4 md:mb-5 text-[12px] font-medium text-navy dark:text-[#F0F4FA] transition-colors"
             >
-              <span>Go to Dashboard</span>
-              <svg className="w-4 h-4 stroke-[2.5]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M5 12h14" />
-                <path d="m12 5 7 7-7 7" />
-              </svg>
-            </Link>
-          ) : (
-            <button
-              onClick={() => openAuthModal("signup")}
-              className="inline-flex items-center justify-center gap-2 px-7 py-3.5 rounded-full bg-[#D4F66C] text-[#0C120C] text-[14px] font-bold tracking-tight shadow-[0_0_24px_rgba(212,246,108,0.3)] hover:bg-[#C6EC57] transition-all active:scale-[0.98]"
+              <span className="w-1.5 h-1.5 rounded-full bg-periwinkle" />
+              <span>100% Dedicated Cat Hardware &amp; Scheduling</span>
+              <span className="w-1.5 h-1.5 rounded-full bg-periwinkle" />
+            </motion.div>
+
+            {/* Headline */}
+            <motion.h1
+              initial={{ opacity: 0, y: 16 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.55, delay: 0.1, ease: "easeOut" }}
+              className="text-[clamp(2.1rem,4.2vw,3.6rem)] font-bold tracking-tight leading-[1.1] text-navy dark:text-white mb-4 md:mb-5"
             >
-              <span>Get Started</span>
-              <svg className="w-4 h-4 stroke-[2.5]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M5 12h14" />
-                <path d="m12 5 7 7-7 7" />
-              </svg>
-            </button>
-          )}
-
-          <a
-            href="#why-cat-care"
-            className="inline-flex items-center justify-center gap-2.5 px-6 py-3.5 rounded-full bg-[#131A14] text-white border border-white/[0.1] hover:bg-[#1A251C] text-[14px] font-medium tracking-tight transition-all active:scale-[0.98]"
-          >
-            <svg className="w-3.5 h-3.5 fill-current text-[#D4F66C]" viewBox="0 0 24 24">
-              <polygon points="5 3 19 12 5 21 5 3" />
-            </svg>
-            <span>Explore Hardware</span>
-          </a>
-        </motion.div>
-      </div>
-
-      {/* 5-Card Feature Row (Screenshot 1 Layout) */}
-      <div id="hero-features" className="section-container relative z-10 py-8">
-        <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-4">
-          {/* Card 1: Topographic Wave Lines Vector */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.35, ease: "easeOut" }}
-            className="apple-card p-5 flex flex-col justify-between h-[230px] bg-[#131A14] border border-white/[0.08]"
-          >
-            {/* Topographic line vector graphic */}
-            <div className="h-16 w-full overflow-hidden opacity-40 text-[#D4F66C]">
-              <svg viewBox="0 0 200 80" className="w-full h-full stroke-current" fill="none" strokeWidth="1.5">
-                <path d="M 0 20 Q 50 5, 100 20 T 200 20" />
-                <path d="M 0 35 Q 50 15, 100 35 T 200 35" />
-                <path d="M 0 50 Q 50 30, 100 50 T 200 50" />
-                <path d="M 0 65 Q 50 45, 100 65 T 200 65" />
-              </svg>
-            </div>
-            <div>
-              <div className="text-[11px] font-semibold uppercase tracking-[0.04em] text-[#D4F66C] mb-1">
-                Acoustic Shield
-              </div>
-              <h3 className="text-[15px] font-bold text-white mb-1.5 leading-snug">
-                Sensory Sensitivity
-              </h3>
-              <p className="text-[12px] text-[#8FA391] leading-relaxed">
-                Silent servo disengage prevents anxiety-inducing motor hums.
-              </p>
-            </div>
-          </motion.div>
-
-          {/* Card 2: 35g / 10kg Metric */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.4, ease: "easeOut" }}
-            className="apple-card p-5 flex flex-col justify-between h-[230px] bg-[#131A14] border border-white/[0.08]"
-          >
-            <div className="flex items-center justify-between">
-              <ScaleIcon className="w-5 h-5 text-[#D4F66C]" />
-              <span className="text-[11px] font-mono text-[#8FA391]">HX711 24-bit</span>
-            </div>
-            <div>
-              <div className="text-[32px] font-bold text-white font-mono tracking-tight leading-none mb-2">
-                35g <span className="text-[16px] text-[#8FA391] font-normal">/ 10kg</span>
-              </div>
-              <div className="text-[11px] font-semibold uppercase tracking-[0.04em] text-[#D4F66C] mb-1">
-                Gram Accuracy
-              </div>
-              <p className="text-[12px] text-[#8FA391] leading-relaxed">
-                Calibrated strain gauge captures intake and detects presence.
-              </p>
-            </div>
-          </motion.div>
-
-          {/* Card 3: Interactive Routine Schedule Preview (Featured Card) */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.45, ease: "easeOut" }}
-            className="apple-card p-5 flex flex-col justify-between h-[230px] bg-[#162017] border border-[#D4F66C]/30 shadow-[0_0_24px_rgba(212,246,108,0.08)]"
-          >
-            <div className="flex items-center justify-between">
-              <div className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-[#D4F66C]/15 text-[#D4F66C] text-[10px] font-semibold uppercase tracking-wider">
-                <span className="w-1 h-1 rounded-full bg-[#D4F66C]" />
-                Automated Routine
-              </div>
-              <KibbleIcon className="w-4 h-4 text-[#D4F66C]" />
-            </div>
-
-            {/* Schedule Items */}
-            <div className="space-y-1.5 my-auto text-[11px] font-mono">
-              <div className="flex items-center justify-between text-white/90">
-                <span className="text-[#8FA391]">08:00</span>
-                <span>Morning Kibble (35g)</span>
-              </div>
-              <div className="flex items-center justify-between text-white/90">
-                <span className="text-[#8FA391]">12:00</span>
-                <span>Water Top-Up (3s)</span>
-              </div>
-              <div className="flex items-center justify-between text-white/90">
-                <span className="text-[#8FA391]">18:00</span>
-                <span>Evening Feed (35g)</span>
-              </div>
-            </div>
-
-            <div className="pt-2 border-t border-white/[0.08] flex items-center justify-between text-[11px]">
-              <span className="text-[#8FA391]">3 Daily Events</span>
-              <span className="text-[#D4F66C] font-semibold">Configured &rarr;</span>
-            </div>
-          </motion.div>
-
-          {/* Card 4: Donut Progress Ring */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.5, ease: "easeOut" }}
-            className="apple-card p-5 flex flex-col justify-between h-[230px] bg-[#131A14] border border-white/[0.08]"
-          >
-            <div className="flex items-center justify-between">
-              <WaterDropIcon className="w-5 h-5 text-accent-azure" />
-              <span className="text-[11px] font-mono text-accent-azure">Adequate</span>
-            </div>
-
-            {/* Donut progress ring */}
-            <div className="flex items-center gap-3 my-auto">
-              <div className="relative w-14 h-14 shrink-0">
-                <svg viewBox="0 0 36 36" className="w-full h-full -rotate-90">
-                  <path
-                    d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
-                    fill="none"
-                    stroke="rgba(255,255,255,0.08)"
-                    strokeWidth="3.5"
-                  />
-                  <path
-                    d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
-                    fill="none"
-                    stroke="#0284C7"
-                    strokeDasharray="98, 100"
-                    strokeWidth="3.5"
-                    strokeLinecap="round"
-                  />
+              Gentle Care, Built
+              <br />
+              Around{" "}
+              <span className="relative inline-block mt-1">
+                {/* 3 radiating sketch marks in periwinkle */}
+                <svg
+                  className="absolute -top-3.5 -right-2 w-6 h-5 text-periwinkle pointer-events-none"
+                  viewBox="0 0 24 20"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2.5"
+                  strokeLinecap="round"
+                >
+                  <line x1="4" y1="16" x2="1" y2="8" />
+                  <line x1="12" y1="14" x2="12" y2="4" />
+                  <line x1="20" y1="16" x2="23" y2="8" />
                 </svg>
-                <span className="absolute inset-0 flex items-center justify-center text-[12px] font-bold text-white font-mono">
-                  98%
+                {/* Soft rounded highlighter background pill */}
+                <span className="relative z-10 px-3 py-0.5 rounded-xl bg-[#DCE8F5] dark:bg-[#1E2B42] text-navy dark:text-white transition-colors">
+                  Your Cat.
                 </span>
-              </div>
-              <div className="text-[11px] text-[#8FA391] leading-tight">
-                Reservoir probe monitored
-              </div>
-            </div>
-
-            <div>
-              <div className="text-[11px] font-semibold uppercase tracking-[0.04em] text-accent-azure mb-1">
-                Soft-Stop Pump
-              </div>
-              <p className="text-[12px] text-[#8FA391] leading-relaxed">
-                600ms voltage ramp prevents splashing and eliminates back-EMF.
-              </p>
-            </div>
-          </motion.div>
-
-          {/* Card 5: Live Hardware Status */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.55, ease: "easeOut" }}
-            className="apple-card p-5 flex flex-col justify-between h-[230px] bg-[#131A14] border border-white/[0.08]"
-          >
-            <div className="flex items-center justify-between">
-              <SignalIcon className="w-5 h-5 text-[#D4F66C]" />
-              <span className="inline-flex items-center gap-1 text-[11px] text-accent-forest font-medium">
-                <span className="w-1.5 h-1.5 rounded-full bg-accent-forest animate-pulse" />
-                Live 1 Hz
               </span>
-            </div>
-            <div>
-              <div className="text-[18px] font-bold text-white tracking-tight mb-1 font-mono">
-                8884 WSS
+            </motion.h1>
+
+            {/* Subtitle */}
+            <motion.p
+              initial={{ opacity: 0, y: 16 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.55, delay: 0.2, ease: "easeOut" }}
+              className="text-[14px] md:text-[16px] leading-relaxed text-navy-muted dark:text-navy-lightMuted max-w-xl mb-6 md:mb-7 transition-colors"
+            >
+              Stress-free automated dry kibble dispensing, fresh water replenishment,
+              and precision gram-level health monitoring built on open hardware.
+            </motion.p>
+
+            {/* Action Pill Buttons */}
+            <motion.div
+              initial={{ opacity: 0, y: 16 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.3, ease: "easeOut" }}
+              className="flex flex-wrap items-center gap-3.5 mb-6 md:mb-8"
+            >
+              {user ? (
+                <Link
+                  href="/dashboard"
+                  className="inline-flex items-center justify-center gap-2 rounded-full px-6 py-3 bg-periwinkle hover:bg-periwinkle-hover text-white text-[13px] font-semibold tracking-tight shadow-[0_2px_12px_rgba(74,114,184,0.25)] transition-all duration-150 active:scale-[0.98]"
+                >
+                  <PawOutlineIcon className="w-4 h-4 text-white" />
+                  <span>Go to Dashboard</span>
+                </Link>
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => openAuthModal("signup")}
+                  className="inline-flex items-center justify-center gap-2 rounded-full px-6 py-3 bg-periwinkle hover:bg-periwinkle-hover text-white text-[13px] font-semibold tracking-tight shadow-[0_2px_12px_rgba(74,114,184,0.25)] transition-all duration-150 active:scale-[0.98]"
+                >
+                  <PawOutlineIcon className="w-4 h-4 text-white" />
+                  <span>Get Started</span>
+                </button>
+              )}
+              <a
+                href="#why-cat-care"
+                className="inline-flex items-center justify-center gap-2 rounded-full px-6 py-3 bg-white dark:bg-navy-card text-navy dark:text-[#F0F4FA] border border-[#D8E4F2] dark:border-white/[0.12] hover:bg-[#EBF3FA] dark:hover:bg-[#1A263D] text-[13px] font-semibold tracking-tight transition-all duration-150 active:scale-[0.98] shadow-sm"
+              >
+                <PawOutlineIcon className="w-4 h-4 text-navy dark:text-[#F0F4FA]" />
+                <span>Explore Hardware</span>
+              </a>
+            </motion.div>
+
+            {/* Metrics Row */}
+            <motion.div
+              initial={{ opacity: 0, y: 16 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.55, delay: 0.4, ease: "easeOut" }}
+              className="flex items-center gap-5 sm:gap-8 pt-4 md:pt-5 border-t border-[#D8E4F2] dark:border-white/[0.08] w-full max-w-lg transition-colors"
+            >
+              <div>
+                <div className="text-[20px] sm:text-[24px] md:text-[26px] font-bold tracking-tight text-navy dark:text-white font-mono">
+                  1,500+
+                </div>
+                <div className="text-[11px] sm:text-[12px] text-navy-muted dark:text-navy-lightMuted mt-0.5">
+                  Meals Dispensed
+                </div>
               </div>
-              <div className="text-[11px] font-semibold uppercase tracking-[0.04em] text-[#D4F66C] mb-1">
-                HiveMQ Cloud TLS
+              <div className="w-px h-9 md:h-10 bg-[#D8E4F2] dark:bg-white/[0.1] shrink-0" />
+              <div>
+                <div className="text-[20px] sm:text-[24px] md:text-[26px] font-bold tracking-tight text-navy dark:text-white font-mono">
+                  8+ Years
+                </div>
+                <div className="text-[11px] sm:text-[12px] text-navy-muted dark:text-navy-lightMuted mt-0.5">
+                  Hardware Reliability
+                </div>
               </div>
-              <p className="text-[12px] text-[#8FA391] leading-relaxed">
-                Sub-100ms commands over encrypted WebSocket telemetry.
-              </p>
+              <div className="w-px h-9 md:h-10 bg-[#D8E4F2] dark:bg-white/[0.1] shrink-0" />
+              <div>
+                <div className="text-[20px] sm:text-[24px] md:text-[26px] font-bold tracking-tight text-navy dark:text-white font-mono">
+                  100%
+                </div>
+                <div className="text-[11px] sm:text-[12px] text-navy-muted dark:text-navy-lightMuted mt-0.5">
+                  Feline-Safe Build
+                </div>
+              </div>
+            </motion.div>
+          </div>
+
+          {/* Right Column: Visual Elements */}
+          <div className="lg:col-span-5 relative flex items-center justify-center pt-2 lg:pt-0">
+            {/* Watermark Paw floating top-left */}
+            <div className="absolute -top-6 left-2 sm:left-6 w-16 h-16 text-periwinkle/20 dark:text-periwinkle/15 -rotate-12 pointer-events-none z-0">
+              <PawIcon className="w-full h-full" />
             </div>
-          </motion.div>
+
+            {/* Outline curved stroke wrapping behind the arches */}
+            <svg
+              className="absolute -top-10 -left-6 w-[120%] h-[120%] pointer-events-none z-0 stroke-periwinkle/30 dark:stroke-white/15"
+              viewBox="0 0 400 450"
+              fill="none"
+              strokeWidth="2.5"
+              strokeDasharray="6 4"
+            >
+              <path d="M 40 220 C 30 100, 160 40, 240 70 C 320 100, 370 200, 350 320 C 330 420, 200 430, 120 400" />
+            </svg>
+
+            {/* Arches Container */}
+            <div className="relative flex items-end justify-center z-10 pb-4 md:pb-6">
+              {/* Left Arch: Pastel Sky Blue with Calico Kitten */}
+              <motion.div
+                initial={{ opacity: 0, y: 30 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6, delay: 0.2, ease: "easeOut" }}
+                className="w-36 sm:w-44 md:w-48 h-56 sm:h-68 md:h-76 rounded-t-full rounded-b-3xl bg-[#D6EBF8] dark:bg-[#17253B] border-2 border-white dark:border-periwinkle/30 shadow-sm overflow-hidden relative flex flex-col justify-end transition-colors"
+              >
+                {/* Decorative arch ambient glow */}
+                <div className="absolute inset-0 bg-gradient-to-b from-[#C0E3F7]/40 dark:from-periwinkle/10 to-transparent pointer-events-none" />
+
+                {/* Calico Kitten Vector */}
+                <svg
+                  viewBox="0 0 200 240"
+                  className="w-full h-auto drop-shadow-sm select-none"
+                  fill="none"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  {/* Calico Body */}
+                  <path
+                    d="M 40 240 C 40 170, 70 140, 100 140 C 130 140, 160 170, 160 240 Z"
+                    fill="#FDFBF7"
+                  />
+                  {/* Calico dark spot on body */}
+                  <path
+                    d="M 120 170 C 135 170, 155 185, 158 215 C 145 220, 130 205, 125 190 Z"
+                    fill="#3F3F46"
+                  />
+                  {/* Calico ginger spot on body */}
+                  <path
+                    d="M 45 200 C 42 180, 60 170, 75 180 C 70 200, 55 210, 45 200 Z"
+                    fill="#E67E22"
+                  />
+
+                  {/* Kitten Head */}
+                  <circle cx="100" cy="110" r="48" fill="#FDFBF7" />
+
+                  {/* Left Ear (Grey/Dark Calico patch) */}
+                  <path d="M 62 82 L 48 35 L 85 68 Z" fill="#3F3F46" />
+                  <path d="M 64 76 L 55 46 L 80 68 Z" fill="#F4B8B8" opacity="0.7" />
+
+                  {/* Right Ear (Ginger Calico patch) */}
+                  <path d="M 138 82 L 152 35 L 115 68 Z" fill="#E67E22" />
+                  <path d="M 136 76 L 145 46 L 120 68 Z" fill="#F4B8B8" opacity="0.7" />
+
+                  {/* Calico eye patch over left eye */}
+                  <path
+                    d="M 68 90 C 60 95, 58 115, 72 125 C 85 125, 90 105, 82 95 Z"
+                    fill="#3F3F46"
+                    opacity="0.9"
+                  />
+
+                  {/* Eyes */}
+                  <circle cx="80" cy="112" r="5" fill="#18181B" />
+                  <circle cx="78.5" cy="110" r="1.5" fill="#FFFFFF" />
+                  <circle cx="120" cy="112" r="5" fill="#18181B" />
+                  <circle cx="118.5" cy="110" r="1.5" fill="#FFFFFF" />
+
+                  {/* Blush Pink Nose */}
+                  <polygon points="97,122 103,122 100,126" fill="#F4B8B8" />
+
+                  {/* Mouth */}
+                  <path
+                    d="M 95 128 Q 100 132 105 128"
+                    stroke="#71717A"
+                    strokeWidth="1.5"
+                    strokeLinecap="round"
+                    fill="none"
+                  />
+
+                  {/* Whiskers Left */}
+                  <line x1="60" y1="122" x2="40" y2="120" stroke="#A1A1AA" strokeWidth="1.2" strokeLinecap="round" />
+                  <line x1="60" y1="126" x2="38" y2="128" stroke="#A1A1AA" strokeWidth="1.2" strokeLinecap="round" />
+                  {/* Whiskers Right */}
+                  <line x1="140" y1="122" x2="160" y2="120" stroke="#A1A1AA" strokeWidth="1.2" strokeLinecap="round" />
+                  <line x1="140" y1="126" x2="162" y2="128" stroke="#A1A1AA" strokeWidth="1.2" strokeLinecap="round" />
+
+                  {/* Paws resting on bottom */}
+                  <ellipse cx="80" cy="235" rx="14" ry="10" fill="#FFFFFF" stroke="#D8E4F2" strokeWidth="1" />
+                  <ellipse cx="120" cy="235" rx="14" ry="10" fill="#FFFFFF" stroke="#D8E4F2" strokeWidth="1" />
+                </svg>
+              </motion.div>
+
+              {/* Right Arch: Warm Pastel Yellow with Ginger Tabby Cat (Taller) */}
+              <motion.div
+                initial={{ opacity: 0, y: 30 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6, delay: 0.3, ease: "easeOut" }}
+                className="w-40 sm:w-48 md:w-52 h-68 sm:h-80 md:h-88 rounded-t-full rounded-b-3xl bg-[#FEF08A]/75 dark:bg-[#342D15] border-2 border-white dark:border-amber-400/30 shadow-sm overflow-hidden relative -ml-8 sm:-ml-10 z-10 flex flex-col justify-end transition-colors"
+              >
+                {/* Decorative arch ambient glow */}
+                <div className="absolute inset-0 bg-gradient-to-b from-[#FDE047]/20 dark:from-amber-400/10 to-transparent pointer-events-none" />
+
+                {/* Ginger Tabby Cat Vector */}
+                <svg
+                  viewBox="0 0 220 280"
+                  className="w-full h-auto drop-shadow-sm select-none"
+                  fill="none"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  {/* Tabby Body */}
+                  <path
+                    d="M 40 280 C 40 190, 75 160, 110 160 C 145 160, 180 190, 180 280 Z"
+                    fill="#F59E0B"
+                  />
+                  {/* Tabby chest bib (cream white) */}
+                  <path
+                    d="M 85 280 C 85 210, 110 195, 110 195 C 110 195, 135 210, 135 280 Z"
+                    fill="#FFFBEB"
+                  />
+
+                  {/* Body Tabby Stripes */}
+                  <path d="M 55 220 Q 75 222 80 215" stroke="#D97706" strokeWidth="2.5" strokeLinecap="round" />
+                  <path d="M 52 245 Q 75 247 82 240" stroke="#D97706" strokeWidth="2.5" strokeLinecap="round" />
+                  <path d="M 165 220 Q 145 222 140 215" stroke="#D97706" strokeWidth="2.5" strokeLinecap="round" />
+                  <path d="M 168 245 Q 145 247 138 240" stroke="#D97706" strokeWidth="2.5" strokeLinecap="round" />
+
+                  {/* Cat Head */}
+                  <circle cx="110" cy="120" r="54" fill="#F59E0B" />
+
+                  {/* Left Ear */}
+                  <path d="M 68 88 L 52 32 L 95 72 Z" fill="#F59E0B" />
+                  <path d="M 70 82 L 60 45 L 88 72 Z" fill="#F4B8B8" opacity="0.8" />
+
+                  {/* Right Ear */}
+                  <path d="M 152 88 L 168 32 L 125 72 Z" fill="#F59E0B" />
+                  <path d="M 150 82 L 160 45 L 132 72 Z" fill="#F4B8B8" opacity="0.8" />
+
+                  {/* Forehead Tabby 'M' marking */}
+                  <path d="M 95 86 L 102 100 L 110 88 L 118 100 L 125 86" stroke="#D97706" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+
+                  {/* White Muzzle Area */}
+                  <ellipse cx="110" cy="138" rx="20" ry="14" fill="#FFFBEB" />
+
+                  {/* Eyes (Happy gentle blue eyes) */}
+                  <ellipse cx="88" cy="122" rx="6" ry="7" fill="#2563EB" />
+                  <circle cx="88" cy="122" r="4" fill="#18181B" />
+                  <circle cx="86" cy="119" r="1.8" fill="#FFFFFF" />
+
+                  <ellipse cx="132" cy="122" rx="6" ry="7" fill="#2563EB" />
+                  <circle cx="132" cy="122" r="4" fill="#18181B" />
+                  <circle cx="130" cy="119" r="1.8" fill="#FFFFFF" />
+
+                  {/* Blush Pink Nose */}
+                  <polygon points="107,133 113,133 110,137" fill="#F4B8B8" />
+
+                  {/* Smiling Mouth */}
+                  <path
+                    d="M 103 140 Q 110 144 117 140"
+                    stroke="#B45309"
+                    strokeWidth="1.5"
+                    strokeLinecap="round"
+                    fill="none"
+                  />
+
+                  {/* Tabby Cheeks */}
+                  <line x1="68" y1="135" x2="42" y2="132" stroke="#D97706" strokeWidth="1.2" strokeLinecap="round" />
+                  <line x1="68" y1="140" x2="40" y2="142" stroke="#D97706" strokeWidth="1.2" strokeLinecap="round" />
+                  <line x1="152" y1="135" x2="178" y2="132" stroke="#D97706" strokeWidth="1.2" strokeLinecap="round" />
+                  <line x1="152" y1="140" x2="180" y2="142" stroke="#D97706" strokeWidth="1.2" strokeLinecap="round" />
+
+                  {/* Front Paws */}
+                  <ellipse cx="88" cy="275" rx="16" ry="11" fill="#FFFBEB" stroke="#FDE68A" strokeWidth="1" />
+                  <ellipse cx="132" cy="275" rx="16" ry="11" fill="#FFFBEB" stroke="#FDE68A" strokeWidth="1" />
+                </svg>
+              </motion.div>
+
+              {/* Floating Rating Card positioned at bottom-right/bottom-center */}
+              <motion.div
+                initial={{ opacity: 0, scale: 0.9, y: 10 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                transition={{ duration: 0.5, delay: 0.45, ease: "easeOut" }}
+                className="absolute -bottom-2 -right-2 sm:right-0 bg-white/95 dark:bg-navy-card/95 backdrop-blur-md rounded-2xl border border-[#D8E4F2] dark:border-white/[0.1] shadow-[0_4px_16px_rgba(28,41,66,0.08)] dark:shadow-[0_4px_16px_rgba(0,0,0,0.3)] p-3 px-4 flex items-center gap-3 z-30 transition-colors"
+              >
+                {/* 3 Circular Avatars Stack */}
+                <div className="flex -space-x-2">
+                  <div className="w-7 h-7 rounded-full bg-[#E0F2FE] dark:bg-sky-900/60 border-2 border-white dark:border-navy-card flex items-center justify-center overflow-hidden">
+                    <svg viewBox="0 0 20 20" className="w-5 h-5 text-sky-600 dark:text-sky-300" fill="currentColor">
+                      <circle cx="10" cy="7" r="3.5" />
+                      <path d="M4 17c0-3 3-5 6-5s6 2 6 5v1H4v-1z" />
+                    </svg>
+                  </div>
+                  <div className="w-7 h-7 rounded-full bg-[#FEF3C7] dark:bg-amber-900/60 border-2 border-white dark:border-navy-card flex items-center justify-center overflow-hidden">
+                    <svg viewBox="0 0 20 20" className="w-5 h-5 text-amber-600 dark:text-amber-300" fill="currentColor">
+                      <circle cx="10" cy="7" r="3.5" />
+                      <path d="M4 17c0-3 3-5 6-5s6 2 6 5v1H4v-1z" />
+                    </svg>
+                  </div>
+                  <div className="w-7 h-7 rounded-full bg-[#EBF3FA] dark:bg-periwinkle/30 border-2 border-white dark:border-navy-card flex items-center justify-center overflow-hidden">
+                    <svg viewBox="0 0 20 20" className="w-5 h-5 text-periwinkle dark:text-periwinkle-light" fill="currentColor">
+                      <circle cx="10" cy="7" r="3.5" />
+                      <path d="M4 17c0-3 3-5 6-5s6 2 6 5v1H4v-1z" />
+                    </svg>
+                  </div>
+                </div>
+
+                {/* Score & Subtext */}
+                <div>
+                  <div className="flex items-center gap-1.5 leading-none">
+                    <StarIcon className="w-3.5 h-3.5 text-periwinkle" />
+                    <span className="font-semibold text-[13px] text-navy dark:text-white font-mono">
+                      4.9/5
+                    </span>
+                  </div>
+                  <div className="text-[11px] text-navy-muted dark:text-navy-lightMuted mt-1 leading-none">
+                    1,500+ Happy Cat Parents
+                  </div>
+                </div>
+              </motion.div>
+            </div>
+          </div>
         </div>
       </div>
 
-      {/* Prominent, Bigger Marquee Ticker Band anchored at the bottom */}
+      {/* Prominent, Bigger Marquee Ticker Band anchored at the bottom of the first section */}
       <TickerBand />
     </section>
   );

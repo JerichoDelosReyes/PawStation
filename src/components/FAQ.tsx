@@ -37,22 +37,22 @@ export default function FAQ() {
   return (
     <section
       id="faq"
-      className="py-24 md:py-32 bg-[#0B0F0B] border-t border-white/[0.04] transition-colors duration-200"
+      className="py-24 md:py-32 bg-canvas-light dark:bg-canvas-dark border-t border-[#D8E4F2] dark:border-white/[0.04] transition-colors duration-200"
     >
       <div className="section-container">
         <div className="text-center mb-16 max-w-2xl mx-auto">
-          <span className="inline-block text-[12px] font-semibold tracking-[0.05em] uppercase text-[#D4F66C] mb-3">
+          <span className="inline-block text-[12px] font-semibold tracking-[0.05em] uppercase text-periwinkle dark:text-periwinkle-light mb-3">
             Technical FAQ
           </span>
-          <h2 className="text-[clamp(1.75rem,3.5vw,2.75rem)] font-bold tracking-tight text-white leading-tight">
+          <h2 className="text-[clamp(1.75rem,3.5vw,2.75rem)] font-bold tracking-tight text-navy dark:text-white leading-tight">
             Frequently Asked Questions
           </h2>
-          <p className="text-[15px] md:text-[16px] text-[#8FA391] mt-3">
+          <p className="text-[15px] md:text-[16px] text-navy-muted dark:text-navy-lightMuted mt-3">
             Essential specifications on electrical isolation, servo mechanics, and MQTT cloud telemetry.
           </p>
         </div>
 
-        <div className="max-w-3xl mx-auto divide-y divide-white/[0.08]">
+        <div className="max-w-3xl mx-auto divide-y divide-[#D8E4F2] dark:divide-white/[0.08]">
           {faqItems.map((item, i) => {
             const isOpen = openIndex === i;
             return (
@@ -62,13 +62,13 @@ export default function FAQ() {
                   className="w-full flex items-start justify-between gap-4 py-5 text-left group"
                   aria-expanded={isOpen}
                 >
-                  <span className="text-[15px] font-medium text-white group-hover:text-[#D4F66C] transition-colors">
+                  <span className="text-[15px] font-medium text-navy dark:text-white group-hover:text-periwinkle dark:group-hover:text-periwinkle-light transition-colors">
                     {item.q}
                   </span>
                   <motion.div
                     animate={{ rotate: isOpen ? 180 : 0 }}
                     transition={{ duration: 0.2 }}
-                    className="shrink-0 mt-0.5 text-[#8FA391] group-hover:text-[#D4F66C] transition-colors"
+                    className="shrink-0 mt-0.5 text-navy-muted dark:text-navy-lightMuted group-hover:text-periwinkle dark:group-hover:text-periwinkle-light transition-colors"
                   >
                     <ChevronDownIcon className="w-4 h-4" />
                   </motion.div>
@@ -82,7 +82,7 @@ export default function FAQ() {
                       transition={{ duration: 0.25, ease: "easeInOut" }}
                       className="overflow-hidden"
                     >
-                      <p className="text-[14px] leading-relaxed text-[#8FA391] pb-6">
+                      <p className="text-[14px] leading-relaxed text-navy-muted dark:text-navy-lightMuted pb-6">
                         {item.a}
                       </p>
                     </motion.div>

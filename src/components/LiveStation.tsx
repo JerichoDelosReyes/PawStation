@@ -142,7 +142,7 @@ export default function LiveStation() {
                 <div
                   className={`w-2 h-2 rounded-full ${
                     isOnline
-                      ? "bg-accent-forest"
+                      ? "bg-sky-500"
                       : isConnecting
                       ? "bg-accent-amber animate-pulse"
                       : "bg-accent-crimson"
@@ -182,7 +182,7 @@ export default function LiveStation() {
                   <span
                     className={`text-[11px] font-medium px-2 py-0.5 rounded-full ${
                       telemetry.scaleOk
-                        ? "bg-accent-forest/15 text-accent-forest"
+                        ? "bg-sky-500/15 text-sky-600 dark:text-sky-400"
                         : "bg-accent-crimson/15 text-accent-crimson"
                     }`}
                   >
@@ -225,7 +225,7 @@ export default function LiveStation() {
                     className={`text-[11px] font-medium px-2 py-0.5 rounded-full ${
                       telemetry.waterLow
                         ? "bg-accent-crimson/15 text-accent-crimson"
-                        : "bg-accent-forest/15 text-accent-forest"
+                        : "bg-sky-500/15 text-sky-600 dark:text-sky-400"
                     }`}
                   >
                     {telemetry.waterLow ? "Low" : "Adequate"}
@@ -348,7 +348,7 @@ export default function LiveStation() {
             {/* Signal and status */}
             <div className="console-tile">
               <div className="flex items-center gap-2 mb-4">
-                <SignalIcon className="w-4 h-4 text-accent-forest" />
+                <SignalIcon className="w-4 h-4 text-sky-500" />
                 <span className="console-label">Station Telemetry</span>
               </div>
               <div className="space-y-3">

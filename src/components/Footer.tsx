@@ -21,20 +21,20 @@ function Modal({ title, children, isOpen, onClose }: ModalProps) {
         onClick={onClose}
       />
       {/* Content */}
-      <div className="relative bg-[#131A14] rounded-apple-2xl border border-white/[0.1] max-w-2xl w-full max-h-[80vh] overflow-y-auto shadow-2xl transition-colors">
-        <div className="sticky top-0 bg-[#131A14]/95 backdrop-blur-md border-b border-white/[0.08] px-6 py-4 flex items-center justify-between z-10">
-          <h3 className="text-[17px] font-semibold text-white">
+      <div className="relative bg-white dark:bg-navy-card rounded-apple-2xl border border-[#D8E4F2] dark:border-white/[0.1] max-w-2xl w-full max-h-[80vh] overflow-y-auto shadow-2xl transition-colors">
+        <div className="sticky top-0 bg-white/95 dark:bg-navy-card/95 backdrop-blur-md border-b border-[#D8E4F2] dark:border-white/[0.08] px-6 py-4 flex items-center justify-between z-10">
+          <h3 className="text-[17px] font-semibold text-navy dark:text-white">
             {title}
           </h3>
           <button
             onClick={onClose}
-            className="p-1.5 rounded-lg hover:bg-white/[0.08] transition-colors"
+            className="p-1.5 rounded-lg hover:bg-black/[0.04] dark:hover:bg-white/[0.08] transition-colors"
             aria-label="Close"
           >
-            <CloseIcon className="w-4 h-4 text-[#8FA391]" />
+            <CloseIcon className="w-4 h-4 text-navy-muted dark:text-navy-lightMuted" />
           </button>
         </div>
-        <div className="px-6 py-6 text-[13px] leading-relaxed text-[#8FA391] space-y-4">
+        <div className="px-6 py-6 text-[13px] leading-relaxed text-navy-muted dark:text-navy-lightMuted space-y-4">
           {children}
         </div>
       </div>
@@ -43,7 +43,7 @@ function Modal({ title, children, isOpen, onClose }: ModalProps) {
 }
 
 const footerLinks = [
-  { label: "Features", href: "/#hero-features" },
+  { label: "Features", href: "/#why-cat-care" },
   { label: "Hardware Architecture", href: "/#why-cat-care" },
   { label: "Technical FAQ", href: "/#faq" },
   { label: "GitHub Repository", href: "https://github.com/JerichoDelosReyes/PawStation.git", external: true },
@@ -55,23 +55,23 @@ export default function Footer() {
 
   return (
     <>
-      <footer className="relative bg-[#080B08] text-white overflow-hidden border-t border-white/[0.06] transition-colors duration-200">
+      <footer className="relative bg-[#0B111B] text-white overflow-hidden border-t border-[#D8E4F2] dark:border-white/[0.08] transition-colors duration-200">
         <div className="section-container py-16 max-w-7xl">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-10 mb-12">
             {/* Brand Column */}
             <div className="md:col-span-2">
               <div className="flex items-center gap-2.5 mb-4">
-                <div className="w-8 h-8 rounded-full bg-[#131A14] border border-white/[0.08] flex items-center justify-center text-[#D4F66C]">
-                  <PawIcon className="w-4 h-4 text-[#D4F66C]" />
+                <div className="w-8 h-8 rounded-full bg-[#131C2D] border border-white/[0.08] flex items-center justify-center text-periwinkle">
+                  <PawIcon className="w-4 h-4 text-periwinkle" />
                 </div>
                 <span className="text-[17px] font-bold tracking-tight text-white">
                   PawStation
                 </span>
-                <span className="text-[12px] text-[#8FA391] font-mono pl-1">
+                <span className="text-[12px] text-navy-lightMuted font-mono pl-1">
                   / Tactile feline feeding &amp; hydration system
                 </span>
               </div>
-              <p className="text-[13px] text-[#8FA391] leading-relaxed max-w-md">
+              <p className="text-[13px] text-navy-lightMuted leading-relaxed max-w-md">
                 An open ESP32 hardware platform combining precision load-cell telemetry,
                 silent servo kibble metering, and soft-stop hydration. Designed for
                 cat health and sensory wellbeing.
@@ -80,7 +80,7 @@ export default function Footer() {
 
             {/* Quick links */}
             <div>
-              <h4 className="text-[11px] font-semibold tracking-[0.05em] uppercase text-[#D4F66C] mb-4">
+              <h4 className="text-[11px] font-semibold tracking-[0.05em] uppercase text-periwinkle dark:text-periwinkle-light mb-4">
                 Platform
               </h4>
               <ul className="space-y-2.5">
@@ -90,7 +90,7 @@ export default function Footer() {
                       href={link.href}
                       target={link.external ? "_blank" : undefined}
                       rel={link.external ? "noopener noreferrer" : undefined}
-                      className="text-[13px] text-[#8FA391] hover:text-white transition-colors"
+                      className="text-[13px] text-navy-lightMuted hover:text-white transition-colors"
                     >
                       {link.label}
                     </a>
@@ -101,14 +101,14 @@ export default function Footer() {
 
             {/* Legal links */}
             <div>
-              <h4 className="text-[11px] font-semibold tracking-[0.05em] uppercase text-[#D4F66C] mb-4">
+              <h4 className="text-[11px] font-semibold tracking-[0.05em] uppercase text-periwinkle dark:text-periwinkle-light mb-4">
                 Compliance &amp; Terms
               </h4>
               <ul className="space-y-2.5">
                 <li>
                   <button
                     onClick={() => setPrivacyOpen(true)}
-                    className="text-[13px] text-[#8FA391] hover:text-white transition-colors"
+                    className="text-[13px] text-navy-lightMuted hover:text-white transition-colors"
                   >
                     Privacy Policy
                   </button>
@@ -116,7 +116,7 @@ export default function Footer() {
                 <li>
                   <button
                     onClick={() => setTermsOpen(true)}
-                    className="text-[13px] text-[#8FA391] hover:text-white transition-colors"
+                    className="text-[13px] text-navy-lightMuted hover:text-white transition-colors"
                   >
                     Terms of Service
                   </button>
@@ -126,12 +126,12 @@ export default function Footer() {
           </div>
 
           {/* Bottom bar */}
-          <div className="pt-8 border-t border-white/[0.06] flex flex-col sm:flex-row items-center justify-between gap-4 text-[12px] text-[#8FA391]">
+          <div className="pt-8 border-t border-white/[0.08] flex flex-col sm:flex-row items-center justify-between gap-4 text-[12px] text-navy-lightMuted">
             <span>
               PawStation. Open hardware for cats, built by cat people.
             </span>
             <div className="flex items-center gap-5 text-[11px] font-mono">
-              <span className="text-[#D4F66C]">ESP32 Firmware v1.2</span>
+              <span className="text-periwinkle dark:text-periwinkle-light">ESP32 Firmware v1.2</span>
               <span>HiveMQ TLS 8884</span>
               <span>Supabase RLS</span>
             </div>
@@ -145,12 +145,12 @@ export default function Footer() {
         isOpen={privacyOpen}
         onClose={() => setPrivacyOpen(false)}
       >
-        <p className="font-semibold text-white">
+        <p className="font-semibold text-navy dark:text-white">
           PawStation Privacy Policy
         </p>
         <p>Last updated: November 12, 2026</p>
 
-        <p className="font-medium text-white mt-4">
+        <p className="font-medium text-navy dark:text-white mt-4">
           1. Information We Collect
         </p>
         <p>
@@ -158,22 +158,22 @@ export default function Footer() {
           data strictly necessary to monitor and operate the pet feeding station.
         </p>
         <p>
-          <strong className="text-white">Hardware and Telemetry Data:</strong> Weight values measured by
+          <strong className="text-navy dark:text-white">Hardware and Telemetry Data:</strong> Weight values measured by
           the HX711, water reservoir levels, actuator execution records, and
           device health and network status (Wi-Fi RSSI, uptime, broker ping latencies).
         </p>
         <p>
-          <strong className="text-white">Account and User Authentication Data:</strong> Email address
+          <strong className="text-navy dark:text-white">Account and User Authentication Data:</strong> Email address
           and unique user identifier (UUID) via Supabase Auth. Session tokens
           (JWT) and encrypted session cookies.
         </p>
         <p>
-          <strong className="text-white">Data We Do NOT Collect:</strong> PawStation contains no
+          <strong className="text-navy dark:text-white">Data We Do NOT Collect:</strong> PawStation contains no
           cameras, no microphones, and no ambient audio listening devices. We do
           not collect GPS location data, advertising IDs, or biometric data.
         </p>
 
-        <p className="font-medium text-white mt-4">
+        <p className="font-medium text-navy dark:text-white mt-4">
           2. How We Use Your Data
         </p>
         <p>
@@ -182,7 +182,7 @@ export default function Footer() {
           protection.
         </p>
 
-        <p className="font-medium text-white mt-4">
+        <p className="font-medium text-navy dark:text-white mt-4">
           3. Data Storage, Retention and Security
         </p>
         <p>
@@ -192,7 +192,7 @@ export default function Footer() {
           automatically pruned. You may request complete erasure at any time.
         </p>
 
-        <p className="font-medium text-white mt-4">
+        <p className="font-medium text-navy dark:text-white mt-4">
           4. Third-Party Service Providers
         </p>
         <p>
@@ -208,12 +208,12 @@ export default function Footer() {
         isOpen={termsOpen}
         onClose={() => setTermsOpen(false)}
       >
-        <p className="font-semibold text-white">
+        <p className="font-semibold text-navy dark:text-white">
           PawStation Terms of Service
         </p>
         <p>Last updated: November 12, 2026</p>
 
-        <p className="font-medium text-white mt-4">
+        <p className="font-medium text-navy dark:text-white mt-4">
           1. Description of Service
         </p>
         <p>
@@ -223,7 +223,7 @@ export default function Footer() {
           dashboard.
         </p>
 
-        <p className="font-medium text-white mt-4">
+        <p className="font-medium text-navy dark:text-white mt-4">
           2. Animal Welfare and Hardware Safety
         </p>
         <p className="text-accent-crimson font-medium">
@@ -241,7 +241,7 @@ export default function Footer() {
           design with protective flyback diodes and capacitors.
         </p>
 
-        <p className="font-medium text-white mt-4">
+        <p className="font-medium text-navy dark:text-white mt-4">
           3. Acceptable Use
         </p>
         <p>
@@ -250,10 +250,10 @@ export default function Footer() {
           broker or database with malicious traffic.
         </p>
 
-        <p className="font-medium text-white mt-4">
+        <p className="font-medium text-navy dark:text-white mt-4">
           4. Limitation of Liability
         </p>
-        <p className="uppercase text-[11px] text-[#8FA391]">
+        <p className="uppercase text-[11px] text-navy-muted dark:text-navy-lightMuted">
           The software, firmware, and circuit designs are provided &quot;as
           is&quot;, without warranty of any kind, express or implied. In no event
           shall the authors be liable for any claim, damages, injury to animals,

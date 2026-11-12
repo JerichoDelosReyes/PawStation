@@ -19,7 +19,7 @@
   }
 
   body {
-    @apply bg-[#0B0F0B] text-white transition-colors duration-200;
+    @apply bg-canvas-light dark:bg-canvas-dark text-navy dark:text-[#F0F4FA] transition-colors duration-200;
   }
 
   * {
@@ -33,7 +33,7 @@
   }
 
   .apple-card {
-    @apply bg-[#131A14] rounded-apple-2xl border border-white/[0.08] overflow-hidden transition-all;
+    @apply bg-white dark:bg-navy-card rounded-apple-2xl border border-[#D8E4F2] dark:border-white/[0.08] overflow-hidden transition-all shadow-[0_2px_12px_rgba(28,41,66,0.04)] dark:shadow-[0_4px_20px_rgba(0,0,0,0.3)];
   }
 
   .apple-button {
@@ -44,20 +44,20 @@
   }
 
   .skeleton-pill {
-    @apply rounded-md bg-gradient-to-r from-[#1A251C] via-[#243327] to-[#1A251C]
+    @apply rounded-md bg-gradient-to-r from-[#E2ECF5] via-[#D0DFEE] to-[#E2ECF5] dark:from-[#131C2D] dark:via-[#1A263D] dark:to-[#131C2D]
            bg-[length:200%_100%] animate-shimmer;
   }
 
   .console-tile {
-    @apply bg-[#121813] rounded-apple-lg border border-white/[0.08] p-5;
+    @apply bg-white dark:bg-navy-deep rounded-apple-lg border border-[#D8E4F2] dark:border-white/[0.08] p-5;
   }
 
   .console-label {
-    @apply text-[11px] font-medium tracking-[0.02em] uppercase text-[#8FA391];
+    @apply text-[11px] font-medium tracking-[0.02em] uppercase text-navy-muted dark:text-navy-lightMuted;
   }
 
   .console-value {
-    @apply text-[32px] font-bold tracking-tight text-white
+    @apply text-[32px] font-bold tracking-tight text-navy dark:text-white
            font-mono tabular-nums;
   }
 }

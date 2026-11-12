@@ -152,8 +152,8 @@ export default function Scheduler() {
                 animate={{ opacity: 1, scale: 1 }}
                 className="apple-card p-10 text-center h-full flex flex-col items-center justify-center"
               >
-                <div className="w-12 h-12 rounded-full bg-accent-forest/10 flex items-center justify-center mx-auto mb-4">
-                  <CheckIcon className="w-6 h-6 text-accent-forest" />
+                <div className="w-12 h-12 rounded-full bg-periwinkle/15 flex items-center justify-center mx-auto mb-4">
+                  <CheckIcon className="w-6 h-6 text-periwinkle" />
                 </div>
                 <h3 className="text-[20px] font-semibold text-[#18181B] dark:text-[#F4F4F5] mb-2">
                   Schedule Saved

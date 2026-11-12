@@ -79,9 +79,9 @@ export default function AuthModal() {
   const strengthLabel = password.length === 0 ? "Empty" : strengthLabels[strengthScore];
   const strengthColor =
     strengthScore === 4
-      ? "bg-accent-forest text-accent-forest"
+      ? "bg-periwinkle text-periwinkle"
       : strengthScore === 3
-      ? "bg-accent-azure text-accent-azure"
+      ? "bg-sky-500 text-sky-500"
       : strengthScore === 2
       ? "bg-amber-500 text-amber-500"
       : "bg-accent-crimson text-accent-crimson";
@@ -520,7 +520,7 @@ function RequirementItem({
       <div
         className={`w-3.5 h-3.5 rounded-full flex items-center justify-center shrink-0 ${
           satisfied
-            ? "bg-accent-forest text-white"
+            ? "bg-periwinkle text-white"
             : "bg-gray-200 dark:bg-[#2C2C2E] text-transparent"
         }`}
       >

@@ -87,8 +87,8 @@ export default function DashboardPage() {
                     <span className="text-[11px] font-semibold uppercase tracking-[0.04em] text-accent-amber">
                       Active Hardware Profile
                     </span>
-                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-accent-forest/15 text-accent-forest text-[11px] font-medium">
-                      <span className="w-1.5 h-1.5 rounded-full bg-accent-forest" />
+                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-sky-500/15 text-sky-600 dark:text-sky-400 text-[11px] font-medium">
+                      <span className="w-1.5 h-1.5 rounded-full bg-sky-500" />
                       Station Synced
                     </span>
                   </div>
@@ -215,7 +215,7 @@ export default function DashboardPage() {
               </div>
 
               {saveSuccess && (
-                <div className="p-2.5 rounded-apple bg-accent-forest/15 text-accent-forest text-[12px] font-medium text-center">
+                <div className="p-2.5 rounded-apple bg-sky-500/15 text-sky-600 dark:text-sky-400 text-[12px] font-medium text-center">
                   Profile updated successfully.
                 </div>
               )}
