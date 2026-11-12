@@ -25,12 +25,14 @@ module.exports = {
           deep: '#0D1524',
         },
         canvas: {
-          light: '#EBF3FA',
-          dark: '#0B111B',
+          light: '#F4F1EA',
+          dark: '#0E0E10',
+          cream: '#F4F1EA',
+          obsidian: '#0E0E10',
         },
         card: {
           light: '#FFFFFF',
-          dark: '#131C2D',
+          dark: '#141417',
         },
         accent: {
           amber: '#4A72B8',

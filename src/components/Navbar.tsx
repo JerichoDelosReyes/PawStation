@@ -2,169 +2,144 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { PawIcon, MenuIcon, CloseIcon, SunIcon, MoonIcon } from "./Icons";
-import { useTheme } from "./ThemeProvider";
+import { PawIcon, MenuIcon, CloseIcon } from "./Icons";
 import { useAuth } from "@/lib/auth-context";
 
 const navLinks = [
-  { label: "Features", href: "/#why-cat-care" },
-  { label: "Architecture", href: "/#why-cat-care" },
-  { label: "Specs", href: "/#why-cat-care" },
+  { label: "Features", href: "/#features" },
+  { label: "Ecosystem", href: "/#ecosystem" },
+  { label: "Architecture", href: "/#blueprint" },
   { label: "FAQ", href: "/#faq" },
 ];
 
 export default function Navbar() {
   const [open, setOpen] = useState(false);
-  const { theme, toggleTheme } = useTheme();
   const { user, openAuthModal, signOut } = useAuth();
 
   return (
-    <nav className="fixed top-0 left-0 right-0 z-50 bg-canvas-light/85 dark:bg-canvas-dark/85 backdrop-blur-md border-b border-[#D8E4F2] dark:border-white/[0.08] transition-colors duration-200">
-      <div className="section-container flex items-center justify-between h-16">
-        {/* Brand */}
-        <Link href="/" className="flex items-center gap-2.5 group">
-          <div className="w-8 h-8 rounded-full bg-white dark:bg-navy-card border border-[#D8E4F2] dark:border-white/[0.08] flex items-center justify-center text-periwinkle shadow-[0_2px_8px_rgba(74,114,184,0.15)] transition-transform group-hover:scale-105">
-            <PawIcon className="w-4 h-4 text-periwinkle" />
+    <header className="fixed top-0 left-0 right-0 z-40 px-4 sm:px-6 md:px-8 pt-3 sm:pt-4 pointer-events-none">
+      <div className="max-w-7xl mx-auto flex items-center justify-between h-14 px-5 rounded-full bg-white/80 dark:bg-[#141417]/85 backdrop-blur-xl border border-black/[0.08] dark:border-white/[0.1] shadow-[0_4px_20px_rgba(0,0,0,0.04)] dark:shadow-[0_8px_32px_rgba(0,0,0,0.4)] pointer-events-auto transition-colors duration-200">
+        {/* Brand Left: Clean White Logo */}
+        <Link href="/" className="flex items-center gap-2.5 group" aria-label="PawStation Home">
+          <div className="w-7 h-7 rounded-lg bg-white flex items-center justify-center text-black shadow-sm transition-transform group-hover:scale-105">
+            <PawIcon className="w-3.5 h-3.5 fill-current" />
           </div>
-          <span className="text-[16px] font-bold tracking-tight text-navy dark:text-white">
+          <span className="text-[14px] font-bold tracking-tight uppercase text-black dark:text-white">
             PawStation
           </span>
         </Link>
 
-        {/* Centered Desktop links */}
-        <div className="hidden md:flex items-center gap-8">
-          {navLinks.map((link, idx) => (
+        {/* Centered Desktop Navigation */}
+        <nav className="hidden md:flex items-center gap-7">
+          {navLinks.map((link) => (
             <a
-              key={`${link.label}-${idx}`}
+              key={link.label}
               href={link.href}
-              className="text-[13px] font-medium text-navy-muted dark:text-navy-lightMuted hover:text-navy dark:hover:text-white transition-colors"
+              className="text-[13px] font-medium text-[#4A4A4F] dark:text-[#A1A1AA] hover:text-black dark:hover:text-white transition-colors"
             >
               {link.label}
             </a>
           ))}
-        </div>
+        </nav>
 
-        {/* Right side controls */}
-        <div className="hidden md:flex items-center gap-4">
-          {/* Theme Toggle */}
-          <button
-            onClick={toggleTheme}
-            aria-label={
-              theme === "dark" ? "Switch to light mode" : "Switch to dark mode"
-            }
-            className="p-2 rounded-full border border-[#D8E4F2] dark:border-white/[0.08] bg-white dark:bg-navy-card text-navy-muted dark:text-navy-lightMuted hover:text-navy dark:hover:text-white hover:bg-canvas-light dark:hover:bg-[#1A263D] transition-all active:scale-[0.95]"
-          >
-            {theme === "dark" ? (
-              <SunIcon className="w-4 h-4 text-periwinkle" />
-            ) : (
-              <MoonIcon className="w-4 h-4 text-navy-muted" />
-            )}
-          </button>
-
-          {/* Primary Action Button */}
+        {/* Right Action Area */}
+        <div className="hidden md:flex items-center gap-3">
+          {/* Primary High-Contrast Pill CTA (with > icon) */}
           {user ? (
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2">
               <Link
                 href="/dashboard"
-                className="inline-flex items-center justify-center px-5 py-2 rounded-full bg-periwinkle hover:bg-periwinkle-hover text-white text-[13px] font-semibold tracking-tight shadow-[0_2px_12px_rgba(74,114,184,0.25)] transition-all active:scale-[0.98]"
+                className="group inline-flex items-center gap-2 px-4 py-2 rounded-full bg-black dark:bg-white text-white dark:text-black text-[12px] font-semibold tracking-tight shadow-sm hover:opacity-90 active:scale-[0.98] transition-all"
               >
-                Dashboard
+                <span>Dashboard</span>
+                <span className="w-4 h-4 rounded-full bg-white dark:bg-black text-black dark:text-white flex items-center justify-center text-[9px] font-bold">
+                  ›
+                </span>
               </Link>
               <button
+                type="button"
                 onClick={signOut}
-                className="text-[12px] font-medium text-navy-muted dark:text-navy-lightMuted hover:text-navy dark:hover:text-white px-2 py-1.5 transition-colors"
+                className="text-[12px] font-medium text-[#666666] dark:text-[#A1A1AA] hover:text-black dark:hover:text-white px-2 py-1 transition-colors"
               >
                 Sign Out
               </button>
             </div>
           ) : (
             <button
-              onClick={() => openAuthModal("login")}
-              className="inline-flex items-center justify-center px-5 py-2 rounded-full bg-periwinkle hover:bg-periwinkle-hover text-white text-[13px] font-semibold tracking-tight shadow-[0_2px_12px_rgba(74,114,184,0.25)] transition-all active:scale-[0.98]"
+              type="button"
+              onClick={() => openAuthModal("signup")}
+              className="group inline-flex items-center gap-2 px-5 py-2 rounded-full bg-black dark:bg-white text-white dark:text-black text-[12px] font-semibold tracking-tight shadow-sm hover:opacity-90 active:scale-[0.98] transition-all"
             >
-              Log In
+              <span>Get Started</span>
+              <span className="w-4 h-4 rounded-full bg-white dark:bg-black text-black dark:text-white flex items-center justify-center text-[9px] font-bold transition-transform duration-200 group-hover:translate-x-0.5">
+                ›
+              </span>
             </button>
           )}
         </div>
 
-        {/* Mobile controls */}
+        {/* Mobile Hamburger Toggle */}
         <div className="flex md:hidden items-center gap-2">
-          <button
-            onClick={toggleTheme}
-            aria-label={
-              theme === "dark" ? "Switch to light mode" : "Switch to dark mode"
-            }
-            className="p-2 rounded-full border border-[#D8E4F2] dark:border-white/[0.08] bg-white dark:bg-navy-card text-navy-muted dark:text-navy-lightMuted"
-          >
-            {theme === "dark" ? (
-              <SunIcon className="w-4 h-4 text-periwinkle" />
-            ) : (
-              <MoonIcon className="w-4 h-4 text-navy-muted" />
-            )}
-          </button>
+          {user ? (
+            <Link
+              href="/dashboard"
+              className="px-3 py-1.5 rounded-full bg-black dark:bg-white text-white dark:text-black text-[11px] font-semibold"
+            >
+              App
+            </Link>
+          ) : (
+            <button
+              type="button"
+              onClick={() => openAuthModal("signup")}
+              className="px-3.5 py-1.5 rounded-full bg-black dark:bg-white text-white dark:text-black text-[11px] font-semibold flex items-center gap-1.5"
+            >
+              <span>Get Started</span>
+              <span>›</span>
+            </button>
+          )}
 
           <button
+            type="button"
             onClick={() => setOpen(!open)}
-            className="p-2 -mr-2 text-navy dark:text-white"
-            aria-label={open ? "Close menu" : "Open menu"}
+            aria-label="Toggle navigation menu"
+            className="w-8 h-8 rounded-full border border-black/10 dark:border-white/10 flex items-center justify-center text-black dark:text-white"
           >
-            {open ? (
-              <CloseIcon className="w-5 h-5" />
-            ) : (
-              <MenuIcon className="w-5 h-5" />
-            )}
+            {open ? <CloseIcon className="w-4 h-4" /> : <MenuIcon className="w-4 h-4" />}
           </button>
         </div>
       </div>
 
-      {/* Mobile drawer */}
+      {/* Mobile Drawer */}
       {open && (
-        <div className="md:hidden bg-canvas-light dark:bg-canvas-dark border-t border-[#D8E4F2] dark:border-white/[0.08]">
-          <div className="section-container py-4 flex flex-col gap-3">
-            {navLinks.map((link, idx) => (
+        <div className="md:hidden mt-2 p-5 rounded-3xl bg-white/95 dark:bg-[#141417]/95 backdrop-blur-2xl border border-black/[0.08] dark:border-white/[0.1] shadow-2xl pointer-events-auto">
+          <div className="flex flex-col gap-3">
+            {navLinks.map((link) => (
               <a
-                key={`m-${link.label}-${idx}`}
+                key={link.label}
                 href={link.href}
                 onClick={() => setOpen(false)}
-                className="text-[15px] font-medium text-navy dark:text-white py-2"
+                className="text-[14px] font-medium text-black dark:text-white py-1.5 border-b border-black/[0.04] dark:border-white/[0.06]"
               >
                 {link.label}
               </a>
             ))}
 
-            {user ? (
-              <div className="flex flex-col gap-2 mt-2 pt-2 border-t border-[#D8E4F2] dark:border-white/[0.08]">
-                <Link
-                  href="/dashboard"
-                  onClick={() => setOpen(false)}
-                  className="inline-flex items-center justify-center px-5 py-2.5 rounded-full bg-periwinkle hover:bg-periwinkle-hover text-white text-[13px] font-semibold text-center"
-                >
-                  Dashboard
-                </Link>
-                <button
-                  onClick={() => {
-                    signOut();
-                    setOpen(false);
-                  }}
-                  className="text-[13px] font-medium text-navy-muted dark:text-navy-lightMuted py-2 text-center"
-                >
-                  Sign Out
-                </button>
-              </div>
-            ) : (
+            <div className="pt-2">
               <button
+                type="button"
                 onClick={() => {
                   setOpen(false);
-                  openAuthModal("login");
+                  openAuthModal("signup");
                 }}
-                className="inline-flex items-center justify-center px-5 py-2.5 rounded-full bg-periwinkle hover:bg-periwinkle-hover text-white text-[13px] font-semibold text-center mt-2"
+                className="w-full py-2.5 rounded-full bg-black dark:bg-white text-white dark:text-black text-[13px] font-semibold flex items-center justify-center gap-2"
               >
-                Log In
+                <span>Get Started</span>
+                <span>›</span>
               </button>
-            )}
+            </div>
           </div>
         </div>
       )}
-    </nav>
+    </header>
   );
 }

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useRef } from "react";
-import { motion, AnimatePresence, useMotionValue, useSpring, useTransform } from "framer-motion";
+import { motion, useMotionValue, useSpring, useTransform } from "framer-motion";
 import { ScaleIcon, WaterDropIcon, KibbleIcon, SignalIcon, ShieldIcon } from "./Icons";
 
 interface CalloutAnnotation {
@@ -24,8 +24,8 @@ const CALLOUTS: CalloutAnnotation[] = [
     spec: "24-Bit ADC · ±0.1g Sled",
     subtext: "Double-deck Baltic birch plywood sled with elevated suspended weighing plate and non-slip silkscreen paw mark.",
     icon: ScaleIcon,
-    targetX: 300,
-    targetY: 450,
+    targetX: 270,
+    targetY: 435,
     category: "Sensor",
   },
   {
@@ -35,8 +35,8 @@ const CALLOUTS: CalloutAnnotation[] = [
     spec: "35g Controlled Dispense",
     subtext: "Angled food-grade delivery chute metered by an auto-detaching SG90 micro-servo with anti-jam shutoff.",
     icon: KibbleIcon,
-    targetX: 495,
-    targetY: 340,
+    targetX: 512,
+    targetY: 315,
     category: "Mechanical",
   },
   {
@@ -44,10 +44,10 @@ const CALLOUTS: CalloutAnnotation[] = [
     code: "03",
     title: "Birch Service Lids",
     spec: "Dual Turned Knobs",
-    subtext: "Twin 12mm birch plywood access lids with turned wooden handles for separate kibble and water replenishment.",
+    subtext: "Twin 12mm Baltic birch plywood access lids with turned wooden handles for separate kibble and water replenishment.",
     icon: ShieldIcon,
-    targetX: 580,
-    targetY: 135,
+    targetX: 585,
+    targetY: 118,
     category: "Mechanical",
   },
   {
@@ -55,10 +55,10 @@ const CALLOUTS: CalloutAnnotation[] = [
     code: "04",
     title: "Sight-Glass & Spout",
     spec: "Slender Level Slit",
-    subtext: "Optical water level sight-glass with graduated height ticks and downward stainless dispensing spout.",
+    subtext: "Optical water level sight-glass with graduated height ticks and downward dispensing spout nozzle.",
     icon: WaterDropIcon,
-    targetX: 632,
-    targetY: 260,
+    targetX: 642,
+    targetY: 235,
     category: "Fluidics",
   },
   {
@@ -68,8 +68,8 @@ const CALLOUTS: CalloutAnnotation[] = [
     spec: "PWM Soft-Stop Dish",
     subtext: "Recessed splash-containment chamber with glazed ceramic bowl directly below the 600ms soft-stop pump outlet.",
     icon: WaterDropIcon,
-    targetX: 635,
-    targetY: 450,
+    targetX: 642,
+    targetY: 435,
     category: "Fluidics",
   },
   {
@@ -79,8 +79,8 @@ const CALLOUTS: CalloutAnnotation[] = [
     spec: "HiveMQ TLS · Dual-Rail",
     subtext: "Side-mounted convective louvered box with isolated 5V power bank avoiding microcontroller brownout resets.",
     icon: SignalIcon,
-    targetX: 745,
-    targetY: 515,
+    targetX: 742,
+    targetY: 285,
     category: "Electrical",
   },
 ];
@@ -96,8 +96,8 @@ export default function Prototype3DSchematic() {
   const springX = useSpring(mouseX, { stiffness: 180, damping: 22 });
   const springY = useSpring(mouseY, { stiffness: 180, damping: 22 });
 
-  const rotateX = useTransform(springY, [-0.5, 0.5], ["6deg", "-6deg"]);
-  const rotateY = useTransform(springX, [-0.5, 0.5], ["-7deg", "7deg"]);
+  const rotateX = useTransform(springY, [-0.5, 0.5], ["5deg", "-5deg"]);
+  const rotateY = useTransform(springX, [-0.5, 0.5], ["-6deg", "6deg"]);
 
   const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
     if (!containerRef.current) return;
@@ -116,26 +116,8 @@ export default function Prototype3DSchematic() {
   const activeCallout = CALLOUTS.find((c) => c.id === activeId) || CALLOUTS[0];
 
   return (
-    <div className="relative w-full max-w-[640px] lg:max-w-[680px] mx-auto select-none py-1">
-      {/* Blueprint Header */}
-      <div className="flex items-center justify-between gap-3 mb-2 px-1 relative z-20">
-        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/95 dark:bg-[#131D30]/95 backdrop-blur-md border border-[#CBD5E1] dark:border-white/[0.1] text-[11px] font-mono text-navy dark:text-white shadow-sm">
-          <span className="w-2 h-2 rounded-full bg-sky-400 animate-pulse" />
-          <span className="font-semibold text-periwinkle dark:text-sky-400 uppercase tracking-wider">
-            3D AXONOMETRIC SCHEMATIC
-          </span>
-          <span className="text-[#94A3B8] dark:text-[#64748B]">|</span>
-          <span className="text-navy-muted dark:text-navy-lightMuted hidden sm:inline">
-            PROTOTYPE ANATOMY
-          </span>
-        </div>
-
-        <div className="text-[11px] font-mono text-navy-muted dark:text-navy-lightMuted hidden sm:block">
-          Interactive 3D Viewport
-        </div>
-      </div>
-
-      {/* 3D Parallax Tilt Viewport */}
+    <div className="relative w-full max-w-[660px] lg:max-w-[700px] mx-auto select-none py-1">
+      {/* 3D Parallax Tilt Viewport (Technical header texts removed per user request) */}
       <motion.div
         ref={containerRef}
         onMouseMove={handleMouseMove}
@@ -147,248 +129,322 @@ export default function Prototype3DSchematic() {
         }}
         className="relative rounded-2xl overflow-hidden bg-white dark:bg-[#0D1524] border border-[#CBD5E1] dark:border-white/[0.12] shadow-[0_16px_48px_rgba(28,41,66,0.12)] dark:shadow-[0_24px_60px_rgba(0,0,0,0.65)] p-3 sm:p-4 transition-colors"
       >
-        {/* Isometric SVG Canvas */}
-        <div className="relative w-full aspect-[800/620] bg-gradient-to-b from-[#F8FAFC] to-[#EEF4FB] dark:from-[#0B111B] dark:to-[#0E1726] rounded-xl overflow-hidden border border-[#E2E8F0] dark:border-white/[0.06]">
-          
-          {/* Subtle Isometric Background Grid */}
-          <svg className="absolute inset-0 w-full h-full pointer-events-none opacity-20 dark:opacity-15" xmlns="http://www.w3.org/2000/svg">
-            <defs>
-              <pattern id="cadGrid" width="40" height="40" patternUnits="userSpaceOnUse">
-                <path d="M 0 20 L 40 20 M 20 0 L 20 40" stroke="#4A72B8" strokeWidth="0.5" strokeDasharray="2 3" />
-              </pattern>
-            </defs>
-            <rect width="100%" height="100%" fill="url(#cadGrid)" />
-          </svg>
-
+        {/* Realistic Studio SVG Canvas matching the physical prototype */}
+        <div className="relative w-full aspect-[900/620] bg-gradient-to-b from-[#FAFBFD] via-[#F4F7FB] to-[#E9EFF7] dark:from-[#0B111B] dark:via-[#0E1726] dark:to-[#121E33] rounded-xl overflow-hidden border border-[#E2E8F0] dark:border-white/[0.06]">
           <svg
-            viewBox="0 0 800 620"
-            className="w-full h-full drop-shadow-md"
+            viewBox="0 0 900 620"
+            className="w-full h-full drop-shadow-sm"
             fill="none"
             xmlns="http://www.w3.org/2000/svg"
           >
             <defs>
-              {/* Natural Birch Wood Faces */}
+              {/* Natural Warm Baltic Birch Face */}
               <linearGradient id="birchFace" x1="0" y1="0" x2="1" y2="1">
-                <stop offset="0%" stopColor="#F5ECE0" />
-                <stop offset="45%" stopColor="#EADCC9" />
-                <stop offset="100%" stopColor="#DEC9B0" />
+                <stop offset="0%" stopColor="#F9F4EB" />
+                <stop offset="40%" stopColor="#F1E5D4" />
+                <stop offset="80%" stopColor="#E4D3BC" />
+                <stop offset="100%" stopColor="#D9C4AA" />
               </linearGradient>
 
-              {/* Realistic Baltic Birch Edge Plies */}
+              {/* Birch Wood Shadow Face */}
+              <linearGradient id="birchDark" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stopColor="#DEC9B0" />
+                <stop offset="100%" stopColor="#CBB499" />
+              </linearGradient>
+
+              {/* Realistic Multi-Ply Laser/CNC Cut Plywood Edge */}
               <linearGradient id="plyEdgeDark" x1="0" y1="0" x2="0" y2="1">
                 <stop offset="0%" stopColor="#B39371" />
-                <stop offset="25%" stopColor="#8C6E4E" />
-                <stop offset="50%" stopColor="#B39371" />
-                <stop offset="75%" stopColor="#8C6E4E" />
-                <stop offset="100%" stopColor="#A88764" />
+                <stop offset="25%" stopColor="#876846" />
+                <stop offset="50%" stopColor="#C4A786" />
+                <stop offset="75%" stopColor="#7E5F3F" />
+                <stop offset="100%" stopColor="#A88661" />
               </linearGradient>
 
-              {/* 3D Cat Shading */}
-              <linearGradient id="catGreyTop" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor="#94A3B8" />
-                <stop offset="50%" stopColor="#64748B" />
-                <stop offset="100%" stopColor="#475569" />
-              </linearGradient>
-
-              {/* White Enclosure Surfaces */}
-              <linearGradient id="cabFront" x1="0" y1="0" x2="1" y2="1">
+              {/* White Cabinet Front Face (Clean Studio Satin) */}
+              <linearGradient id="whiteCabFront" x1="0" y1="0" x2="1" y2="1">
                 <stop offset="0%" stopColor="#FFFFFF" />
+                <stop offset="60%" stopColor="#FAFCFF" />
                 <stop offset="100%" stopColor="#F1F5F9" />
               </linearGradient>
-              <linearGradient id="cabSide" x1="0" y1="0" x2="1" y2="1">
+
+              {/* White Cabinet Side Face (3D Perspective Shade) */}
+              <linearGradient id="whiteCabSide" x1="0" y1="0" x2="1" y2="0">
                 <stop offset="0%" stopColor="#E2E8F0" />
+                <stop offset="50%" stopColor="#D8E2EC" />
                 <stop offset="100%" stopColor="#CBD5E1" />
               </linearGradient>
 
-              {/* Blue Inspection Window Gradient */}
-              <linearGradient id="waterWindow" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor="#38BDF8" stopOpacity="0.95" />
-                <stop offset="100%" stopColor="#2563EB" stopOpacity="0.95" />
+              {/* Cat Fur Gradients - Domestic Slate Grey */}
+              <linearGradient id="catBody" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stopColor="#8899AC" />
+                <stop offset="35%" stopColor="#6C7F94" />
+                <stop offset="70%" stopColor="#55667B" />
+                <stop offset="100%" stopColor="#435264" />
               </linearGradient>
+
+              <linearGradient id="catSpineHighlight" x1="0" y1="0" x2="1" y2="0">
+                <stop offset="0%" stopColor="#9AB0C6" stopOpacity="0.8" />
+                <stop offset="50%" stopColor="#8194A8" stopOpacity="0.4" />
+                <stop offset="100%" stopColor="#5A6D81" stopOpacity="0" />
+              </linearGradient>
+
+              {/* Water Window Liquid Column */}
+              <linearGradient id="waterColumn" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stopColor="#38BDF8" />
+                <stop offset="50%" stopColor="#2563EB" />
+                <stop offset="100%" stopColor="#1D4ED8" />
+              </linearGradient>
+
+              {/* Ceramic Bowls Gloss */}
+              <linearGradient id="ceramicBowl" x1="0" y1="0" x2="1" y2="1">
+                <stop offset="0%" stopColor="#FFFFFF" />
+                <stop offset="70%" stopColor="#F8FAFC" />
+                <stop offset="100%" stopColor="#E2E8F0" />
+              </linearGradient>
+
+              {/* Turned Wooden Knob Radial Highlight */}
+              <radialGradient id="woodenKnob" cx="35%" cy="35%" r="65%">
+                <stop offset="0%" stopColor="#FAF4EB" />
+                <stop offset="45%" stopColor="#DFC8AE" />
+                <stop offset="90%" stopColor="#B39371" />
+                <stop offset="100%" stopColor="#876846" />
+              </radialGradient>
+
+              {/* Soft Studio Floor Ambient Occlusion Shadow */}
+              <radialGradient id="groundStudioShadow" cx="50%" cy="50%" r="50%">
+                <stop offset="0%" stopColor="rgba(28,41,66,0.18)" />
+                <stop offset="60%" stopColor="rgba(28,41,66,0.08)" />
+                <stop offset="100%" stopColor="rgba(28,41,66,0)" />
+              </radialGradient>
             </defs>
 
-            {/* Isometric Dimension Guides */}
-            <g opacity="0.25" stroke="#4A72B8" strokeWidth="0.8" strokeDasharray="3 3">
-              <line x1="70" y1="510" x2="490" y2="430" />
-              <line x1="490" y1="430" x2="770" y2="500" />
-              <line x1="710" y1="120" x2="710" y2="480" />
+            {/* 1. STUDIO GROUND SHADOWS */}
+            <ellipse cx="460" cy="535" rx="400" ry="50" fill="url(#groundStudioShadow)" />
+            <ellipse cx="290" cy="515" rx="220" ry="32" fill="rgba(28,41,66,0.10)" />
+            <ellipse cx="640" cy="495" rx="170" ry="30" fill="rgba(28,41,66,0.12)" />
+
+            {/* 2. MAIN TOWER BIRCH PLYWOOD BASE PLATE */}
+            <g id="tower-birch-base">
+              {/* Top Face of Cabinet Base */}
+              <polygon points="460,420 715,465 780,442 525,400" fill="url(#birchFace)" stroke="#D5C4A9" strokeWidth="1" />
+              {/* Exposed Front Ply Edge */}
+              <polygon points="460,420 715,465 715,476 460,431" fill="url(#plyEdgeDark)" stroke="#876846" strokeWidth="0.8" />
+              {/* Exposed Right Ply Edge */}
+              <polygon points="715,465 780,442 780,453 715,476" fill="url(#plyEdgeDark)" stroke="#876846" strokeWidth="0.8" />
             </g>
 
-            {/* Ground Contact Shadow */}
-            <ellipse cx="440" cy="540" rx="340" ry="46" fill="rgba(28,41,66,0.14)" className="dark:fill-black/60" />
-
-            {/* 1. BIRCH PLYWOOD DOUBLE-DECK SCALE PLATFORM */}
+            {/* 3. BIRCH PLYWOOD DOUBLE-DECK SCALE PLATFORM & SLED */}
             <g id="birch-scale-assembly">
-              {/* Bottom Base Frame (Flat on table with inner cutout) */}
-              <polygon points="70,510 490,430 550,465 130,555" fill="#DFC9B0" stroke="#C5AC8F" strokeWidth="1.2" />
-              <polygon points="130,555 550,465 550,477 130,567" fill="url(#plyEdgeDark)" stroke="#8C6E4E" strokeWidth="0.8" />
-              <polygon points="70,510 130,555 130,567 70,522" fill="url(#plyEdgeDark)" stroke="#8C6E4E" strokeWidth="0.8" />
+              {/* Base Floor Sled (Resting flat on table with center cutout) */}
+              <polygon points="45,502 470,425 532,460 108,548" fill="#E4D3BD" stroke="#CBB499" strokeWidth="1.2" />
+              {/* Sled Front Edge */}
+              <polygon points="108,548 532,460 532,472 108,560" fill="url(#plyEdgeDark)" stroke="#876846" strokeWidth="0.8" />
+              {/* Sled Left Edge */}
+              <polygon points="45,502 108,548 108,560 45,514" fill="url(#plyEdgeDark)" stroke="#876846" strokeWidth="0.8" />
 
-              {/* Inner Cutout Hole on Base Sled */}
-              <polygon points="140,522 455,458 480,474 165,540" fill="#E6EEF8" className="dark:fill-[#080E18]" stroke="#CBD5E1" strokeWidth="0.8" />
+              {/* Inner Cutout Hole on Sled */}
+              <polygon points="118,515 435,452 462,468 142,534" fill="#EEF3F8" className="dark:fill-[#0A101C]" stroke="#CBD5E1" strokeWidth="0.8" />
 
-              {/* Suspended Weighing Plate (Elevated on HX711 load cell mount) */}
-              <polygon points="110,460 480,390 525,422 155,498" fill="url(#birchFace)" stroke="#D5C4A9" strokeWidth="1.5" />
-              <polygon points="155,498 525,422 525,436 155,512" fill="url(#plyEdgeDark)" stroke="#8C6E4E" strokeWidth="1" />
-              <polygon points="110,460 155,498 155,512 110,474" fill="url(#plyEdgeDark)" stroke="#8C6E4E" strokeWidth="1" />
+              {/* Suspended Weighing Deck (Hovering on load-cell mounts) */}
+              <polygon points="85,455 450,388 495,420 130,495" fill="url(#birchFace)" stroke="#D5C4A9" strokeWidth="1.5" />
+              {/* Front Ply Edge */}
+              <polygon points="130,495 495,420 495,433 130,508" fill="url(#plyEdgeDark)" stroke="#876846" strokeWidth="1" />
+              {/* Left Ply Edge */}
+              <polygon points="85,455 130,495 130,508 85,468" fill="url(#plyEdgeDark)" stroke="#876846" strokeWidth="1" />
 
-              {/* Multi-ply edge pinstripes */}
-              <line x1="155" y1="503" x2="525" y2="427" stroke="#654A2E" strokeWidth="0.75" />
-              <line x1="155" y1="507" x2="525" y2="431" stroke="#F5ECE0" strokeWidth="0.75" />
+              {/* Realistic Laser/Plywood Edge Pinstripes */}
+              <line x1="130" y1="499" x2="495" y2="424" stroke="#5D4329" strokeWidth="0.75" />
+              <line x1="130" y1="504" x2="495" y2="429" stroke="#F9F4EB" strokeWidth="0.75" />
 
-              {/* Prominent Large Black Paw Print Silkscreen on Weighing Plate */}
-              <g transform="translate(295, 442) rotate(-11) scale(0.92)">
+              {/* Bold Black Paw Print Silkscreen on Weighing Deck */}
+              <g transform="translate(285, 436) rotate(-11) scale(0.92)">
+                {/* Large Metacarpal Pad */}
                 <path
-                  d="M 22 29 C 9 29, 3 20, 7 10 C 11 2, 22 0, 32 0 C 42 0, 53 2, 57 10 C 61 20, 55 29, 42 29 Z"
+                  d="M 22 28 C 9 28, 3 19, 7 9 C 11 1, 22 0, 32 0 C 42 0, 53 1, 57 9 C 61 19, 55 28, 42 28 Z"
                   fill="#1E293B"
                 />
-                <ellipse cx="5" cy="-7" rx="6.5" ry="9" fill="#1E293B" transform="rotate(-22 5 -7)" />
-                <ellipse cx="23" cy="-15" rx="6.5" ry="10" fill="#1E293B" transform="rotate(-7 23 -15)" />
-                <ellipse cx="41" cy="-15" rx="6.5" ry="10" fill="#1E293B" transform="rotate(7 41 -15)" />
-                <ellipse cx="59" cy="-7" rx="6.5" ry="9" fill="#1E293B" transform="rotate(22 59 -7)" />
+                {/* 4 Distinct Toe Bean Pads */}
+                <ellipse cx="5" cy="-8" rx="6.5" ry="9" fill="#1E293B" transform="rotate(-22 5 -8)" />
+                <ellipse cx="23" cy="-16" rx="6.5" ry="10" fill="#1E293B" transform="rotate(-7 23 -16)" />
+                <ellipse cx="41" cy="-16" rx="6.5" ry="10" fill="#1E293B" transform="rotate(7 41 -16)" />
+                <ellipse cx="59" cy="-8" rx="6.5" ry="9" fill="#1E293B" transform="rotate(22 59 -8)" />
               </g>
 
-              {/* Raised Birch Pedestal for Food Bowl */}
-              <polygon points="410,412 510,395 528,412 428,429" fill="url(#birchFace)" stroke="#D5C4A9" strokeWidth="1" />
-              <polygon points="428,429 528,412 528,422 428,439" fill="url(#plyEdgeDark)" />
+              {/* Cantilevered Birch Plywood Bracket for Food Bowl */}
+              <polygon points="405,408 505,390 522,408 422,425" fill="url(#birchFace)" stroke="#D5C4A9" strokeWidth="1" />
+              <polygon points="422,425 522,408 522,417 422,434" fill="url(#plyEdgeDark)" />
 
               {/* White Ceramic Food Bowl */}
-              <ellipse cx="470" cy="406" rx="36" ry="18" fill="#FFFFFF" stroke="#CBD5E1" strokeWidth="1.5" />
-              <ellipse cx="470" cy="404" rx="30" ry="14" fill="#F1F5F9" />
-              {/* Kibble Pellets */}
+              <ellipse cx="468" cy="406" rx="36" ry="18" fill="url(#ceramicBowl)" stroke="#CBD5E1" strokeWidth="1.5" />
+              <ellipse cx="468" cy="404" rx="30" ry="14" fill="#F1F5F9" />
+              {/* Crunchy Kibble Nuggets in Bowl */}
               <g fill="#A66F33">
-                <ellipse cx="460" cy="404" rx="5.5" ry="3.2" />
-                <ellipse cx="468" cy="405" rx="6" ry="3.5" fill="#C28847" />
-                <ellipse cx="478" cy="403" rx="5.2" ry="3.2" fill="#8C5824" />
-                <ellipse cx="465" cy="409" rx="5.5" ry="3.2" fill="#C28847" />
-                <ellipse cx="473" cy="408" rx="5" ry="3" />
+                <ellipse cx="458" cy="404" rx="5.5" ry="3.2" fill="#8C5824" />
+                <ellipse cx="466" cy="405" rx="6" ry="3.5" fill="#C28847" />
+                <ellipse cx="476" cy="403" rx="5.2" ry="3.2" fill="#75441A" />
+                <ellipse cx="463" cy="409" rx="5.5" ry="3.2" fill="#D49B58" />
+                <ellipse cx="472" cy="408" rx="5" ry="3" fill="#A66F33" />
+                <ellipse cx="478" cy="407" rx="4.5" ry="2.8" fill="#8C5824" />
               </g>
             </g>
 
-            {/* 2. THE SLEEK SOLID GREY CAT STANDING ON PLATFORM EATING */}
+            {/* 4. THE DOMESTIC GREY CAT STANDING ON PLATFORM EATING (True to physical photo) */}
             <g id="grey-cat-eating">
+              {/* Subtle Cat Contact Shadows on Birch Board */}
+              <ellipse cx="258" cy="442" rx="14" ry="7" fill="rgba(28,41,66,0.3)" />
+              <ellipse cx="294" cy="452" rx="15" ry="8" fill="rgba(28,41,66,0.3)" />
+              <ellipse cx="368" cy="446" rx="14" ry="7" fill="rgba(28,41,66,0.3)" />
+              <ellipse cx="400" cy="442" rx="15" ry="8" fill="rgba(28,41,66,0.3)" />
+
+              {/* Graceful Curved Tail trailing behind */}
               <path
-                d="M 235 395 C 215 365, 245 315, 295 305 C 355 295, 405 325, 445 375 C 425 415, 375 435, 315 435 C 275 435, 245 420, 235 395 Z"
-                fill="url(#catGreyTop)"
-              />
-              <path
-                d="M 275 325 C 325 315, 375 335, 405 375 C 375 395, 325 390, 285 370 Z"
-                fill="#CBD5E1"
-                opacity="0.3"
-              />
-
-              {/* Four Paws Firmly Planted on Birch Platform */}
-              <ellipse cx="285" cy="440" rx="14" ry="8" fill="#475569" />
-              <ellipse cx="315" cy="450" rx="14" ry="8" fill="#64748B" />
-              <ellipse cx="385" cy="445" rx="13" ry="7" fill="#475569" />
-              <ellipse cx="415" cy="440" rx="14" ry="8" fill="#64748B" />
-
-              {/* Cat Head Lowered Eating */}
-              <circle cx="450" cy="390" r="28" fill="#64748B" />
-              <ellipse cx="465" cy="400" rx="16" ry="12" fill="#475569" />
-
-              {/* Ears in True 3D Perspective */}
-              <polygon points="435,370 430,340 453,360" fill="#475569" />
-              <polygon points="434,367 433,347 448,360" fill="#F4B8B8" opacity="0.6" />
-              <polygon points="455,365 465,337 473,363" fill="#475569" />
-              <polygon points="457,363 464,345 469,362" fill="#F4B8B8" opacity="0.6" />
-
-              {/* Sleek Curved Tail */}
-              <path
-                d="M 240 395 C 215 400, 190 390, 185 365 C 180 340, 200 325, 220 335"
-                stroke="#475569"
-                strokeWidth="12"
+                d="M 215 385 C 190 392, 160 380, 150 355 C 142 332, 162 315, 185 325"
+                stroke="#3F4E5F"
+                strokeWidth="13"
                 strokeLinecap="round"
                 fill="none"
               />
               <path
-                d="M 240 395 C 215 400, 190 390, 185 365 C 180 340, 200 325, 220 335"
+                d="M 215 385 C 190 392, 160 380, 150 355 C 142 332, 162 315, 185 325"
                 stroke="#64748B"
                 strokeWidth="8"
                 strokeLinecap="round"
                 fill="none"
               />
+
+              {/* Hind Haunches & Thigh Contours */}
+              <path
+                d="M 205 378 C 188 348, 218 305, 268 296 C 328 286, 378 316, 420 368 C 400 410, 350 430, 290 430 C 248 430, 216 412, 205 378 Z"
+                fill="url(#catBody)"
+              />
+
+              {/* Spine Soft Studio Rim Light Highlight */}
+              <path
+                d="M 248 315 C 298 305, 350 325, 385 365 C 352 385, 302 380, 260 360 Z"
+                fill="url(#catSpineHighlight)"
+              />
+
+              {/* Rear Legs & Paws planted on wood */}
+              <ellipse cx="258" cy="438" rx="13" ry="7" fill="#435264" />
+              <ellipse cx="294" cy="448" rx="14" ry="8" fill="#55667B" />
+
+              {/* Front Legs & Paws */}
+              <ellipse cx="368" cy="442" rx="13" ry="7" fill="#435264" />
+              <ellipse cx="400" cy="438" rx="14" ry="8" fill="#64748B" />
+
+              {/* Neck & Cat Head Lowered Eating inside the food bowl */}
+              <ellipse cx="426" cy="365" rx="26" ry="24" fill="#55667B" />
+              <circle cx="445" cy="385" r="24" fill="#64748B" />
+              <ellipse cx="462" cy="396" rx="15" ry="11" fill="#435264" />
+
+              {/* Perked Feline Ears in 3D Perspective */}
+              {/* Left / Near Ear */}
+              <polygon points="426,360 418,328 442,348" fill="#435264" />
+              <polygon points="425,357 421,334 438,348" fill="#F4B8B8" opacity="0.65" />
+              {/* Right / Far Ear */}
+              <polygon points="448,354 458,324 466,352" fill="#55667B" />
+              <polygon points="450,352 457,332 463,350" fill="#F4B8B8" opacity="0.65" />
             </g>
 
-            {/* 3. DUAL-BAY WHITE VERTICAL CABINET */}
-            <g id="dual-bay-cabinet">
-              <polygon points="470,120 710,165 710,480 470,420" fill="url(#cabFront)" stroke="#CBD5E1" strokeWidth="1.5" />
-              <polygon points="710,165 770,145 770,455 710,480" fill="url(#cabSide)" stroke="#CBD5E1" strokeWidth="1.5" />
+            {/* 5. MAIN DUAL-BAY CABINET TOWER (Clean White Body) */}
+            <g id="dual-bay-cabinet-tower">
+              {/* Front White Face (Dual Bays) */}
+              <polygon points="465,115 710,160 710,465 465,420" fill="url(#whiteCabFront)" stroke="#CBD5E1" strokeWidth="1.5" />
+              {/* Receding Right Side Face */}
+              <polygon points="710,160 772,140 772,442 710,465" fill="url(#whiteCabSide)" stroke="#CBD5E1" strokeWidth="1.5" />
 
-              {/* Birch Top Cover with Turned Handles */}
-              <polygon points="455,115 695,160 765,140 525,98" fill="url(#birchFace)" stroke="#D5C4A9" strokeWidth="1.5" />
-              <polygon points="455,115 695,160 695,170 455,125" fill="url(#plyEdgeDark)" />
-              <polygon points="695,160 765,140 765,150 695,170" fill="url(#plyEdgeDark)" />
+              {/* Vertical Division Seam between Kibble Bay & Water Bay */}
+              <line x1="588" y1="138" x2="588" y2="442" stroke="#CBD5E1" strokeWidth="1.2" />
 
-              {/* Wooden Turn Knobs */}
-              <ellipse cx="535" cy="120" rx="9" ry="5" fill="#DFC9B0" stroke="#8C6E4E" strokeWidth="1" />
-              <ellipse cx="645" cy="140" rx="9" ry="5" fill="#DFC9B0" stroke="#8C6E4E" strokeWidth="1" />
+              {/* Top Service Lids (Baltic Birch with Layered Edges) */}
+              {/* Left Lid (Kibble Reservoir) */}
+              <polygon points="452,110 584,134 648,118 518,96" fill="url(#birchFace)" stroke="#D5C4A9" strokeWidth="1.2" />
+              <polygon points="452,110 584,134 584,142 452,118" fill="url(#plyEdgeDark)" />
+              {/* Right Lid (Water Reservoir) */}
+              <polygon points="588,135 706,156 770,138 652,119" fill="url(#birchFace)" stroke="#D5C4A9" strokeWidth="1.2" />
+              <polygon points="588,135 706,156 706,164 588,143" fill="url(#plyEdgeDark)" />
+              <polygon points="706,156 770,138 770,146 706,164" fill="url(#plyEdgeDark)" />
 
-              {/* Left Bay: Kibble Dispensing Chute */}
-              <g id="feeder-chute">
-                <line x1="585" y1="142" x2="585" y2="350" stroke="#CBD5E1" strokeWidth="1.2" />
-                <path d="M 485 300 C 485 275, 525 275, 525 300 L 525 330 L 485 330 Z" fill="#E2E8F0" />
-                <polygon points="485,300 525,300 515,350 475,350" fill="#FBF7F0" stroke="#D5C4A9" strokeWidth="1.2" />
-                <polygon points="475,350 515,350 510,365 470,365" fill="#EADCC9" stroke="#8C6E4E" strokeWidth="1" />
-                
-                {/* SG90 Status LED */}
-                <circle cx="568" cy="340" r="3" fill="#38BDF8" className="animate-pulse" />
-                <circle cx="568" cy="340" r="6" fill="#38BDF8" fillOpacity="0.3" />
+              {/* Turned Wooden Lid Knobs */}
+              {/* Left Knob */}
+              <ellipse cx="538" cy="114" rx="8.5" ry="4.8" fill="url(#woodenKnob)" stroke="#876846" strokeWidth="0.8" />
+              {/* Right Knob */}
+              <ellipse cx="658" cy="136" rx="8.5" ry="4.8" fill="url(#woodenKnob)" stroke="#876846" strokeWidth="0.8" />
+
+              {/* LEFT BAY: Food Chute Assembly */}
+              <g id="feeder-chute-assembly">
+                {/* Chute Hood Opening */}
+                <path d="M 488 290 C 488 268, 526 268, 526 290 L 526 320 L 488 320 Z" fill="#E2E8F0" />
+                {/* 3D Angled Delivery Chute Funnel */}
+                <polygon points="488,290 526,290 516,340 478,340" fill="#FDFBF7" stroke="#D5C4A9" strokeWidth="1.2" />
+                <polygon points="478,340 516,340 512,352 474,352" fill="#EADCC9" stroke="#876846" strokeWidth="1" />
+
+                {/* Status Indicator LED (Emerald Green as in physical photo) */}
+                <circle cx="572" cy="348" r="3.2" fill="#22C55E" />
+                <circle cx="572" cy="348" r="7" fill="#22C55E" fillOpacity="0.25" className="animate-pulse" />
               </g>
 
-              {/* Right Bay: Water Sight-Glass Window & Alcove */}
-              <g id="water-reservoir-and-alcove">
+              {/* RIGHT BAY: Water Reservoir Sight-Glass, Spout & Lower Alcove */}
+              <g id="water-bay-assembly">
+                {/* Slender Vertical Sight-Glass Slot Window */}
                 <rect x="635" y="195" width="14" height="110" rx="7" fill="#0B111B" stroke="#CBD5E1" strokeWidth="1" />
-                <rect x="637" y="235" width="10" height="68" rx="5" fill="url(#waterWindow)" />
-                <line x1="636" y1="245" x2="641" y2="245" stroke="#FFFFFF" strokeWidth="0.8" opacity="0.8" />
-                <line x1="636" y1="265" x2="641" y2="265" stroke="#FFFFFF" strokeWidth="0.8" opacity="0.8" />
-                <line x1="636" y1="285" x2="641" y2="285" stroke="#FFFFFF" strokeWidth="0.8" opacity="0.8" />
+                <rect x="637" y="235" width="10" height="68" rx="5" fill="url(#waterColumn)" />
+                {/* Level Measurement Ticks */}
+                <line x1="636" y1="245" x2="641" y2="245" stroke="#FFFFFF" strokeWidth="0.8" opacity="0.85" />
+                <line x1="636" y1="265" x2="641" y2="265" stroke="#FFFFFF" strokeWidth="0.8" opacity="0.85" />
+                <line x1="636" y1="285" x2="641" y2="285" stroke="#FFFFFF" strokeWidth="0.8" opacity="0.85" />
 
-                {/* Downward Curved Spout */}
+                {/* Downward Curved Off-White Dispensing Spout */}
                 <path
-                  d="M 642 330 C 642 355, 630 365, 625 375"
-                  stroke="#F1F5F9"
+                  d="M 642 332 C 642 355, 630 364, 626 374"
+                  stroke="#F8FAFC"
                   strokeWidth="8"
                   strokeLinecap="round"
                   fill="none"
                 />
 
-                {/* Arched Water Alcove */}
+                {/* Arched Lower Water Alcove Chamber */}
                 <path
-                  d="M 598 470 L 598 385 C 598 360, 685 360, 685 385 L 685 470 Z"
+                  d="M 602 460 L 602 385 C 602 362, 684 362, 684 385 L 684 460 Z"
                   fill="#E2E8F0"
                   stroke="#CBD5E1"
-                  strokeWidth="1"
+                  strokeWidth="1.2"
                 />
-                <ellipse cx="642" cy="445" rx="36" ry="18" fill="#FFFFFF" stroke="#CBD5E1" strokeWidth="1.5" />
-                <ellipse cx="642" cy="443" rx="30" ry="14" fill="#38BDF8" fillOpacity="0.4" stroke="#38BDF8" strokeWidth="1" />
+                {/* Glazed Ceramic Water Bowl inside Alcove */}
+                <ellipse cx="642" cy="446" rx="36" ry="18" fill="url(#ceramicBowl)" stroke="#CBD5E1" strokeWidth="1.5" />
+                <ellipse cx="642" cy="444" rx="30" ry="14" fill="#38BDF8" fillOpacity="0.45" stroke="#38BDF8" strokeWidth="1" />
               </g>
 
-              {/* 4. ESP32 Electronics Bay & 5V Power Bank */}
-              <g id="electronics-and-power">
-                <polygon points="710,240 760,225 760,365 710,380" fill="#FFFFFF" stroke="#CBD5E1" strokeWidth="1.2" />
-                <line x1="722" y1="260" x2="748" y2="252" stroke="#94A3B8" strokeWidth="1.5" strokeLinecap="round" />
-                <line x1="722" y1="272" x2="748" y2="264" stroke="#94A3B8" strokeWidth="1.5" strokeLinecap="round" />
-                <line x1="722" y1="284" x2="748" y2="276" stroke="#94A3B8" strokeWidth="1.5" strokeLinecap="round" />
-                <line x1="722" y1="296" x2="748" y2="288" stroke="#94A3B8" strokeWidth="1.5" strokeLinecap="round" />
+              {/* 6. SIDE ELECTRONICS BOX & EXTERNAL POWER BANK (Right Exterior Wall) */}
+              <g id="electronics-and-external-power">
+                {/* Convective Louvered Electronics Box attached to right wall */}
+                <polygon points="710,235 760,220 760,358 710,372" fill="#FFFFFF" stroke="#CBD5E1" strokeWidth="1.2" />
+                {/* 5 Horizontal Ventilation Grille Slits */}
+                <line x1="722" y1="255" x2="748" y2="247" stroke="#64748B" strokeWidth="1.8" strokeLinecap="round" />
+                <line x1="722" y1="267" x2="748" y2="259" stroke="#64748B" strokeWidth="1.8" strokeLinecap="round" />
+                <line x1="722" y1="279" x2="748" y2="271" stroke="#64748B" strokeWidth="1.8" strokeLinecap="round" />
+                <line x1="722" y1="291" x2="748" y2="283" stroke="#64748B" strokeWidth="1.8" strokeLinecap="round" />
+                <line x1="722" y1="303" x2="748" y2="295" stroke="#64748B" strokeWidth="1.8" strokeLinecap="round" />
 
-                {/* DC Cable Harness */}
+                {/* Flexible Black USB Power Cable */}
                 <path
-                  d="M 742 375 C 742 435, 770 475, 755 512"
+                  d="M 740 370 C 740 430, 775 470, 765 505 C 760 518, 775 528, 792 522"
                   stroke="#0F172A"
                   strokeWidth="4.5"
                   strokeLinecap="round"
                   fill="none"
                 />
 
-                {/* 5V Power Bank */}
-                <polygon points="700,505 770,480 800,500 730,525" fill="#1E293B" stroke="#0F172A" strokeWidth="1.2" />
-                <polygon points="730,525 800,500 800,515 730,540" fill="#0F172A" />
-                <polygon points="700,505 730,525 730,540 700,520" fill="#0F172A" />
-                <circle cx="738" cy="530" r="1.5" fill="#38BDF8" />
-                <circle cx="745" cy="527" r="1.5" fill="#38BDF8" />
-                <circle cx="752" cy="524" r="1.5" fill="#38BDF8" />
-                <circle cx="759" cy="521" r="1.5" fill="#38BDF8" />
+                {/* Slim External Black Power Bank resting flat on table */}
+                <polygon points="745,510 820,485 850,505 775,530" fill="#1E293B" stroke="#0F172A" strokeWidth="1.2" />
+                <polygon points="775,530 850,505 850,518 775,543" fill="#0F172A" />
+                <polygon points="745,510 775,530 775,543 745,523" fill="#0F172A" />
+                {/* Front Port Accents & Battery Dots */}
+                <circle cx="782" cy="534" r="1.5" fill="#38BDF8" />
+                <circle cx="789" cy="531" r="1.5" fill="#38BDF8" />
+                <circle cx="796" cy="528" r="1.5" fill="#38BDF8" />
+                <circle cx="803" cy="525" r="1.5" fill="#38BDF8" />
               </g>
             </g>
 
@@ -396,7 +452,7 @@ export default function Prototype3DSchematic() {
             <circle
               cx={activeCallout.targetX}
               cy={activeCallout.targetY}
-              r="14"
+              r="15"
               fill="#38BDF8"
               fillOpacity="0.25"
               className="animate-ping"
@@ -404,10 +460,10 @@ export default function Prototype3DSchematic() {
             <circle
               cx={activeCallout.targetX}
               cy={activeCallout.targetY}
-              r="7"
+              r="7.5"
               fill="#38BDF8"
               stroke="#FFFFFF"
-              strokeWidth="2"
+              strokeWidth="2.5"
             />
           </svg>
         </div>
@@ -459,7 +515,6 @@ export default function Prototype3DSchematic() {
             </span>
           </div>
         </div>
-
       </motion.div>
     </div>
   );

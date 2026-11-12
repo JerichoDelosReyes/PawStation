@@ -7,39 +7,45 @@ type Theme = "light" | "dark";
 interface ThemeContextType {
   theme: Theme;
   toggleTheme: () => void;
+  setTheme: (theme: Theme) => void;
 }
 
 const ThemeContext = createContext<ThemeContextType>({
   theme: "light",
   toggleTheme: () => {},
+  setTheme: () => {},
 });
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
-  const [theme, setTheme] = useState<Theme>("light");
+  const [theme, setThemeState] = useState<Theme>("light");
 
   useEffect(() => {
     const stored = localStorage.getItem("pawstation-theme") as Theme | null;
     if (stored === "dark" || stored === "light") {
-      setTheme(stored);
+      setThemeState(stored);
       document.documentElement.classList.toggle("dark", stored === "dark");
     } else if (window.matchMedia("(prefers-color-scheme: dark)").matches) {
-      setTheme("dark");
+      setThemeState("dark");
       document.documentElement.classList.add("dark");
     } else {
-      setTheme("light");
+      setThemeState("light");
       document.documentElement.classList.remove("dark");
     }
   }, []);
 
-  const toggleTheme = () => {
-    const next = theme === "light" ? "dark" : "light";
-    setTheme(next);
+  const setTheme = (next: Theme) => {
+    setThemeState(next);
     localStorage.setItem("pawstation-theme", next);
     document.documentElement.classList.toggle("dark", next === "dark");
   };
 
+  const toggleTheme = () => {
+    const next = theme === "light" ? "dark" : "light";
+    setTheme(next);
+  };
+
   return (
-    <ThemeContext.Provider value={{ theme, toggleTheme }}>
+    <ThemeContext.Provider value={{ theme, toggleTheme, setTheme }}>
       {children}
     </ThemeContext.Provider>
   );

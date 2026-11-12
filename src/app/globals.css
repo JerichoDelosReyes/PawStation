@@ -3,6 +3,20 @@
 @tailwind utilities;
 
 @layer base {
+  :root {
+    --frame-bg: #161618;
+    --panel-bg: #F8F5EE;
+    --panel-text: #111113;
+    --panel-muted: #6B7280;
+  }
+
+  .dark {
+    --frame-bg: #0C0C0E;
+    --panel-bg: #151518;
+    --panel-text: #FFFFFF;
+    --panel-muted: #9CA3AF;
+  }
+
   html {
     font-family:
       -apple-system,
