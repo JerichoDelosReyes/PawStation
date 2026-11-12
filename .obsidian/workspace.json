@@ -183,6 +183,8 @@
   },
   "active": "7dbc362d75ef2a51",
   "lastOpenFiles": [
+    "src/components/IsometricStation.tsx",
+    "tsconfig.tsbuildinfo",
     "src/components/CtaSection.tsx",
     "src/components/SupportContact.tsx",
     "supabase/migrations/20261112000001_create_cat_profiles.sql",
@@ -193,8 +195,6 @@
     "src/components/AuthModal.tsx",
     "src/lib/auth-context.tsx",
     "src/components/ThemeProvider.tsx",
-    "src/components/Scheduler.tsx",
-    "src/components/Footer.tsx",
     "node_modules/@typescript/typescript-darwin-arm64/README.md",
     "node_modules/@types/react/README.md",
     "node_modules/csstype/README.md",
