@@ -439,24 +439,26 @@ export default function AuthModal() {
                     </div>
 
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                      <FormInput
-                        label="Cat Name"
-                        type="text"
-                        value={catName}
-                        onChange={(e) => setCatName(e.target.value)}
-                        required
-                        placeholder="e.g. Whiskers"
-                      />
+                      <div className="min-w-0">
+                        <FormInput
+                          label="Cat Name"
+                          type="text"
+                          value={catName}
+                          onChange={(e) => setCatName(e.target.value)}
+                          required
+                          placeholder="e.g. Whiskers"
+                        />
+                      </div>
 
-                      <div>
+                      <div className="min-w-0">
                         <label className="block text-[12px] font-medium text-[#71717A] dark:text-[#A1A1AA] mb-1.5">
                           Cat Breed
                         </label>
-                        <div className="relative">
+                        <div className="relative w-full min-w-0">
                           <select
                             value={catBreed}
                             onChange={(e) => setCatBreed(e.target.value)}
-                            className="w-full appearance-none rounded-apple border border-black/[0.1] dark:border-white/[0.12] bg-canvas-light dark:bg-[#121214] pl-3 pr-8 py-2.5 text-[13px] text-[#18181B] dark:text-[#F4F4F5] focus:outline-none focus:ring-2 focus:ring-accent-amber/40 transition-all cursor-pointer truncate"
+                            className="w-full min-w-0 appearance-none rounded-apple border border-black/[0.1] dark:border-white/[0.12] bg-canvas-light dark:bg-[#121214] pl-3 pr-8 py-2.5 text-[13px] text-[#18181B] dark:text-[#F4F4F5] focus:outline-none focus:ring-2 focus:ring-accent-amber/40 transition-all cursor-pointer truncate"
                           >
                             {CAT_BREEDS.map((b) => (
                               <option key={b} value={b} className="bg-white dark:bg-[#1C1C1E] text-[#18181B] dark:text-[#F4F4F5]">
@@ -464,7 +466,7 @@ export default function AuthModal() {
                               </option>
                             ))}
                           </select>
-                          <div className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 text-navy-muted dark:text-navy-lightMuted">
+                          <div className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 text-navy-muted dark:text-navy-lightMuted flex items-center justify-center">
                             <svg className="w-4 h-4" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.75">
                               <path d="M6 8l4 4 4-4" strokeLinecap="round" strokeLinejoin="round" />
                             </svg>
