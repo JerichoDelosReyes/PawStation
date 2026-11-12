@@ -2,8 +2,9 @@
 
 import { motion } from "framer-motion";
 import Link from "next/link";
-import { PawIcon, PawOutlineIcon, StarIcon } from "./Icons";
+import { PawOutlineIcon } from "./Icons";
 import TickerBand from "./TickerBand";
+import IsometricStation from "./IsometricStation";
 import { useAuth } from "@/lib/auth-context";
 
 export default function Hero() {
@@ -18,7 +19,7 @@ export default function Hero() {
       <div className="section-container relative w-full flex-1 flex flex-col justify-center py-4 md:py-6 lg:py-6 my-auto">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-8 items-center">
           {/* Left Column: Text & Actions */}
-          <div className="lg:col-span-7 flex flex-col items-start text-left z-10">
+          <div className="lg:col-span-6 xl:col-span-6 flex flex-col items-start text-left z-10">
             {/* Top Pill Badge */}
             <motion.div
               initial={{ opacity: 0, y: 12 }}
@@ -143,235 +144,9 @@ export default function Hero() {
             </motion.div>
           </div>
 
-          {/* Right Column: Visual Elements */}
-          <div className="lg:col-span-5 relative flex items-center justify-center pt-2 lg:pt-0">
-            {/* Watermark Paw floating top-left */}
-            <div className="absolute -top-6 left-2 sm:left-6 w-16 h-16 text-periwinkle/20 dark:text-periwinkle/15 -rotate-12 pointer-events-none z-0">
-              <PawIcon className="w-full h-full" />
-            </div>
-
-            {/* Outline curved stroke wrapping behind the arches */}
-            <svg
-              className="absolute -top-10 -left-6 w-[120%] h-[120%] pointer-events-none z-0 stroke-periwinkle/30 dark:stroke-white/15"
-              viewBox="0 0 400 450"
-              fill="none"
-              strokeWidth="2.5"
-              strokeDasharray="6 4"
-            >
-              <path d="M 40 220 C 30 100, 160 40, 240 70 C 320 100, 370 200, 350 320 C 330 420, 200 430, 120 400" />
-            </svg>
-
-            {/* Arches Container */}
-            <div className="relative flex items-end justify-center z-10 pb-4 md:pb-6">
-              {/* Left Arch: Pastel Sky Blue with Calico Kitten */}
-              <motion.div
-                initial={{ opacity: 0, y: 30 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6, delay: 0.2, ease: "easeOut" }}
-                className="w-36 sm:w-44 md:w-48 h-56 sm:h-68 md:h-76 rounded-t-full rounded-b-3xl bg-[#D6EBF8] dark:bg-[#17253B] border-2 border-white dark:border-periwinkle/30 shadow-sm overflow-hidden relative flex flex-col justify-end transition-colors"
-              >
-                {/* Decorative arch ambient glow */}
-                <div className="absolute inset-0 bg-gradient-to-b from-[#C0E3F7]/40 dark:from-periwinkle/10 to-transparent pointer-events-none" />
-
-                {/* Calico Kitten Vector */}
-                <svg
-                  viewBox="0 0 200 240"
-                  className="w-full h-auto drop-shadow-sm select-none"
-                  fill="none"
-                  xmlns="http://www.w3.org/2000/svg"
-                >
-                  {/* Calico Body */}
-                  <path
-                    d="M 40 240 C 40 170, 70 140, 100 140 C 130 140, 160 170, 160 240 Z"
-                    fill="#FDFBF7"
-                  />
-                  {/* Calico dark spot on body */}
-                  <path
-                    d="M 120 170 C 135 170, 155 185, 158 215 C 145 220, 130 205, 125 190 Z"
-                    fill="#3F3F46"
-                  />
-                  {/* Calico ginger spot on body */}
-                  <path
-                    d="M 45 200 C 42 180, 60 170, 75 180 C 70 200, 55 210, 45 200 Z"
-                    fill="#E67E22"
-                  />
-
-                  {/* Kitten Head */}
-                  <circle cx="100" cy="110" r="48" fill="#FDFBF7" />
-
-                  {/* Left Ear (Grey/Dark Calico patch) */}
-                  <path d="M 62 82 L 48 35 L 85 68 Z" fill="#3F3F46" />
-                  <path d="M 64 76 L 55 46 L 80 68 Z" fill="#F4B8B8" opacity="0.7" />
-
-                  {/* Right Ear (Ginger Calico patch) */}
-                  <path d="M 138 82 L 152 35 L 115 68 Z" fill="#E67E22" />
-                  <path d="M 136 76 L 145 46 L 120 68 Z" fill="#F4B8B8" opacity="0.7" />
-
-                  {/* Calico eye patch over left eye */}
-                  <path
-                    d="M 68 90 C 60 95, 58 115, 72 125 C 85 125, 90 105, 82 95 Z"
-                    fill="#3F3F46"
-                    opacity="0.9"
-                  />
-
-                  {/* Eyes */}
-                  <circle cx="80" cy="112" r="5" fill="#18181B" />
-                  <circle cx="78.5" cy="110" r="1.5" fill="#FFFFFF" />
-                  <circle cx="120" cy="112" r="5" fill="#18181B" />
-                  <circle cx="118.5" cy="110" r="1.5" fill="#FFFFFF" />
-
-                  {/* Blush Pink Nose */}
-                  <polygon points="97,122 103,122 100,126" fill="#F4B8B8" />
-
-                  {/* Mouth */}
-                  <path
-                    d="M 95 128 Q 100 132 105 128"
-                    stroke="#71717A"
-                    strokeWidth="1.5"
-                    strokeLinecap="round"
-                    fill="none"
-                  />
-
-                  {/* Whiskers Left */}
-                  <line x1="60" y1="122" x2="40" y2="120" stroke="#A1A1AA" strokeWidth="1.2" strokeLinecap="round" />
-                  <line x1="60" y1="126" x2="38" y2="128" stroke="#A1A1AA" strokeWidth="1.2" strokeLinecap="round" />
-                  {/* Whiskers Right */}
-                  <line x1="140" y1="122" x2="160" y2="120" stroke="#A1A1AA" strokeWidth="1.2" strokeLinecap="round" />
-                  <line x1="140" y1="126" x2="162" y2="128" stroke="#A1A1AA" strokeWidth="1.2" strokeLinecap="round" />
-
-                  {/* Paws resting on bottom */}
-                  <ellipse cx="80" cy="235" rx="14" ry="10" fill="#FFFFFF" stroke="#D8E4F2" strokeWidth="1" />
-                  <ellipse cx="120" cy="235" rx="14" ry="10" fill="#FFFFFF" stroke="#D8E4F2" strokeWidth="1" />
-                </svg>
-              </motion.div>
-
-              {/* Right Arch: Warm Pastel Yellow with Ginger Tabby Cat (Taller) */}
-              <motion.div
-                initial={{ opacity: 0, y: 30 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6, delay: 0.3, ease: "easeOut" }}
-                className="w-40 sm:w-48 md:w-52 h-68 sm:h-80 md:h-88 rounded-t-full rounded-b-3xl bg-[#FEF08A]/75 dark:bg-[#342D15] border-2 border-white dark:border-amber-400/30 shadow-sm overflow-hidden relative -ml-8 sm:-ml-10 z-10 flex flex-col justify-end transition-colors"
-              >
-                {/* Decorative arch ambient glow */}
-                <div className="absolute inset-0 bg-gradient-to-b from-[#FDE047]/20 dark:from-amber-400/10 to-transparent pointer-events-none" />
-
-                {/* Ginger Tabby Cat Vector */}
-                <svg
-                  viewBox="0 0 220 280"
-                  className="w-full h-auto drop-shadow-sm select-none"
-                  fill="none"
-                  xmlns="http://www.w3.org/2000/svg"
-                >
-                  {/* Tabby Body */}
-                  <path
-                    d="M 40 280 C 40 190, 75 160, 110 160 C 145 160, 180 190, 180 280 Z"
-                    fill="#F59E0B"
-                  />
-                  {/* Tabby chest bib (cream white) */}
-                  <path
-                    d="M 85 280 C 85 210, 110 195, 110 195 C 110 195, 135 210, 135 280 Z"
-                    fill="#FFFBEB"
-                  />
-
-                  {/* Body Tabby Stripes */}
-                  <path d="M 55 220 Q 75 222 80 215" stroke="#D97706" strokeWidth="2.5" strokeLinecap="round" />
-                  <path d="M 52 245 Q 75 247 82 240" stroke="#D97706" strokeWidth="2.5" strokeLinecap="round" />
-                  <path d="M 165 220 Q 145 222 140 215" stroke="#D97706" strokeWidth="2.5" strokeLinecap="round" />
-                  <path d="M 168 245 Q 145 247 138 240" stroke="#D97706" strokeWidth="2.5" strokeLinecap="round" />
-
-                  {/* Cat Head */}
-                  <circle cx="110" cy="120" r="54" fill="#F59E0B" />
-
-                  {/* Left Ear */}
-                  <path d="M 68 88 L 52 32 L 95 72 Z" fill="#F59E0B" />
-                  <path d="M 70 82 L 60 45 L 88 72 Z" fill="#F4B8B8" opacity="0.8" />
-
-                  {/* Right Ear */}
-                  <path d="M 152 88 L 168 32 L 125 72 Z" fill="#F59E0B" />
-                  <path d="M 150 82 L 160 45 L 132 72 Z" fill="#F4B8B8" opacity="0.8" />
-
-                  {/* Forehead Tabby 'M' marking */}
-                  <path d="M 95 86 L 102 100 L 110 88 L 118 100 L 125 86" stroke="#D97706" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-
-                  {/* White Muzzle Area */}
-                  <ellipse cx="110" cy="138" rx="20" ry="14" fill="#FFFBEB" />
-
-                  {/* Eyes (Happy gentle blue eyes) */}
-                  <ellipse cx="88" cy="122" rx="6" ry="7" fill="#2563EB" />
-                  <circle cx="88" cy="122" r="4" fill="#18181B" />
-                  <circle cx="86" cy="119" r="1.8" fill="#FFFFFF" />
-
-                  <ellipse cx="132" cy="122" rx="6" ry="7" fill="#2563EB" />
-                  <circle cx="132" cy="122" r="4" fill="#18181B" />
-                  <circle cx="130" cy="119" r="1.8" fill="#FFFFFF" />
-
-                  {/* Blush Pink Nose */}
-                  <polygon points="107,133 113,133 110,137" fill="#F4B8B8" />
-
-                  {/* Smiling Mouth */}
-                  <path
-                    d="M 103 140 Q 110 144 117 140"
-                    stroke="#B45309"
-                    strokeWidth="1.5"
-                    strokeLinecap="round"
-                    fill="none"
-                  />
-
-                  {/* Tabby Cheeks */}
-                  <line x1="68" y1="135" x2="42" y2="132" stroke="#D97706" strokeWidth="1.2" strokeLinecap="round" />
-                  <line x1="68" y1="140" x2="40" y2="142" stroke="#D97706" strokeWidth="1.2" strokeLinecap="round" />
-                  <line x1="152" y1="135" x2="178" y2="132" stroke="#D97706" strokeWidth="1.2" strokeLinecap="round" />
-                  <line x1="152" y1="140" x2="180" y2="142" stroke="#D97706" strokeWidth="1.2" strokeLinecap="round" />
-
-                  {/* Front Paws */}
-                  <ellipse cx="88" cy="275" rx="16" ry="11" fill="#FFFBEB" stroke="#FDE68A" strokeWidth="1" />
-                  <ellipse cx="132" cy="275" rx="16" ry="11" fill="#FFFBEB" stroke="#FDE68A" strokeWidth="1" />
-                </svg>
-              </motion.div>
-
-              {/* Floating Rating Card positioned at bottom-right/bottom-center */}
-              <motion.div
-                initial={{ opacity: 0, scale: 0.9, y: 10 }}
-                animate={{ opacity: 1, scale: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: 0.45, ease: "easeOut" }}
-                className="absolute -bottom-2 -right-2 sm:right-0 bg-white/95 dark:bg-navy-card/95 backdrop-blur-md rounded-2xl border border-[#D8E4F2] dark:border-white/[0.1] shadow-[0_4px_16px_rgba(28,41,66,0.08)] dark:shadow-[0_4px_16px_rgba(0,0,0,0.3)] p-3 px-4 flex items-center gap-3 z-30 transition-colors"
-              >
-                {/* 3 Circular Avatars Stack */}
-                <div className="flex -space-x-2">
-                  <div className="w-7 h-7 rounded-full bg-[#E0F2FE] dark:bg-sky-900/60 border-2 border-white dark:border-navy-card flex items-center justify-center overflow-hidden">
-                    <svg viewBox="0 0 20 20" className="w-5 h-5 text-sky-600 dark:text-sky-300" fill="currentColor">
-                      <circle cx="10" cy="7" r="3.5" />
-                      <path d="M4 17c0-3 3-5 6-5s6 2 6 5v1H4v-1z" />
-                    </svg>
-                  </div>
-                  <div className="w-7 h-7 rounded-full bg-[#FEF3C7] dark:bg-amber-900/60 border-2 border-white dark:border-navy-card flex items-center justify-center overflow-hidden">
-                    <svg viewBox="0 0 20 20" className="w-5 h-5 text-amber-600 dark:text-amber-300" fill="currentColor">
-                      <circle cx="10" cy="7" r="3.5" />
-                      <path d="M4 17c0-3 3-5 6-5s6 2 6 5v1H4v-1z" />
-                    </svg>
-                  </div>
-                  <div className="w-7 h-7 rounded-full bg-[#EBF3FA] dark:bg-periwinkle/30 border-2 border-white dark:border-navy-card flex items-center justify-center overflow-hidden">
-                    <svg viewBox="0 0 20 20" className="w-5 h-5 text-periwinkle dark:text-periwinkle-light" fill="currentColor">
-                      <circle cx="10" cy="7" r="3.5" />
-                      <path d="M4 17c0-3 3-5 6-5s6 2 6 5v1H4v-1z" />
-                    </svg>
-                  </div>
-                </div>
-
-                {/* Score & Subtext */}
-                <div>
-                  <div className="flex items-center gap-1.5 leading-none">
-                    <StarIcon className="w-3.5 h-3.5 text-periwinkle" />
-                    <span className="font-semibold text-[13px] text-navy dark:text-white font-mono">
-                      4.9/5
-                    </span>
-                  </div>
-                  <div className="text-[11px] text-navy-muted dark:text-navy-lightMuted mt-1 leading-none">
-                    1,500+ Happy Cat Parents
-                  </div>
-                </div>
-              </motion.div>
-            </div>
+          {/* Right Column: Tactile 3D Isometric Hardware Representation */}
+          <div className="lg:col-span-6 xl:col-span-6 relative flex items-center justify-center pt-4 lg:pt-0">
+            <IsometricStation />
           </div>
         </div>
       </div>

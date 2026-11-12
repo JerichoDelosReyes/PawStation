@@ -36,7 +36,7 @@ module.exports = {
           amber: '#4A72B8',
           blue: '#4A72B8',
           azure: '#0284C7',
-          forest: '#2563EB',
+          blueAccent: '#2563EB',
           crimson: '#DC2626',
         },
       },
