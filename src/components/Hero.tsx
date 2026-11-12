@@ -4,7 +4,7 @@ import { motion } from "framer-motion";
 import Link from "next/link";
 import { PawOutlineIcon } from "./Icons";
 import TickerBand from "./TickerBand";
-import PrototypeHeroFigure from "./PrototypeHeroFigure";
+import Prototype3DSchematic from "./Prototype3DSchematic";
 import { useAuth } from "@/lib/auth-context";
 
 export default function Hero() {
@@ -143,9 +143,9 @@ export default function Hero() {
             </motion.div>
           </div>
 
-          {/* Right Column: Physical Hardware Prototype & 3D Schematic Figure */}
+          {/* Right Column: Refined 3D Hardware Schematic with Anatomy & Technical Callouts */}
           <div className="lg:col-span-6 xl:col-span-6 relative flex items-center justify-center pt-2 lg:pt-0">
-            <PrototypeHeroFigure />
+            <Prototype3DSchematic />
           </div>
         </div>
       </div>
