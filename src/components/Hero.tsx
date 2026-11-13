@@ -1,10 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { motion, useMotionValue, useSpring, useTransform, AnimatePresence } from "framer-motion";
-import { PawIcon, PawOutlineIcon, ScaleIcon, KibbleIcon, WaterDropIcon, SignalIcon } from "./Icons";
+import { PawIcon, PawOutlineIcon, ScaleIcon, KibbleIcon, WaterDropIcon, SignalIcon, MenuIcon, CloseIcon } from "./Icons";
 import { useAuth } from "@/lib/auth-context";
 import InverseCorner from "./InverseCorner";
 import ThemeTogglePill from "./ThemeTogglePill";
@@ -12,13 +12,99 @@ import ThemeTogglePill from "./ThemeTogglePill";
 const navLinks = [
   { label: "Features", href: "/#features" },
   { label: "Materials", href: "/#materials" },
+  { label: "Architecture", href: "/#blueprint" },
   { label: "FAQ", href: "/#faq" },
 ];
+
+const IOS_EASE = [0.16, 1, 0.3, 1] as const;
+
+function MagneticHeroButton({
+  children,
+  onClick,
+  className,
+  isAnchor = false,
+  href,
+}: {
+  children: React.ReactNode;
+  onClick?: (e: React.MouseEvent<any>) => void;
+  className?: string;
+  isAnchor?: boolean;
+  href?: string;
+}) {
+  const ref = useRef<HTMLDivElement>(null);
+  const x = useMotionValue(0);
+  const y = useMotionValue(0);
+
+  const springX = useSpring(x, { stiffness: 340, damping: 28, mass: 0.1 });
+  const springY = useSpring(y, { stiffness: 340, damping: 28, mass: 0.1 });
+
+  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (!ref.current) return;
+    const rect = ref.current.getBoundingClientRect();
+    const centerX = rect.left + rect.width / 2;
+    const centerY = rect.top + rect.height / 2;
+    const deltaX = e.clientX - centerX;
+    const deltaY = e.clientY - centerY;
+    // Micro-magnetic pull for a refined, precision-engineered feel (max ±6px)
+    const pullX = Math.max(-6, Math.min(6, deltaX * 0.12));
+    const pullY = Math.max(-5, Math.min(5, deltaY * 0.12));
+    x.set(pullX);
+    y.set(pullY);
+  };
+
+  const handleMouseLeave = () => {
+    x.set(0);
+    y.set(0);
+  };
+
+  if (isAnchor) {
+    return (
+      <div
+        ref={ref}
+        onMouseMove={handleMouseMove}
+        onMouseLeave={handleMouseLeave}
+        className="flex-1 sm:flex-initial"
+      >
+        <motion.a
+          href={href}
+          onClick={onClick}
+          style={{ x: springX, y: springY }}
+          whileHover={{ scale: 1.02 }}
+          whileTap={{ scale: 0.97 }}
+          className={className}
+        >
+          {children}
+        </motion.a>
+      </div>
+    );
+  }
+
+  return (
+    <div
+      ref={ref}
+      onMouseMove={handleMouseMove}
+      onMouseLeave={handleMouseLeave}
+      className="flex-1 sm:flex-initial"
+    >
+      <motion.button
+        type="button"
+        onClick={onClick}
+        style={{ x: springX, y: springY }}
+        whileHover={{ scale: 1.02 }}
+        whileTap={{ scale: 0.97 }}
+        className={className}
+      >
+        {children}
+      </motion.button>
+    </div>
+  );
+}
 
 export default function Hero() {
   const { user, openAuthModal, signOut } = useAuth();
   const [activeHotspot, setActiveHotspot] = useState<string | null>(null);
   const [activeNav, setActiveNav] = useState<string | null>(null);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const handleNavClick = (e: React.MouseEvent<HTMLAnchorElement>, href: string, label: string) => {
     setActiveNav(label);
@@ -61,6 +147,81 @@ export default function Hero() {
       className="relative w-full min-h-[100dvh] lg:h-[100dvh] bg-[var(--frame-bg)] text-white select-none p-2 sm:p-3 lg:p-4 flex flex-col justify-between overflow-x-hidden lg:overflow-hidden"
     >
       {/* ─────────────────────────────────────────────────────────────
+          ALL-BLACK MOBILE HEADER BAR (< lg)
+      ───────────────────────────────────────────────────────────── */}
+      <div className="lg:hidden w-full bg-[var(--frame-bg)] pb-2 flex flex-col z-40 relative">
+        <div className="w-full flex items-center justify-between px-2 py-1">
+          {/* Brand */}
+          <Link href="/" className="flex items-center gap-2 group" aria-label="PawStation Home">
+            <div className="w-7 h-7 rounded-lg bg-white flex items-center justify-center text-black shadow-sm">
+              <PawIcon className="w-3.5 h-3.5 fill-current" />
+            </div>
+            <span className="text-[14px] font-bold tracking-tight uppercase text-white font-sans">
+              PawStation
+            </span>
+          </Link>
+
+          {/* Right Action: Quick CTA + Hamburger */}
+          <div className="flex items-center gap-2">
+            {user ? (
+              <Link
+                href="/dashboard"
+                className="px-3 py-1.5 rounded-full bg-white text-black text-[11px] font-semibold flex items-center gap-1 shadow-sm"
+              >
+                <span>Dashboard</span>
+                <span className="text-[9px] font-bold">›</span>
+              </Link>
+            ) : (
+              <button
+                type="button"
+                onClick={() => openAuthModal("login")}
+                className="px-3.5 py-1.5 rounded-full bg-white text-black text-[11.5px] font-semibold flex items-center gap-1 shadow-sm active:scale-95 transition-transform"
+              >
+                <span>Log In</span>
+                <span className="text-[9px] font-bold">›</span>
+              </button>
+            )}
+
+            <button
+              type="button"
+              onClick={() => setMobileMenuOpen((prev) => !prev)}
+              aria-label="Toggle navigation menu"
+              className="w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 active:scale-95 flex items-center justify-center text-white border border-white/10 transition-all cursor-pointer"
+            >
+              {mobileMenuOpen ? <CloseIcon className="w-4 h-4" /> : <MenuIcon className="w-4 h-4" />}
+            </button>
+          </div>
+        </div>
+
+        {/* Mobile Dropdown Drawer */}
+        <AnimatePresence>
+          {mobileMenuOpen && (
+            <motion.div
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              transition={{ duration: 0.2, ease: "easeOut" }}
+              className="absolute top-full left-2 right-2 z-50 mt-1 px-3 py-3 bg-[#161618]/95 backdrop-blur-2xl rounded-2xl border border-white/15 flex flex-col gap-1 shadow-2xl"
+            >
+              {navLinks.map((link) => (
+                <a
+                  key={link.label}
+                  href={link.href}
+                  onClick={(e) => {
+                    handleNavClick(e, link.href, link.label);
+                    setMobileMenuOpen(false);
+                  }}
+                  className="px-4 py-2.5 rounded-xl text-[14px] font-medium text-neutral-200 hover:text-white hover:bg-white/[0.08] transition-colors"
+                >
+                  {link.label}
+                </a>
+              ))}
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
+
+      {/* ─────────────────────────────────────────────────────────────
           UNIFIED HERO CARD (CHASSIS + SEAMLESS INTEGRATED HEADER + BODY)
       ───────────────────────────────────────────────────────────── */}
       <div className="relative w-full flex-1 flex flex-col min-h-0">
@@ -68,12 +229,12 @@ export default function Hero() {
         <div
           onMouseMove={handleMouseMove}
           onMouseLeave={handleMouseLeave}
-          className="relative w-full flex-1 min-h-0 bg-[var(--panel-bg)] text-[var(--panel-text)] rounded-bl-[22px] sm:rounded-bl-[38px] flex flex-col justify-start lg:justify-between transition-colors duration-200 overflow-visible lg:overflow-hidden"
+          className="relative w-full flex-1 min-h-0 bg-[var(--panel-bg)] text-[var(--panel-text)] rounded-[20px] sm:rounded-[28px] lg:rounded-none lg:rounded-bl-[38px] flex flex-col justify-start lg:justify-between transition-colors duration-200 overflow-visible lg:overflow-hidden"
         >
           {/* ─────────────────────────────────────────────────────────
-              1. DOCKED TOP-LEFT NOTCH (BRAND LOGO)
+              1. DOCKED TOP-LEFT NOTCH (BRAND LOGO - DESKTOP ONLY)
           ───────────────────────────────────────────────────────── */}
-          <div className="absolute top-0 left-0 z-30 flex items-start">
+          <div className="hidden lg:flex absolute top-0 left-0 z-30 items-start">
             <div className="bg-[var(--frame-bg)] pt-2 pb-2 pl-3.5 pr-4 sm:pt-3 sm:pb-3 sm:pl-7 sm:pr-8 rounded-br-[20px] sm:rounded-br-[28px] flex items-center">
               <Link href="/" className="flex items-center gap-2 sm:gap-3 group" aria-label="PawStation Home">
                 <div className="w-6 h-6 sm:w-8 sm:h-8 rounded-lg sm:rounded-xl bg-white flex items-center justify-center text-black shadow-sm transition-transform duration-200 group-hover:scale-105">
@@ -90,14 +251,14 @@ export default function Hero() {
             </div>
           </div>
           {/* Inverted Fillet Curve Below Logo Notch */}
-          <div className="absolute left-0 top-[40px] sm:top-[56px] z-30 text-[var(--frame-bg)]">
+          <div className="hidden lg:block absolute left-0 top-[40px] sm:top-[56px] z-30 text-[var(--frame-bg)]">
             <InverseCorner type="top-left-bottom" size={20} className="w-5 h-5 sm:w-6 sm:h-6" />
           </div>
 
           {/* ─────────────────────────────────────────────────────────
-              2. DOCKED TOP-RIGHT NOTCH (GET STARTED CTA)
+              2. DOCKED TOP-RIGHT NOTCH (GET STARTED CTA - DESKTOP ONLY)
           ───────────────────────────────────────────────────────── */}
-          <div className="absolute top-0 right-0 z-30 flex items-start">
+          <div className="hidden lg:flex absolute top-0 right-0 z-30 items-start">
             {/* Inverted Fillet Curve to Left of Notch */}
             <div className="text-[var(--frame-bg)]">
               <InverseCorner type="top-right-left" size={20} className="w-5 h-5 sm:w-6 sm:h-6" />
@@ -137,7 +298,7 @@ export default function Hero() {
             </div>
           </div>
           {/* Inverted Fillet Curve Below CTA Notch */}
-          <div className="absolute right-0 top-[40px] sm:top-[56px] z-30 text-[var(--frame-bg)]">
+          <div className="hidden lg:block absolute right-0 top-[40px] sm:top-[56px] z-30 text-[var(--frame-bg)]">
             <InverseCorner type="top-right-bottom" size={20} className="w-5 h-5 sm:w-6 sm:h-6" />
           </div>
 
@@ -180,11 +341,11 @@ export default function Hero() {
           </div>
 
           {/* ─────────────────────────────────────────────────────────
-              4. HERO CONTENT: BOTTOM-ALIGNED CLEAN TYPOGRAPHY + ELEVATED 3D FIGURE
+              4. HERO CONTENT: CENTER-ALIGNED CLEAN TYPOGRAPHY + ELEVATED 3D FIGURE
           ───────────────────────────────────────────────────────── */}
-          <div className="relative z-10 flex-1 grid grid-cols-1 lg:grid-cols-12 gap-6 sm:gap-8 lg:gap-8 xl:gap-12 w-full max-w-[1720px] mx-auto px-5 sm:px-10 lg:px-14 pt-24 sm:pt-28 lg:pt-4 pb-12 sm:pb-16 lg:pb-12 min-h-0 items-start lg:items-end">
-            {/* Left Column: Bottom-Aligned, Clean & Non-Bold Typography */}
-            <div className="lg:col-span-5 xl:col-span-5 flex flex-col items-start text-left z-20 self-start lg:self-end pb-1 sm:pb-4">
+          <div className="relative z-10 flex-1 grid grid-cols-1 lg:grid-cols-12 gap-6 sm:gap-8 lg:gap-8 xl:gap-12 w-full max-w-[1720px] mx-auto px-5 sm:px-10 lg:px-14 pt-6 sm:pt-8 lg:pt-0 pb-8 sm:pb-10 lg:pb-0 min-h-0 items-center">
+            {/* Left Column: Center-Aligned, Clean & Non-Bold Typography */}
+            <div className="lg:col-span-5 xl:col-span-5 flex flex-col items-start text-left z-20 self-center pb-1 sm:pb-4">
               {/* Responsive Headline with Fluid Scaling */}
               <h1 className="text-[clamp(2.35rem,6.8vw,3.6rem)] sm:text-[clamp(3.2rem,5.2vw,4.8rem)] lg:text-[clamp(3.5rem,5.6vw,5.6rem)] xl:text-[clamp(3.9rem,6.2vw,6.4rem)] font-normal tracking-[-0.035em] leading-[1.0] text-neutral-900 dark:text-neutral-100 mb-5 sm:mb-6">
                 There is a
@@ -199,29 +360,33 @@ export default function Hero() {
                 to Nourish.
               </h1>
 
-              {/* Responsive Compact Dual Button Group */}
-              <div className="flex flex-row flex-wrap items-center gap-2.5 sm:gap-3.5 w-auto mb-5 sm:mb-6">
-                <button
-                  type="button"
-                  onClick={() => user ? (window.location.href = "/dashboard") : openAuthModal("signup")}
-                  className="group inline-flex items-center justify-center gap-2 px-5 sm:px-6 py-2.5 sm:py-3 rounded-full bg-neutral-900 dark:bg-white text-white dark:text-neutral-900 text-[13px] sm:text-[14px] font-semibold tracking-tight shadow-md hover:bg-neutral-800 dark:hover:bg-neutral-100 active:scale-[0.98] transition-all w-auto cursor-pointer whitespace-nowrap"
-                >
-                  <span>{user ? "Go to Dashboard" : "Get Started"}</span>
-                  <span className="w-4 h-4 sm:w-4.5 sm:h-4.5 rounded-full bg-white/20 dark:bg-black/10 flex items-center justify-center text-[9px] sm:text-[10px] font-bold transition-transform duration-200 group-hover:translate-x-0.5">
-                    ›
-                  </span>
-                </button>
+              {/* Innovative Unified Hardware Capsule Dock (Fluid Responsive & Magnetic) */}
+              <div className="w-full sm:w-auto max-w-md sm:max-w-none mb-5 sm:mb-6">
+                <div className="flex flex-row items-center gap-1 sm:gap-1.5 p-1 sm:p-1.5 rounded-full bg-black/[0.04] dark:bg-white/[0.07] border border-black/10 dark:border-white/15 backdrop-blur-xl shadow-[0_2px_12px_rgba(0,0,0,0.04)] dark:shadow-[0_4px_20px_rgba(0,0,0,0.25)]">
+                  {/* Primary Action Button: Get Started / Dashboard */}
+                  <MagneticHeroButton
+                    onClick={() => user ? (window.location.href = "/dashboard") : openAuthModal("signup")}
+                    className="group relative flex items-center justify-center gap-1.5 min-[380px]:gap-2 sm:gap-2.5 px-3.5 min-[380px]:px-4.5 sm:px-6 py-2.5 sm:py-3 rounded-full bg-neutral-900 dark:bg-white text-white dark:text-neutral-900 text-[12px] min-[380px]:text-[13px] sm:text-[14px] font-semibold tracking-tight shadow-[0_2px_10px_rgba(0,0,0,0.2)] dark:shadow-[0_2px_12px_rgba(255,255,255,0.2)] hover:bg-neutral-800 dark:hover:bg-neutral-100 transition-colors w-full sm:w-auto cursor-pointer whitespace-nowrap"
+                  >
+                    <span>{user ? "Go to Dashboard" : "Get Started"}</span>
+                    <span className="w-4 h-4 sm:w-4.5 sm:h-4.5 rounded-full bg-white/20 dark:bg-black/15 flex items-center justify-center text-[9px] sm:text-[10px] font-bold transition-transform duration-200 group-hover:translate-x-0.5">
+                      ›
+                    </span>
+                  </MagneticHeroButton>
 
-                <a
-                  href="#features"
-                  onClick={(e) => handleNavClick(e, "#features", "Features")}
-                  className="group inline-flex items-center justify-center gap-2 px-4.5 sm:px-5.5 py-2.5 sm:py-3 rounded-full border border-black/15 dark:border-white/20 bg-black/[0.03] dark:bg-white/[0.06] hover:bg-black/[0.06] dark:hover:bg-white/10 text-neutral-800 dark:text-neutral-200 text-[13px] sm:text-[14px] font-medium tracking-tight shadow-sm active:scale-[0.98] transition-all w-auto cursor-pointer whitespace-nowrap"
-                >
-                  <span>Explore Architecture</span>
-                  <span className="transition-transform duration-200 group-hover:translate-x-0.5 opacity-60 group-hover:opacity-100 text-[13px] sm:text-[14px]">
-                    →
-                  </span>
-                </a>
+                  {/* Secondary Action Button: Explore Features */}
+                  <MagneticHeroButton
+                    isAnchor
+                    href="#features"
+                    onClick={(e) => handleNavClick(e, "#features", "Features")}
+                    className="group relative flex items-center justify-center gap-1.5 min-[380px]:gap-2 px-3 min-[380px]:px-4 sm:px-5.5 py-2.5 sm:py-3 rounded-full hover:bg-black/[0.06] dark:hover:bg-white/10 text-neutral-800 dark:text-neutral-200 text-[12px] min-[380px]:text-[13px] sm:text-[14px] font-medium tracking-tight transition-colors w-full sm:w-auto cursor-pointer whitespace-nowrap"
+                  >
+                    <span>Explore Features</span>
+                    <span className="transition-transform duration-200 group-hover:translate-x-1 opacity-60 group-hover:opacity-100 text-[12px] sm:text-[14px]">
+                      →
+                    </span>
+                  </MagneticHeroButton>
+                </div>
               </div>
 
               {/* Clean Readable Description */}
@@ -231,7 +396,7 @@ export default function Hero() {
             </div>
 
             {/* Right Column: Giant, Showy 3D Hardware Sculpture with Hotspots */}
-            <div className="lg:col-span-7 xl:col-span-7 relative flex justify-center lg:justify-end items-center select-none w-full self-start lg:self-end lg:-translate-y-4 xl:-translate-y-6 lg:translate-x-6 xl:translate-x-12 mt-4 sm:mt-6 lg:mt-0">
+            <div className="lg:col-span-7 xl:col-span-7 relative flex justify-center lg:justify-end items-center select-none w-full self-center lg:translate-x-6 xl:translate-x-12 mt-4 sm:mt-6 lg:mt-0">
               {/* Contextual Telemetry Flyout (Placed outside scaled 3D canvas so it is always horizontally centered and never clipped) */}
               <AnimatePresence>
                 {activeHotspot && (

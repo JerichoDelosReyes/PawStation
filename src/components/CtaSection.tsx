@@ -10,17 +10,13 @@ export default function CtaSection() {
   const { user, openAuthModal } = useAuth();
   const triggerRef = useRef<HTMLDivElement>(null);
 
-  // Magnetic button displacement coordinates
+  // Refined, subtle magnetic button displacement coordinates
   const magnetX = useMotionValue(0);
   const magnetY = useMotionValue(0);
 
-  // Physics spring for organic magnetic pull and rebound
-  const springX = useSpring(magnetX, { stiffness: 220, damping: 18, mass: 0.18 });
-  const springY = useSpring(magnetY, { stiffness: 220, damping: 18, mass: 0.18 });
-
-  // Optional subtle inner icon/text parallax offset
-  const textX = useSpring(magnetX, { stiffness: 300, damping: 24, mass: 0.1 });
-  const textY = useSpring(magnetY, { stiffness: 300, damping: 24, mass: 0.1 });
+  // Taut, premium spring physics for a controlled, Apple-grade magnetic response
+  const springX = useSpring(magnetX, { stiffness: 320, damping: 26, mass: 0.12 });
+  const springY = useSpring(magnetY, { stiffness: 320, damping: 26, mass: 0.12 });
 
   const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
     if (!triggerRef.current) return;
@@ -31,10 +27,10 @@ export default function CtaSection() {
     const deltaX = e.clientX - centerX;
     const deltaY = e.clientY - centerY;
 
-    // Magnetic pull factor - button smoothly tracks cursor position up to max 32px
-    const maxOffset = 32;
-    const pullX = Math.max(-maxOffset, Math.min(maxOffset, deltaX * 0.38));
-    const pullY = Math.max(-maxOffset, Math.min(maxOffset, deltaY * 0.38));
+    // Subtle magnetic pull - restrained to max 10px with gentle 15% sensitivity
+    const maxOffset = 10;
+    const pullX = Math.max(-maxOffset, Math.min(maxOffset, deltaX * 0.15));
+    const pullY = Math.max(-maxOffset, Math.min(maxOffset, deltaY * 0.15));
 
     magnetX.set(pullX);
     magnetY.set(pullY);
@@ -66,27 +62,25 @@ export default function CtaSection() {
               Join thousands of cat parents who monitor feline health and automate daily meals with PawStation.
             </p>
 
-            {/* Magnetic Button Interaction Zone */}
+            {/* Polished Magnetic Button Interaction Zone */}
             <div
               ref={triggerRef}
               onMouseMove={handleMouseMove}
               onMouseLeave={handleMouseLeave}
-              className="inline-block p-8 -m-8 select-none"
+              className="inline-block p-4 -m-4 select-none"
             >
               <motion.button
                 type="button"
                 style={{ x: springX, y: springY }}
-                whileHover={{ scale: 1.04 }}
-                whileTap={{ scale: 0.96 }}
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
                 onClick={() => user ? (window.location.href = "/dashboard") : openAuthModal("signup")}
-                className="group relative inline-flex items-center justify-center gap-3 px-8 py-3.5 sm:px-9 sm:py-4 rounded-full bg-white text-black text-[14px] font-bold tracking-tight shadow-[0_4px_24px_rgba(255,255,255,0.22)] hover:shadow-[0_8px_32px_rgba(255,255,255,0.35)] hover:bg-[#F2EFE9] transition-all cursor-pointer"
+                className="group relative inline-flex items-center justify-center gap-3 px-8 py-3.5 sm:px-9 sm:py-4 rounded-full bg-white text-black text-[14px] font-bold tracking-tight shadow-[0_4px_20px_rgba(255,255,255,0.18)] hover:shadow-[0_6px_28px_rgba(255,255,255,0.28)] hover:bg-[#F2EFE9] transition-shadow cursor-pointer"
               >
-                <motion.span style={{ x: textX, y: textY }} className="inline-flex items-center gap-3">
-                  <span>{user ? "Go to Dashboard" : "Get Started"}</span>
-                  <span className="w-5 h-5 rounded-full bg-black text-white flex items-center justify-center text-[10px] font-bold transition-transform duration-200 group-hover:translate-x-0.5">
-                    ›
-                  </span>
-                </motion.span>
+                <span>{user ? "Go to Dashboard" : "Get Started"}</span>
+                <span className="w-5 h-5 rounded-full bg-black text-white flex items-center justify-center text-[10px] font-bold transition-transform duration-200 group-hover:translate-x-0.5">
+                  ›
+                </span>
               </motion.button>
             </div>
           </div>

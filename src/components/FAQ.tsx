@@ -134,10 +134,12 @@ export default function FAQ() {
             </p>
 
             {/* Expand / Collapse All Toggle Button */}
-            <button
+            <motion.button
               type="button"
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.96 }}
               onClick={toggleAll}
-              className="group px-4 sm:px-5 py-2 sm:py-2.5 rounded-full bg-[#18181B] border border-white/10 hover:border-white/25 text-[13px] font-medium text-neutral-300 hover:text-white transition-all inline-flex items-center gap-2.5 shadow-sm active:scale-95"
+              className="group px-4 sm:px-5 py-2 sm:py-2.5 rounded-full bg-[#18181B] border border-white/10 hover:border-white/25 text-[13px] font-medium text-neutral-300 hover:text-white transition-colors inline-flex items-center gap-2.5 shadow-sm cursor-pointer select-none"
             >
               <svg
                 className="w-3.5 h-3.5 text-neutral-400 group-hover:text-white transition-transform duration-200"
@@ -164,22 +166,22 @@ export default function FAQ() {
               <span className="text-[11px] font-mono text-neutral-500">
                 ({FAQ_ITEMS.length})
               </span>
-            </button>
+            </motion.button>
           </div>
         </motion.div>
 
         {/* 
-          Unified 2-Column Responsive Grid:
-          Pairs each row equally across columns so side-by-side cards maintain identical heights.
+          Smooth 2-Column Responsive Grid:
+          Each card expands with silky hardware spring height, avoiding grid row squishing.
         */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-stretch">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-start">
           {FAQ_ITEMS.map((item, idx) => (
             <FAQCard
               key={item.id}
               item={item}
               isOpen={!!openIds[item.id]}
               onToggle={() => toggleOpen(item.id)}
-              delay={idx * 0.05}
+              delay={idx * 0.04}
             />
           ))}
         </div>
@@ -203,16 +205,15 @@ function FAQCard({
 
   return (
     <motion.div
-      layout
       initial={{ opacity: 0, y: 20 }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, margin: "-40px" }}
       transition={{
-        duration: 0.6,
+        duration: 0.5,
         delay,
         ease: IOS_EASE,
       }}
-      className={`rounded-2xl bg-[#161619] border transition-all duration-200 select-none overflow-hidden h-full flex flex-col justify-between ${
+      className={`rounded-2xl bg-[#161619] border select-none overflow-hidden transition-colors duration-200 shadow-sm ${
         isOpen
           ? "border-white/25 shadow-lg shadow-black/40 bg-[#18181c]"
           : "border-white/10 hover:border-white/20"
@@ -221,7 +222,7 @@ function FAQCard({
       <button
         type="button"
         onClick={onToggle}
-        className="w-full p-6 sm:p-7 flex items-start justify-between text-left gap-4 group"
+        className="w-full p-6 sm:p-7 flex items-start justify-between text-left gap-4 group cursor-pointer"
         aria-expanded={isOpen}
       >
         <div className="flex items-start gap-3.5 flex-1 min-w-0">
@@ -252,7 +253,7 @@ function FAQCard({
         </div>
 
         <span
-          className={`p-2 rounded-full border transition-all duration-300 shrink-0 ${
+          className={`p-2 rounded-full border transition-transform duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] shrink-0 ${
             isOpen
               ? "rotate-180 bg-white text-black border-white"
               : "bg-white/[0.05] text-[#9CA3AF] border-white/10 group-hover:border-white/20 group-hover:text-white"
@@ -267,17 +268,43 @@ function FAQCard({
           <motion.div
             key="content"
             initial={{ height: 0, opacity: 0 }}
-            animate={{ height: "auto", opacity: 1 }}
-            exit={{ height: 0, opacity: 0 }}
-            transition={{ duration: 0.35, ease: IOS_EASE }}
-            className="overflow-hidden flex-1 flex flex-col justify-between"
+            animate={{
+              height: "auto",
+              opacity: 1,
+              transition: {
+                height: {
+                  duration: 0.32,
+                  ease: [0.16, 1, 0.3, 1],
+                },
+                opacity: {
+                  duration: 0.2,
+                  delay: 0.06,
+                  ease: "easeOut",
+                },
+              },
+            }}
+            exit={{
+              height: 0,
+              opacity: 0,
+              transition: {
+                height: {
+                  duration: 0.25,
+                  ease: [0.16, 1, 0.3, 1],
+                },
+                opacity: {
+                  duration: 0.15,
+                  ease: "easeIn",
+                },
+              },
+            }}
+            className="overflow-hidden"
           >
-            <div className="px-6 sm:px-7 pb-6 sm:pb-7 pt-0 flex-1 flex flex-col justify-between">
-              <div className="pt-4 border-t border-white/10 flex-1 flex flex-col justify-between">
+            <div className="px-6 sm:px-7 pb-6 sm:pb-7 pt-0">
+              <div className="pt-4 border-t border-white/10">
                 <p className="text-[13px] sm:text-[14px] leading-relaxed text-[#9CA3AF] mb-4">
                   {item.a}
                 </p>
-                <div className="mt-auto inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-white/[0.03] border border-white/10 text-[11px] font-mono text-neutral-300 w-fit">
+                <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-white/[0.03] border border-white/10 text-[11px] font-mono text-neutral-300 w-fit">
                   <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
                   <span>{item.highlight}</span>
                 </div>
