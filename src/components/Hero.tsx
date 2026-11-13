@@ -172,12 +172,12 @@ export default function Hero() {
             {/* Left Column: Bottom-Aligned, Clean & Non-Bold Typography */}
             <div className="lg:col-span-5 xl:col-span-5 flex flex-col items-start text-left z-20 self-end pb-2 sm:pb-4">
               {/* Headline matching Reference Screenshot (Non-Bold / Regular Weight) */}
-              <h1 className="text-[clamp(3.1rem,5.2vw,5.2rem)] xl:text-[clamp(3.5rem,5.6vw,5.8rem)] font-normal tracking-[-0.035em] leading-[1.0] text-neutral-900 dark:text-neutral-100 mb-6 sm:mb-7">
+              <h1 className="text-[clamp(3.5rem,5.8vw,5.7rem)] xl:text-[clamp(3.9rem,6.2vw,6.4rem)] font-normal tracking-[-0.035em] leading-[1.0] text-neutral-900 dark:text-neutral-100 mb-6 sm:mb-7">
                 There is a
                 <br />
                 <span className="inline-flex items-center gap-3.5 sm:gap-4 my-1.5">
-                  <span className="inline-flex items-center justify-center w-14 h-14 sm:w-16 sm:h-16 lg:w-[4.4rem] lg:h-[4.4rem] rounded-2xl sm:rounded-[22px] bg-black/[0.03] dark:bg-white/[0.06] border border-black/15 dark:border-white/20 text-neutral-800 dark:text-neutral-200 shadow-sm flex-shrink-0">
-                    <PawOutlineIcon className="w-7 h-7 sm:w-8 sm:h-8 lg:w-9 lg:h-9" />
+                  <span className="inline-flex items-center justify-center w-14 h-14 sm:w-16 sm:h-16 lg:w-[4.8rem] lg:h-[4.8rem] xl:w-[5.2rem] xl:h-[5.2rem] rounded-2xl sm:rounded-[22px] bg-black/[0.03] dark:bg-white/[0.06] border border-black/15 dark:border-white/20 text-neutral-800 dark:text-neutral-200 shadow-sm flex-shrink-0">
+                    <PawOutlineIcon className="w-7 h-7 sm:w-8 sm:h-8 lg:w-9 lg:h-9 xl:w-10 xl:h-10" />
                   </span>
                   <span>Better Way</span>
                 </span>
@@ -324,7 +324,7 @@ export default function Hero() {
                   }}
                   onMouseEnter={() => setActiveHotspot("scale")}
                   onMouseLeave={() => setActiveHotspot(null)}
-                  className={`absolute top-[4%] sm:top-[6%] left-0 sm:left-[2%] lg:left-[1%] px-3.5 py-1.5 rounded-full bg-white/95 dark:bg-[#1C1F2E]/95 backdrop-blur-md border shadow-lg flex items-center gap-2.5 text-[11px] text-[var(--panel-text)] cursor-pointer transition-all duration-300 z-30 ${
+                  className={`absolute top-[28%] sm:top-[30%] left-[4%] sm:left-[7%] lg:left-[8%] px-3.5 py-1.5 rounded-full bg-white/95 dark:bg-[#1C1F2E]/95 backdrop-blur-md border shadow-lg flex items-center gap-2.5 text-[11px] text-[var(--panel-text)] cursor-pointer transition-all duration-300 z-30 ${
                     activeHotspot === "scale"
                       ? "border-emerald-500 ring-2 ring-emerald-500/30 scale-105 shadow-emerald-500/20"
                       : "border-black/10 dark:border-white/10 hover:border-black/20 dark:hover:border-white/20"
