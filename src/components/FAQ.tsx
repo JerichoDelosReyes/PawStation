@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   ChevronDownIcon,
@@ -92,10 +92,7 @@ const IOS_EASE = [0.16, 1, 0.3, 1] as const;
 
 export default function FAQ() {
   const [selectedCategory, setSelectedCategory] = useState<string>("All");
-  const [openIds, setOpenIds] = useState<Record<string, boolean>>({
-    servo: true,
-    pump: false,
-  });
+  const [openIds, setOpenIds] = useState<Record<string, boolean>>({});
 
   const toggleOpen = (id: string) => {
     setOpenIds((prev) => ({
@@ -104,10 +101,37 @@ export default function FAQ() {
     }));
   };
 
-  const filteredItems =
-    selectedCategory === "All"
+  const filteredItems = useMemo(() => {
+    return selectedCategory === "All"
       ? FAQ_ITEMS
       : FAQ_ITEMS.filter((item) => item.category === selectedCategory);
+  }, [selectedCategory]);
+
+  const allOpen = useMemo(() => {
+    return filteredItems.length > 0 && filteredItems.every((item) => openIds[item.id]);
+  }, [filteredItems, openIds]);
+
+  const toggleAll = () => {
+    if (allOpen) {
+      setOpenIds({});
+    } else {
+      const next: Record<string, boolean> = {};
+      filteredItems.forEach((item) => {
+        next[item.id] = true;
+      });
+      setOpenIds(next);
+    }
+  };
+
+  // Split into two independent columns for masonry packing on desktop (eliminates CSS Grid row stretching)
+  const leftColumnItems = useMemo(
+    () => filteredItems.filter((_, idx) => idx % 2 === 0),
+    [filteredItems]
+  );
+  const rightColumnItems = useMemo(
+    () => filteredItems.filter((_, idx) => idx % 2 === 1),
+    [filteredItems]
+  );
 
   return (
     <section
@@ -121,9 +145,13 @@ export default function FAQ() {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, margin: "-60px" }}
           transition={{ duration: 0.85, ease: IOS_EASE }}
-          className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start mb-16"
+          className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start mb-14"
         >
           <div className="lg:col-span-5">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/[0.04] border border-white/10 text-[11px] font-mono uppercase tracking-wider text-neutral-400 mb-4">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+              Technical FAQ
+            </div>
             <h2 className="text-[clamp(2.5rem,5vw,3.8rem)] font-extrabold tracking-[-0.03em] text-white leading-[1.08]">
               Frequently
               <br />
@@ -136,88 +164,191 @@ export default function FAQ() {
               Technical specifications on electrical isolation, kinematic kibble metering, fail-safe water shutoff, and load cell calibration.
             </p>
 
-            {/* Category Pills with Tactile Spring */}
-            <div className="flex flex-wrap items-center gap-2">
-              {CATEGORIES.map((cat) => {
-                const active = selectedCategory === cat;
-                return (
-                  <motion.button
-                    key={cat}
-                    type="button"
-                    whileTap={{ scale: 0.95 }}
-                    transition={{ type: "spring", stiffness: 400, damping: 25 }}
-                    onClick={() => setSelectedCategory(cat)}
-                    className={`px-3.5 py-1 rounded-full text-[12px] font-medium transition-all ${
-                      active
-                        ? "bg-white text-black font-semibold shadow-sm"
-                        : "bg-[#18181B] text-[#9CA3AF] border border-white/10 hover:text-white hover:border-white/20"
-                    }`}
-                  >
-                    {cat}
-                  </motion.button>
-                );
-              })}
+            {/* Category Pills & Expand/Collapse Toggle */}
+            <div className="w-full flex flex-wrap items-center justify-between gap-3">
+              <div className="flex flex-wrap items-center gap-2">
+                {CATEGORIES.map((cat) => {
+                  const active = selectedCategory === cat;
+                  const count =
+                    cat === "All"
+                      ? FAQ_ITEMS.length
+                      : FAQ_ITEMS.filter((i) => i.category === cat).length;
+                  return (
+                    <motion.button
+                      key={cat}
+                      type="button"
+                      whileTap={{ scale: 0.95 }}
+                      transition={{ type: "spring", stiffness: 400, damping: 25 }}
+                      onClick={() => setSelectedCategory(cat)}
+                      className={`px-3 py-1 rounded-full text-[12px] font-medium transition-all inline-flex items-center gap-1.5 ${
+                        active
+                          ? "bg-white text-black font-semibold shadow-sm"
+                          : "bg-[#18181B] text-[#9CA3AF] border border-white/10 hover:text-white hover:border-white/20"
+                      }`}
+                    >
+                      <span>{cat}</span>
+                      <span
+                        className={`text-[10px] px-1.5 py-0.2 rounded-full ${
+                          active
+                            ? "bg-black/10 text-black font-semibold"
+                            : "bg-white/5 text-neutral-400"
+                        }`}
+                      >
+                        {count}
+                      </span>
+                    </motion.button>
+                  );
+                })}
+              </div>
+
+              {filteredItems.length > 1 && (
+                <button
+                  type="button"
+                  onClick={toggleAll}
+                  className="text-[12px] font-mono text-neutral-400 hover:text-white transition-colors underline underline-offset-4 decoration-white/20 hover:decoration-white/60 py-1"
+                >
+                  {allOpen ? "Collapse All" : "Expand All"}
+                </button>
+              )}
             </div>
           </div>
         </motion.div>
 
-        {/* Minimalist Accordion Grid with iOS Fluid Animation */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {filteredItems.map((item, idx) => {
-            const isOpen = !!openIds[item.id];
-            return (
-              <motion.div
+        {/* 
+          Dual-Column Independent Masonry Grid:
+          Each column stacks independently (flex flex-col gap-4) so that an expanded card on one side
+          never forces the adjacent card on the other side to stretch vertically or leave blank voids.
+        */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-start">
+          {/* Column 1 (Left Column) */}
+          <div className="flex flex-col gap-4">
+            {leftColumnItems.map((item, idx) => (
+              <FAQCard
                 key={item.id}
-                initial={{ opacity: 0, y: 24 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true, margin: "-40px" }}
-                transition={{
-                  duration: 0.7,
-                  delay: (idx % 4) * 0.08,
-                  ease: IOS_EASE,
-                }}
-                className="p-6 sm:p-7 rounded-2xl bg-[#161619] border border-white/10 hover:border-white/20 transition-colors select-none"
-              >
-                <button
-                  type="button"
-                  onClick={() => toggleOpen(item.id)}
-                  className="w-full flex items-center justify-between text-left gap-4"
-                >
-                  <span className="text-[16px] font-bold text-white tracking-tight">
-                    {item.q}
-                  </span>
-                  <span
-                    className={`p-1.5 rounded-full bg-white/[0.05] text-[#9CA3AF] transition-transform duration-200 ${
-                      isOpen ? "rotate-180 text-white" : ""
-                    }`}
-                  >
-                    <ChevronDownIcon className="w-4 h-4" />
-                  </span>
-                </button>
+                item={item}
+                isOpen={!!openIds[item.id]}
+                onToggle={() => toggleOpen(item.id)}
+                delay={idx * 0.08}
+              />
+            ))}
+          </div>
 
-                <AnimatePresence>
-                  {isOpen && (
-                    <motion.div
-                      initial={{ height: 0, opacity: 0 }}
-                      animate={{ height: "auto", opacity: 1 }}
-                      exit={{ height: 0, opacity: 0 }}
-                      transition={{ duration: 0.35, ease: IOS_EASE }}
-                      className="overflow-hidden"
-                    >
-                      <p className="mt-4 pt-4 border-t border-white/10 text-[13px] sm:text-[14px] leading-relaxed text-[#9CA3AF]">
-                        {item.a}
-                      </p>
-                      <div className="mt-4 text-[11px] font-mono text-[#6B7280]">
-                        {item.highlight}
-                      </div>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-              </motion.div>
-            );
-          })}
+          {/* Column 2 (Right Column) */}
+          <div className="flex flex-col gap-4">
+            {rightColumnItems.map((item, idx) => (
+              <FAQCard
+                key={item.id}
+                item={item}
+                isOpen={!!openIds[item.id]}
+                onToggle={() => toggleOpen(item.id)}
+                delay={(idx + 1) * 0.08}
+              />
+            ))}
+          </div>
         </div>
       </div>
     </section>
+  );
+}
+
+function FAQCard({
+  item,
+  isOpen,
+  onToggle,
+  delay,
+}: {
+  item: FAQItem;
+  isOpen: boolean;
+  onToggle: () => void;
+  delay: number;
+}) {
+  const IconComponent = item.icon;
+
+  return (
+    <motion.div
+      layout
+      initial={{ opacity: 0, y: 20 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true, margin: "-40px" }}
+      transition={{
+        duration: 0.6,
+        delay,
+        ease: IOS_EASE,
+      }}
+      className={`rounded-2xl bg-[#161619] border transition-all duration-200 select-none overflow-hidden h-fit ${
+        isOpen
+          ? "border-white/25 shadow-lg shadow-black/40 bg-[#18181c]"
+          : "border-white/10 hover:border-white/20"
+      }`}
+    >
+      <button
+        type="button"
+        onClick={onToggle}
+        className="w-full p-6 sm:p-7 flex items-start justify-between text-left gap-4 group"
+        aria-expanded={isOpen}
+      >
+        <div className="flex items-start gap-3.5 flex-1 min-w-0">
+          <div
+            className={`mt-0.5 p-2 rounded-xl border transition-colors shrink-0 ${
+              isOpen
+                ? "bg-white text-black border-white"
+                : "bg-white/[0.04] text-neutral-400 border-white/10 group-hover:text-white group-hover:border-white/20"
+            }`}
+          >
+            <IconComponent className="w-4 h-4" />
+          </div>
+
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center gap-2 mb-1.5 flex-wrap">
+              <span className="text-[11px] font-mono tracking-wide text-neutral-400 uppercase">
+                {item.category}
+              </span>
+              <span className="text-white/20 text-[10px]">•</span>
+              <span className="text-[11px] font-mono text-emerald-400/90 bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/20">
+                {item.tag}
+              </span>
+            </div>
+            <h3 className="text-[15px] sm:text-[16px] font-semibold text-white tracking-tight leading-snug group-hover:text-white/90">
+              {item.q}
+            </h3>
+          </div>
+        </div>
+
+        <span
+          className={`p-2 rounded-full border transition-all duration-300 shrink-0 ${
+            isOpen
+              ? "rotate-180 bg-white text-black border-white"
+              : "bg-white/[0.05] text-[#9CA3AF] border-white/10 group-hover:border-white/20 group-hover:text-white"
+          }`}
+        >
+          <ChevronDownIcon className="w-3.5 h-3.5" />
+        </span>
+      </button>
+
+      <AnimatePresence initial={false}>
+        {isOpen && (
+          <motion.div
+            key="content"
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: "auto", opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.35, ease: IOS_EASE }}
+            className="overflow-hidden"
+          >
+            <div className="px-6 sm:px-7 pb-6 sm:pb-7 pt-0">
+              <div className="pt-4 border-t border-white/10">
+                <p className="text-[13px] sm:text-[14px] leading-relaxed text-[#9CA3AF]">
+                  {item.a}
+                </p>
+                <div className="mt-4 inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-white/[0.03] border border-white/10 text-[11px] font-mono text-neutral-300">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
+                  <span>{item.highlight}</span>
+                </div>
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </motion.div>
   );
 }

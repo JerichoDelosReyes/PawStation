@@ -183,6 +183,10 @@
   },
   "active": "7dbc362d75ef2a51",
   "lastOpenFiles": [
+    "public/hero-figure-dark.png",
+    "public/hero-figure-dark.webp",
+    "public/hero-figure-light.png",
+    "public/hero-figure-light.webp",
     "Docs/Terms of Service.md",
     "Docs/Fynsec UI and Landing Page Architecture.md",
     "Docs/Security Architecture and Hardening.md",
@@ -219,7 +223,6 @@
     "node_modules/@tweenjs/tween.js/README.md",
     "node_modules/@use-gesture/core/CHANGELOG.md",
     "node_modules/@use-gesture/react/README.md",
-    "node_modules/@use-gesture/react/CHANGELOG.md",
     "public/prototype.png",
     "src/app/icon.svg",
     "node_modules/@supabase/phoenix/priv/static/phoenix.png",

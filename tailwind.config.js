@@ -75,6 +75,10 @@ module.exports = {
           '0%': { transform: 'translateX(0)' },
           '100%': { transform: 'translateX(-50%)' },
         },
+        'ticker-reverse': {
+          '0%': { transform: 'translateX(-50%)' },
+          '100%': { transform: 'translateX(0)' },
+        },
         shimmer: {
           '0%': { backgroundPosition: '-200% 0' },
           '100%': { backgroundPosition: '200% 0' },
@@ -86,6 +90,7 @@ module.exports = {
       },
       animation: {
         ticker: 'ticker 30s linear infinite',
+        'ticker-reverse': 'ticker-reverse 30s linear infinite',
         shimmer: 'shimmer 1.5s ease-in-out infinite',
         'fade-in-up': 'fade-in-up 0.5s ease-out forwards',
       },

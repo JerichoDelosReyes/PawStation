@@ -16,7 +16,7 @@ export default function HomePage() {
         {/* Section 1: Hero with Interlocking Top Bar, White Canvas & Complex Filleted Edges */}
         <Hero />
 
-        {/* Section 2: Our Partners / Ecosystem (Fynsec Screenshot 2 Replication) */}
+        {/* Section 2: Our Materials (Fynsec Screenshot 2 Replication) */}
         <EcosystemBand />
 
         {/* Section 3: How Can PawStation Help? (3 Numbered Cards / 01, / 02, / 03) */}

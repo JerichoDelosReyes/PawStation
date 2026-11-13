@@ -16,7 +16,7 @@ export const metadata: Metadata = {
 const themeScript = `
   try {
     const stored = localStorage.getItem('pawstation-theme');
-    if (stored === 'dark' || (!stored && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+    if (stored === 'dark') {
       document.documentElement.classList.add('dark');
     } else {
       document.documentElement.classList.remove('dark');
