@@ -76,7 +76,11 @@ const CARDS: HelpCard[] = [
 ];
 
 export default function HowPawStationHelps() {
-  const [hoveredIdx, setHoveredIdx] = useState<number | null>(null);
+  const [expandedIdx, setExpandedIdx] = useState<number | null>(null);
+
+  const toggleCard = (idx: number) => {
+    setExpandedIdx((prev) => (prev === idx ? null : idx));
+  };
 
   return (
     <section id="features" className="py-24 sm:py-32 px-6 sm:px-10 lg:px-14 bg-[#111113] text-white border-t border-white/[0.08]">
@@ -112,56 +116,74 @@ export default function HowPawStationHelps() {
           </div>
         </motion.div>
 
-        {/* 3 Numbered Minimalist Feature Cards with iOS-Style Staggered Spring Physics */}
+        {/* 3 Numbered Minimalist Feature Cards with Click / Touch Expansion */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {CARDS.map((card, idx) => {
-            const isHovered = hoveredIdx === idx;
+            const isExpanded = expandedIdx === idx;
             return (
               <motion.div
                 key={card.number}
+                layout
+                role="button"
+                tabIndex={0}
+                aria-expanded={isExpanded}
+                onClick={() => toggleCard(idx)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" || e.key === " ") {
+                    e.preventDefault();
+                    toggleCard(idx);
+                  }
+                }}
                 initial={{ opacity: 0, y: 38, scale: 0.97 }}
                 whileInView={{ opacity: 1, y: 0, scale: 1 }}
                 viewport={{ once: true, margin: "-50px" }}
                 transition={{
-                  duration: 0.85,
-                  delay: idx * 0.12,
+                  duration: 0.7,
+                  delay: idx * 0.1,
                   ease: IOS_EASE,
+                  layout: { duration: 0.35, ease: IOS_EASE },
                 }}
                 whileHover={{
-                  scale: 1.025,
-                  y: -4,
-                  transition: { type: "spring", stiffness: 350, damping: 25 },
+                  y: -3,
+                  transition: { type: "spring", stiffness: 400, damping: 25 },
                 }}
                 whileTap={{
-                  scale: 0.98,
+                  scale: 0.985,
                   transition: { type: "spring", stiffness: 500, damping: 30 },
                 }}
-                onMouseEnter={() => setHoveredIdx(idx)}
-                onMouseLeave={() => setHoveredIdx(null)}
-                className="group relative p-8 sm:p-10 rounded-2xl bg-[#161619] border border-white/10 hover:border-white/30 hover:bg-[#1A1A1E] transition-colors duration-300 flex flex-col justify-between min-h-[380px] select-none cursor-pointer overflow-hidden shadow-lg will-change-transform"
+                className={`group relative p-7 sm:p-9 rounded-2xl transition-colors duration-300 flex flex-col justify-between h-full min-h-[420px] select-none cursor-pointer overflow-hidden border will-change-transform ${
+                  isExpanded
+                    ? "bg-[#1C1C22] border-white/35 shadow-[0_12px_36px_rgba(0,0,0,0.45)] ring-1 ring-white/10"
+                    : "bg-[#161619] border-white/10 hover:border-white/25 hover:bg-[#19191D] shadow-lg"
+                }`}
               >
                 {/* Number tag at top */}
-                <div className="text-[12px] font-mono text-[#6B7280] group-hover:text-white transition-colors">
+                <div
+                  className={`text-[12px] font-mono transition-colors ${
+                    isExpanded ? "text-white font-bold" : "text-[#6B7280] group-hover:text-neutral-300"
+                  }`}
+                >
                   {card.number}
                 </div>
 
                 {/* Center 3D Render */}
-                <div className="my-auto py-8 flex items-center justify-center">
+                <div className="flex-1 my-auto py-6 sm:py-8 flex items-center justify-center pointer-events-none">
                   {card.render3D}
                 </div>
 
                 {/* Bottom Content Area */}
-                <div className="relative z-10">
-                  <h3 className="text-[20px] sm:text-[22px] font-bold text-white tracking-tight leading-snug mb-2">
+                <div className="relative z-10 pt-2">
+                  <h3 className="text-[20px] sm:text-[22px] font-bold text-white tracking-tight leading-snug mb-2.5 min-h-[54px] flex items-end">
                     {card.title}
                   </h3>
 
-                  {/* Expanded description on hover */}
-                  <div className="overflow-hidden transition-all duration-300">
-                    <p className="text-[13px] sm:text-[14px] leading-relaxed text-[#9CA3AF]">
-                      {isHovered ? card.fullDesc : card.shortDesc}
+                  {/* Description changes smoothly on Click / Touch */}
+                  <div className="overflow-hidden">
+                    <p className="text-[13px] sm:text-[14px] leading-relaxed text-[#9CA3AF] transition-colors duration-200">
+                      {isExpanded ? card.fullDesc : card.shortDesc}
                     </p>
-                    {isHovered && (
+
+                    {isExpanded && (
                       <div className="pt-3">
                         <span className="inline-flex items-center gap-1.5 text-[12px] font-semibold text-white">
                           <span>Learn more</span>

@@ -19,12 +19,6 @@ export default function CtaSection() {
           className="p-10 sm:p-16 rounded-[36px] bg-[#161619] border border-white/10 text-center relative overflow-hidden shadow-2xl"
         >
           <div className="max-w-2xl mx-auto">
-            {/* Top pill */}
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/[0.06] border border-white/10 text-[11px] font-mono text-[#9CA3AF] mb-6">
-              <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />
-              <span>Zero setup &middot; Connects via Web MQTTS</span>
-            </div>
-
             {/* Headline */}
             <h2 className="text-[clamp(2.2rem,5vw,3.6rem)] font-extrabold tracking-tight text-white leading-[1.08] mb-6">
               Ready to experience true feeding clarity?
