@@ -166,23 +166,32 @@ export default function Hero() {
                 to Nourish.
               </h1>
 
-              {/* High-Contrast CTA Link with Full Underline Spanning Width */}
-              <div className="w-full max-w-md sm:max-w-lg mb-2.5">
+              {/* Redesigned Dual Button Group directly below "to Nourish" */}
+              <div className="flex flex-wrap items-center gap-3 sm:gap-3.5 w-full mb-5 sm:mb-6">
                 <button
                   type="button"
                   onClick={() => user ? (window.location.href = "/dashboard") : openAuthModal("signup")}
-                  className="group inline-flex items-center gap-2.5 text-[14.5px] sm:text-[15.5px] font-normal text-neutral-800 dark:text-neutral-200 hover:opacity-75 transition-opacity mb-2.5"
+                  className="group inline-flex items-center gap-2.5 px-6 sm:px-7 py-3 sm:py-3.5 rounded-full bg-neutral-900 dark:bg-white text-white dark:text-neutral-900 text-[14px] font-semibold tracking-tight shadow-md hover:bg-neutral-800 dark:hover:bg-neutral-100 active:scale-[0.98] transition-all"
                 >
-                  <span className="w-5 h-5 min-w-[20px] min-h-[20px] rounded-full bg-neutral-900 dark:bg-white text-white dark:text-neutral-900 flex items-center justify-center text-[10px] font-bold shrink-0 transition-transform group-hover:translate-x-0.5">
+                  <span>{user ? "Go to Dashboard" : "Get Started"}</span>
+                  <span className="w-5 h-5 rounded-full bg-white/20 dark:bg-black/10 flex items-center justify-center text-[10px] font-bold transition-transform duration-200 group-hover:translate-x-0.5">
                     ›
                   </span>
-                  <span>Get Started</span>
                 </button>
-                <div className="w-full h-[1px] bg-black/15 dark:bg-white/15" />
+
+                <a
+                  href="#blueprint"
+                  className="group inline-flex items-center gap-2 px-5 sm:px-6 py-3 sm:py-3.5 rounded-full border border-black/15 dark:border-white/20 bg-black/[0.03] dark:bg-white/[0.06] hover:bg-black/[0.06] dark:hover:bg-white/10 text-neutral-800 dark:text-neutral-200 text-[14px] font-medium tracking-tight shadow-sm active:scale-[0.98] transition-all"
+                >
+                  <span>Explore Architecture</span>
+                  <span className="transition-transform duration-200 group-hover:translate-x-0.5 opacity-60 group-hover:opacity-100">
+                    →
+                  </span>
+                </a>
               </div>
 
               {/* Clean Readable Description */}
-              <p className="text-[13.5px] sm:text-[14.5px] leading-relaxed text-neutral-500 dark:text-neutral-400 max-w-md sm:max-w-lg font-normal mt-3">
+              <p className="text-[14px] sm:text-[15px] leading-relaxed text-neutral-600 dark:text-neutral-400 max-w-md sm:max-w-lg font-normal">
                 PawStation is an open-hardware feline workstation that automates controlled micro-portion kibble dispensing, fresh water replenishment, and gram-level health telemetry to avoid costly vet emergencies.
               </p>
             </div>
