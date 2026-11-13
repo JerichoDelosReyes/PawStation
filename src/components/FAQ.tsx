@@ -148,10 +148,6 @@ export default function FAQ() {
           className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start mb-14"
         >
           <div className="lg:col-span-5">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/[0.04] border border-white/10 text-[11px] font-mono uppercase tracking-wider text-neutral-400 mb-4">
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-              Technical FAQ
-            </div>
             <h2 className="text-[clamp(2.5rem,5vw,3.8rem)] font-extrabold tracking-[-0.03em] text-white leading-[1.08]">
               Frequently
               <br />

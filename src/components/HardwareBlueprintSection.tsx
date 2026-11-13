@@ -106,7 +106,7 @@ export default function HardwareBlueprintSection() {
                   transition: { type: "spring", stiffness: 500, damping: 30 },
                 }}
                 onClick={() => setActiveIdx(idx)}
-                className={`group p-8 rounded-2xl border transition-colors duration-200 flex flex-col justify-between min-h-[320px] select-none cursor-pointer shadow-md ${
+                className={`group p-8 rounded-2xl border transition-colors duration-200 flex flex-col justify-between min-h-[320px] select-none cursor-pointer shadow-md will-change-transform ${
                   isActive
                     ? "bg-[#1A1A1E] border-white/40 shadow-xl"
                     : "bg-[#161619] border-white/10 hover:border-white/25 hover:bg-[#18181C]"

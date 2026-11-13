@@ -195,20 +195,9 @@ const ROW_TWO_MATERIALS: MaterialItem[] = [
 export default function EcosystemBand() {
   const { openAuthModal } = useAuth();
 
-  // 4x repetition for silky-smooth infinite looping on both rows
-  const marqueeRowOne = [
-    ...ROW_ONE_MATERIALS,
-    ...ROW_ONE_MATERIALS,
-    ...ROW_ONE_MATERIALS,
-    ...ROW_ONE_MATERIALS,
-  ];
-
-  const marqueeRowTwo = [
-    ...ROW_TWO_MATERIALS,
-    ...ROW_TWO_MATERIALS,
-    ...ROW_TWO_MATERIALS,
-    ...ROW_TWO_MATERIALS,
-  ];
+  // 2x repetition is sufficient for full 4K screen coverage with seamless -50% translateX loop
+  const marqueeRowOne = [...ROW_ONE_MATERIALS, ...ROW_ONE_MATERIALS];
+  const marqueeRowTwo = [...ROW_TWO_MATERIALS, ...ROW_TWO_MATERIALS];
 
   return (
     <section
@@ -263,13 +252,11 @@ export default function EcosystemBand() {
         <div className="absolute top-0 bottom-0 right-0 w-16 sm:w-28 bg-gradient-to-l from-[#161618] to-transparent z-10 pointer-events-none" />
 
         {/* Row 1: Sensors & Core Electronics (Drifting Left) */}
-        <div className="flex w-max gap-5 sm:gap-6 animate-ticker hover:[animation-play-state:paused] motion-reduce:animate-none">
+        <div className="flex w-max gap-5 sm:gap-6 animate-ticker hover:[animation-play-state:paused] motion-reduce:animate-none will-change-transform">
           {marqueeRowOne.map((item, idx) => (
-            <motion.div
+            <div
               key={`row1-${item.id}-${idx}`}
-              whileHover={{ scale: 1.03, y: -2 }}
-              transition={{ type: "spring", stiffness: 350, damping: 25 }}
-              className="w-[240px] sm:w-[280px] h-[130px] sm:h-[140px] rounded-[24px] bg-[#18181B] border border-white/10 hover:border-white/30 transition-all flex flex-col justify-center items-center px-6 shadow-sm shrink-0 select-none cursor-pointer"
+              className="w-[240px] sm:w-[280px] h-[130px] sm:h-[140px] rounded-[24px] bg-[#18181B] border border-white/10 hover:border-white/30 hover:scale-[1.03] hover:-translate-y-0.5 transition-transform duration-200 flex flex-col justify-center items-center px-6 shadow-sm shrink-0 select-none cursor-pointer will-change-transform"
             >
               <div className="opacity-95 hover:opacity-100 transition-opacity flex items-center gap-3">
                 {item.icon}
@@ -280,18 +267,16 @@ export default function EcosystemBand() {
               <span className="text-[11px] font-mono text-[#6B7280] mt-2 text-center">
                 {item.subtitle}
               </span>
-            </motion.div>
+            </div>
           ))}
         </div>
 
         {/* Row 2: Actuation, Power & Structure (Drifting Right) */}
-        <div className="flex w-max gap-5 sm:gap-6 animate-ticker-reverse hover:[animation-play-state:paused] motion-reduce:animate-none">
+        <div className="flex w-max gap-5 sm:gap-6 animate-ticker-reverse hover:[animation-play-state:paused] motion-reduce:animate-none will-change-transform">
           {marqueeRowTwo.map((item, idx) => (
-            <motion.div
+            <div
               key={`row2-${item.id}-${idx}`}
-              whileHover={{ scale: 1.03, y: -2 }}
-              transition={{ type: "spring", stiffness: 350, damping: 25 }}
-              className="w-[240px] sm:w-[280px] h-[130px] sm:h-[140px] rounded-[24px] bg-[#18181B] border border-white/10 hover:border-white/30 transition-all flex flex-col justify-center items-center px-6 shadow-sm shrink-0 select-none cursor-pointer"
+              className="w-[240px] sm:w-[280px] h-[130px] sm:h-[140px] rounded-[24px] bg-[#18181B] border border-white/10 hover:border-white/30 hover:scale-[1.03] hover:-translate-y-0.5 transition-transform duration-200 flex flex-col justify-center items-center px-6 shadow-sm shrink-0 select-none cursor-pointer will-change-transform"
             >
               <div className="opacity-95 hover:opacity-100 transition-opacity flex items-center gap-3">
                 {item.icon}
@@ -302,7 +287,7 @@ export default function EcosystemBand() {
               <span className="text-[11px] font-mono text-[#6B7280] mt-2 text-center">
                 {item.subtitle}
               </span>
-            </motion.div>
+            </div>
           ))}
         </div>
       </div>

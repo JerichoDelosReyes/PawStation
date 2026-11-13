@@ -29,11 +29,16 @@
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     text-rendering: optimizeLegibility;
-    scroll-behavior: smooth;
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    html:focus-within {
+      scroll-behavior: smooth;
+    }
   }
 
   body {
-    @apply bg-canvas-light dark:bg-canvas-dark text-navy dark:text-[#F0F4FA] transition-colors duration-200;
+    @apply bg-canvas-light dark:bg-canvas-dark text-navy dark:text-[#F0F4FA];
   }
 
   * {

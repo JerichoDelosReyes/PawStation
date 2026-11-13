@@ -67,10 +67,10 @@ export default function Navbar() {
           ) : (
             <button
               type="button"
-              onClick={() => openAuthModal("signup")}
+              onClick={() => openAuthModal("login")}
               className="group inline-flex items-center gap-2 px-5 py-2 rounded-full bg-black dark:bg-white text-white dark:text-black text-[12px] font-semibold tracking-tight shadow-sm hover:opacity-90 active:scale-[0.98] transition-all"
             >
-              <span>Get Started</span>
+              <span>Log In</span>
               <span className="w-4 h-4 rounded-full bg-white dark:bg-black text-black dark:text-white flex items-center justify-center text-[9px] font-bold transition-transform duration-200 group-hover:translate-x-0.5">
                 ›
               </span>
@@ -90,10 +90,10 @@ export default function Navbar() {
           ) : (
             <button
               type="button"
-              onClick={() => openAuthModal("signup")}
+              onClick={() => openAuthModal("login")}
               className="px-3.5 py-1.5 rounded-full bg-black dark:bg-white text-white dark:text-black text-[11px] font-semibold flex items-center gap-1.5"
             >
-              <span>Get Started</span>
+              <span>Log In</span>
               <span>›</span>
             </button>
           )}
@@ -129,11 +129,11 @@ export default function Navbar() {
                 type="button"
                 onClick={() => {
                   setOpen(false);
-                  openAuthModal("signup");
+                  openAuthModal("login");
                 }}
                 className="w-full py-2.5 rounded-full bg-black dark:bg-white text-white dark:text-black text-[13px] font-semibold flex items-center justify-center gap-2"
               >
-                <span>Get Started</span>
+                <span>Log In</span>
                 <span>›</span>
               </button>
             </div>

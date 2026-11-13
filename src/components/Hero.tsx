@@ -1,9 +1,9 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { motion, useMotionValue, useSpring, useTransform, useScroll, AnimatePresence } from "framer-motion";
+import { motion, useMotionValue, useSpring, useTransform, AnimatePresence } from "framer-motion";
 import { PawIcon, PawOutlineIcon, ScaleIcon, KibbleIcon, WaterDropIcon, SignalIcon } from "./Icons";
 import { useAuth } from "@/lib/auth-context";
 import InverseCorner from "./InverseCorner";
@@ -18,38 +18,20 @@ const navLinks = [
 
 export default function Hero() {
   const { user, openAuthModal } = useAuth();
-  const heroRef = useRef<HTMLElement>(null);
   const [activeHotspot, setActiveHotspot] = useState<string | null>(null);
 
-  // Scroll physics
-  const { scrollYProgress } = useScroll({
-    target: heroRef,
-    offset: ["start start", "end start"],
-  });
-
-  const smoothProgress = useSpring(scrollYProgress, {
-    stiffness: 100,
-    damping: 26,
-    restDelta: 0.001,
-  });
-
-  const heroScale = useTransform(smoothProgress, [0, 1], [1, 0.98]);
-  const heroY = useTransform(smoothProgress, [0, 1], [0, 30]);
-  const heroOpacity = useTransform(smoothProgress, [0, 0.9], [1, 0.92]);
-  const sculptureScrollY = useTransform(smoothProgress, [0, 1], [0, 36]);
-
-  // Subtle 3D mouse parallax
+  // Subtle 3D mouse parallax with zero layout reflows (window metrics)
   const mouseX = useMotionValue(0);
   const mouseY = useMotionValue(0);
-  const springX = useSpring(mouseX, { stiffness: 120, damping: 20 });
-  const springY = useSpring(mouseY, { stiffness: 120, damping: 20 });
-  const rotateX = useTransform(springY, [-0.5, 0.5], ["3deg", "-3deg"]);
-  const rotateY = useTransform(springX, [-0.5, 0.5], ["-4deg", "4deg"]);
+  const springX = useSpring(mouseX, { stiffness: 90, damping: 24 });
+  const springY = useSpring(mouseY, { stiffness: 90, damping: 24 });
+  const rotateX = useTransform(springY, [-0.5, 0.5], ["2deg", "-2deg"]);
+  const rotateY = useTransform(springX, [-0.5, 0.5], ["-3deg", "3deg"]);
 
   const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
-    const rect = e.currentTarget.getBoundingClientRect();
-    const xPct = (e.clientX - rect.left) / rect.width - 0.5;
-    const yPct = (e.clientY - rect.top) / rect.height - 0.5;
+    if (typeof window === "undefined") return;
+    const xPct = e.clientX / window.innerWidth - 0.5;
+    const yPct = e.clientY / window.innerHeight - 0.5;
     mouseX.set(xPct);
     mouseY.set(yPct);
   };
@@ -61,31 +43,23 @@ export default function Hero() {
 
   return (
     <section
-      ref={heroRef}
       className="relative w-full min-h-[100dvh] lg:h-[100dvh] bg-[var(--frame-bg)] text-white select-none p-2 sm:p-3 lg:p-4 flex flex-col justify-between overflow-hidden"
     >
       {/* ─────────────────────────────────────────────────────────────
           UNIFIED HERO CARD (CHASSIS + SEAMLESS INTEGRATED HEADER + BODY)
       ───────────────────────────────────────────────────────────── */}
-      <motion.div
-        style={{
-          scale: heroScale,
-          y: heroY,
-          opacity: heroOpacity,
-        }}
-        className="relative w-full flex-1 flex flex-col min-h-0"
-      >
+      <div className="relative w-full flex-1 flex flex-col min-h-0">
         {/* ── UNIFIED CREAM CANVAS WITH DOCKED CORNER NOTCHES ─────── */}
         <div
           onMouseMove={handleMouseMove}
           onMouseLeave={handleMouseLeave}
-          className="relative w-full flex-1 min-h-0 bg-[var(--panel-bg)] text-[var(--panel-text)] rounded-[26px] sm:rounded-[38px] overflow-hidden flex flex-col justify-between transition-colors duration-200"
+          className="relative w-full flex-1 min-h-0 bg-[var(--panel-bg)] text-[var(--panel-text)] rounded-bl-[26px] sm:rounded-bl-[38px] overflow-hidden flex flex-col justify-between transition-colors duration-200"
         >
           {/* ─────────────────────────────────────────────────────────
               1. DOCKED TOP-LEFT NOTCH (BRAND LOGO)
           ───────────────────────────────────────────────────────── */}
           <div className="absolute top-0 left-0 z-30 flex items-start">
-            <div className="bg-[var(--frame-bg)] pt-2.5 sm:pt-3.5 pb-2.5 sm:pb-3.5 pl-4 sm:pl-7 pr-5 sm:pr-8 rounded-br-[24px] sm:rounded-br-[28px] flex items-center shadow-sm">
+            <div className="bg-[var(--frame-bg)] pt-2.5 sm:pt-3.5 pb-2.5 sm:pb-3.5 pl-4 sm:pl-7 pr-5 sm:pr-8 rounded-br-[24px] sm:rounded-br-[28px] flex items-center">
               <Link href="/" className="flex items-center gap-2.5 sm:gap-3 group" aria-label="PawStation Home">
                 <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-xl bg-white flex items-center justify-center text-black shadow-sm transition-transform duration-200 group-hover:scale-105">
                   <PawIcon className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-black fill-current" />
@@ -113,7 +87,7 @@ export default function Hero() {
             <div className="text-[var(--frame-bg)]">
               <InverseCorner type="top-right-left" size={24} />
             </div>
-            <div className="bg-[var(--frame-bg)] pt-2.5 sm:pt-3.5 pb-2.5 sm:pb-3.5 pl-5 sm:pl-8 pr-4 sm:pr-6 rounded-bl-[24px] sm:rounded-bl-[28px] flex items-center shadow-sm">
+            <div className="bg-[var(--frame-bg)] pt-2.5 sm:pt-3.5 pb-2.5 sm:pb-3.5 pl-5 sm:pl-8 pr-4 sm:pr-6 rounded-bl-[24px] sm:rounded-bl-[28px] flex items-center">
               {user ? (
                 <div className="flex items-center gap-2.5">
                   <Link
@@ -212,19 +186,12 @@ export default function Hero() {
                 style={{
                   rotateX,
                   rotateY,
-                  y: sculptureScrollY,
                   transformStyle: "preserve-3d",
                 }}
                 className="relative w-full max-w-[660px] sm:max-w-[820px] lg:max-w-[1050px] xl:max-w-[1250px] 2xl:max-w-[1380px] aspect-[2872/1656] flex items-center justify-center scale-115 sm:scale-125 lg:scale-[1.4] xl:scale-[1.48] transform-gpu origin-center lg:origin-right"
               >
                 {/* Seamless High-Resolution PawStation 3D Hardware Sculpture */}
-                <div
-                  className="relative w-full h-full flex items-center justify-center"
-                  style={{
-                    maskImage: "radial-gradient(ellipse 98% 96% at 50% 50%, black 92%, transparent 100%)",
-                    WebkitMaskImage: "radial-gradient(ellipse 98% 96% at 50% 50%, black 92%, transparent 100%)",
-                  }}
-                >
+                <div className="relative w-full h-full flex items-center justify-center">
                   {/* Light Mode Figure */}
                   <Image
                     src="/hero-figure-light.webp"
@@ -315,16 +282,10 @@ export default function Hero() {
 
                 {/* ── FLOATING GLASS LABELS WITH INDEPENDENT BOBBING ─────────── */}
                 {/* Floating Glass Label 1: Birch Tare Scale (Top-Left of Cat) */}
-                <motion.div
-                  animate={{ y: [0, -5, 0] }}
-                  transition={{
-                    duration: 4.2,
-                    repeat: Infinity,
-                    ease: "easeInOut",
-                  }}
+                <div
                   onMouseEnter={() => setActiveHotspot("scale")}
                   onMouseLeave={() => setActiveHotspot(null)}
-                  className={`absolute top-[28%] sm:top-[30%] left-[4%] sm:left-[7%] lg:left-[8%] px-3.5 py-1.5 rounded-full bg-white/95 dark:bg-[#1C1F2E]/95 backdrop-blur-md border shadow-lg flex items-center gap-2.5 text-[11px] text-[var(--panel-text)] cursor-pointer transition-all duration-300 z-30 ${
+                  className={`animate-float absolute top-[28%] sm:top-[30%] left-[4%] sm:left-[7%] lg:left-[8%] px-3.5 py-1.5 rounded-full bg-white/95 dark:bg-[#1C1F2E]/95 border shadow-md flex items-center gap-2.5 text-[11px] text-[var(--panel-text)] cursor-pointer transition-all duration-300 z-30 will-change-transform ${
                     activeHotspot === "scale"
                       ? "border-emerald-500 ring-2 ring-emerald-500/30 scale-105 shadow-emerald-500/20"
                       : "border-black/10 dark:border-white/10 hover:border-black/20 dark:hover:border-white/20"
@@ -336,20 +297,13 @@ export default function Hero() {
                     <span className="font-semibold tracking-tight text-neutral-900 dark:text-white">Tare Scale · ±0.1g</span>
                     <span className="text-[9.5px] font-mono text-neutral-500 dark:text-neutral-400 mt-0.5">4.2 kg Presence Active</span>
                   </div>
-                </motion.div>
+                </div>
 
                 {/* Floating Glass Label 2: Kibble Chute (Top-Center) */}
-                <motion.div
-                  animate={{ y: [0, -6, 0] }}
-                  transition={{
-                    duration: 4.8,
-                    repeat: Infinity,
-                    ease: "easeInOut",
-                    delay: 0.3,
-                  }}
+                <div
                   onMouseEnter={() => setActiveHotspot("kibble")}
                   onMouseLeave={() => setActiveHotspot(null)}
-                  className={`hidden sm:flex absolute -top-[4%] sm:-top-[2%] left-[36%] sm:left-[42%] lg:left-[44%] px-3.5 py-1.5 rounded-full bg-white/95 dark:bg-[#1C1F2E]/95 backdrop-blur-md border shadow-lg items-center gap-2.5 text-[11px] text-[var(--panel-text)] cursor-pointer transition-all duration-300 z-30 ${
+                  className={`animate-float-delayed hidden sm:flex absolute -top-[4%] sm:-top-[2%] left-[36%] sm:left-[42%] lg:left-[44%] px-3.5 py-1.5 rounded-full bg-white/95 dark:bg-[#1C1F2E]/95 border shadow-md items-center gap-2.5 text-[11px] text-[var(--panel-text)] cursor-pointer transition-all duration-300 z-30 will-change-transform ${
                     activeHotspot === "kibble"
                       ? "border-amber-500 ring-2 ring-amber-500/30 scale-105 shadow-amber-500/20"
                       : "border-black/10 dark:border-white/10 hover:border-black/20 dark:hover:border-white/20"
@@ -360,20 +314,13 @@ export default function Hero() {
                     <span className="font-semibold tracking-tight text-neutral-900 dark:text-white">Micro-Portion Chute</span>
                     <span className="text-[9.5px] font-mono text-neutral-500 dark:text-neutral-400 mt-0.5">35g · 85% Full</span>
                   </div>
-                </motion.div>
+                </div>
 
                 {/* Floating Glass Label 3: Water Alcove (Bottom-Center) */}
-                <motion.div
-                  animate={{ y: [0, -5, 0] }}
-                  transition={{
-                    duration: 5.4,
-                    repeat: Infinity,
-                    ease: "easeInOut",
-                    delay: 0.6,
-                  }}
+                <div
                   onMouseEnter={() => setActiveHotspot("water")}
                   onMouseLeave={() => setActiveHotspot(null)}
-                  className={`absolute bottom-[10%] sm:bottom-[12%] left-[38%] sm:left-[46%] lg:left-[48%] px-3.5 py-1.5 rounded-full bg-white/95 dark:bg-[#1C1F2E]/95 backdrop-blur-md border shadow-lg flex items-center gap-2.5 text-[11px] text-[var(--panel-text)] cursor-pointer transition-all duration-300 z-30 ${
+                  className={`animate-float absolute bottom-[10%] sm:bottom-[12%] left-[38%] sm:left-[46%] lg:left-[48%] px-3.5 py-1.5 rounded-full bg-white/95 dark:bg-[#1C1F2E]/95 border shadow-md flex items-center gap-2.5 text-[11px] text-[var(--panel-text)] cursor-pointer transition-all duration-300 z-30 will-change-transform ${
                     activeHotspot === "water"
                       ? "border-sky-500 ring-2 ring-sky-500/30 scale-105 shadow-sky-500/20"
                       : "border-black/10 dark:border-white/10 hover:border-black/20 dark:hover:border-white/20"
@@ -384,20 +331,13 @@ export default function Hero() {
                     <span className="font-semibold tracking-tight text-neutral-900 dark:text-white">Soft-Stop Alcove</span>
                     <span className="text-[9.5px] font-mono text-neutral-500 dark:text-neutral-400 mt-0.5">720ml Fresh Water</span>
                   </div>
-                </motion.div>
+                </div>
 
                 {/* Floating Glass Label 4: Telemetry & Power (Bottom-Right) */}
-                <motion.div
-                  animate={{ y: [0, -4, 0] }}
-                  transition={{
-                    duration: 4.6,
-                    repeat: Infinity,
-                    ease: "easeInOut",
-                    delay: 0.9,
-                  }}
+                <div
                   onMouseEnter={() => setActiveHotspot("power")}
                   onMouseLeave={() => setActiveHotspot(null)}
-                  className={`hidden sm:flex absolute bottom-[3%] sm:bottom-[5%] right-[2%] sm:right-[4%] lg:right-[5%] px-3.5 py-1.5 rounded-full bg-white/95 dark:bg-[#1C1F2E]/95 backdrop-blur-md border shadow-lg items-center gap-2.5 text-[11px] text-[var(--panel-text)] cursor-pointer transition-all duration-300 z-30 ${
+                  className={`animate-float-delayed hidden sm:flex absolute bottom-[3%] sm:bottom-[5%] right-[2%] sm:right-[4%] lg:right-[5%] px-3.5 py-1.5 rounded-full bg-white/95 dark:bg-[#1C1F2E]/95 border shadow-md items-center gap-2.5 text-[11px] text-[var(--panel-text)] cursor-pointer transition-all duration-300 z-30 will-change-transform ${
                     activeHotspot === "power"
                       ? "border-indigo-500 ring-2 ring-indigo-500/30 scale-105 shadow-indigo-500/20"
                       : "border-black/10 dark:border-white/10 hover:border-black/20 dark:hover:border-white/20"
@@ -409,7 +349,7 @@ export default function Hero() {
                     <span className="font-semibold tracking-tight text-neutral-900 dark:text-white">ESP32-S3 Telemetry</span>
                     <span className="text-[9.5px] font-mono text-neutral-500 dark:text-neutral-400 mt-0.5">Dual-Rail 5V Isolation</span>
                   </div>
-                </motion.div>
+                </div>
 
                 {/* Hover Details Flyout (Contextual Telemetry Card) */}
                 <AnimatePresence>
@@ -447,12 +387,12 @@ export default function Hero() {
             </div>
 
             {/* The Single Global Dark Mode Pill Cutout */}
-            <div className="bg-[var(--frame-bg)] pt-2.5 pb-2.5 pl-4 pr-5 rounded-tl-[24px] flex items-center shadow-md">
+            <div className="bg-[var(--frame-bg)] pt-2.5 pb-2.5 pl-4 pr-5 rounded-tl-[24px] flex items-center">
               <ThemeTogglePill />
             </div>
           </div>
         </div>
-      </motion.div>
+      </div>
     </section>
   );
 }

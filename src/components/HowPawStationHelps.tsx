@@ -138,7 +138,7 @@ export default function HowPawStationHelps() {
                 }}
                 onMouseEnter={() => setHoveredIdx(idx)}
                 onMouseLeave={() => setHoveredIdx(null)}
-                className="group relative p-8 sm:p-10 rounded-2xl bg-[#161619] border border-white/10 hover:border-white/30 hover:bg-[#1A1A1E] transition-colors duration-300 flex flex-col justify-between min-h-[380px] select-none cursor-pointer overflow-hidden shadow-lg"
+                className="group relative p-8 sm:p-10 rounded-2xl bg-[#161619] border border-white/10 hover:border-white/30 hover:bg-[#1A1A1E] transition-colors duration-300 flex flex-col justify-between min-h-[380px] select-none cursor-pointer overflow-hidden shadow-lg will-change-transform"
               >
                 {/* Number tag at top */}
                 <div className="text-[12px] font-mono text-[#6B7280] group-hover:text-white transition-colors">

@@ -72,12 +72,20 @@ module.exports = {
       },
       keyframes: {
         ticker: {
-          '0%': { transform: 'translateX(0)' },
-          '100%': { transform: 'translateX(-50%)' },
+          '0%': { transform: 'translate3d(0, 0, 0)' },
+          '100%': { transform: 'translate3d(-50%, 0, 0)' },
         },
         'ticker-reverse': {
-          '0%': { transform: 'translateX(-50%)' },
-          '100%': { transform: 'translateX(0)' },
+          '0%': { transform: 'translate3d(-50%, 0, 0)' },
+          '100%': { transform: 'translate3d(0, 0, 0)' },
+        },
+        float: {
+          '0%, 100%': { transform: 'translate3d(0, 0, 0)' },
+          '50%': { transform: 'translate3d(0, -5px, 0)' },
+        },
+        'float-delayed': {
+          '0%, 100%': { transform: 'translate3d(0, 0, 0)' },
+          '50%': { transform: 'translate3d(0, -6px, 0)' },
         },
         shimmer: {
           '0%': { backgroundPosition: '-200% 0' },
@@ -91,6 +99,8 @@ module.exports = {
       animation: {
         ticker: 'ticker 30s linear infinite',
         'ticker-reverse': 'ticker-reverse 30s linear infinite',
+        float: 'float 4.2s ease-in-out infinite',
+        'float-delayed': 'float-delayed 5s ease-in-out infinite',
         shimmer: 'shimmer 1.5s ease-in-out infinite',
         'fade-in-up': 'fade-in-up 0.5s ease-out forwards',
       },
