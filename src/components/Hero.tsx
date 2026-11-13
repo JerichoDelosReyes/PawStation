@@ -17,7 +17,7 @@ const navLinks = [
 ];
 
 export default function Hero() {
-  const { user, openAuthModal } = useAuth();
+  const { user, openAuthModal, signOut } = useAuth();
   const [activeHotspot, setActiveHotspot] = useState<string | null>(null);
 
   // Subtle 3D mouse parallax with zero layout reflows (window metrics)
@@ -99,14 +99,21 @@ export default function Hero() {
                       ›
                     </span>
                   </Link>
+                  <button
+                    type="button"
+                    onClick={signOut}
+                    className="text-[12px] font-medium text-neutral-400 hover:text-white px-1.5 py-1 transition-colors"
+                  >
+                    Sign Out
+                  </button>
                 </div>
               ) : (
                 <button
                   type="button"
-                  onClick={() => openAuthModal("signup")}
+                  onClick={() => openAuthModal("login")}
                   className="group inline-flex items-center gap-2 sm:gap-2.5 px-4.5 sm:px-6 py-1.5 sm:py-2 rounded-full bg-white text-black hover:bg-[#F2EFE9] text-[12px] sm:text-[13px] font-semibold tracking-tight shadow-sm transition-all duration-200 active:scale-[0.98]"
                 >
-                  <span>Get Started</span>
+                  <span>Log In</span>
                   <span className="w-4 h-4 sm:w-4.5 sm:h-4.5 rounded-full bg-black text-white flex items-center justify-center text-[9px] sm:text-[10px] font-bold transition-transform duration-200 group-hover:translate-x-0.5">
                     ›
                   </span>
