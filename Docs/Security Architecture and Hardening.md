@@ -16,7 +16,7 @@ status: Planned
 
 # PawStation Security Architecture & Hardening Guide
 
-Part of [[Index]] | Related: [[Supabase and Backend Architecture]] | [[Pawstation Documentation and Parts]] | [[Implementation Plan and Roadmap]]
+Part of [[Index]] | Related: [[Fynsec UI and Landing Page Architecture]] | [[Supabase and Backend Architecture]] | [[Pawstation Documentation and Parts]] | [[Implementation Plan and Roadmap]]
 
 ## 1. Threat Modeling & Scope
 

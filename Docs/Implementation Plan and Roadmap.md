@@ -15,11 +15,11 @@ status: Under Review
 
 # PawStation Implementation Plan & Roadmap
 
-Part of [[Index]] | Related: [[Security Architecture and Hardening]] | [[Design System and Apple UI]] | [[Supabase and Backend Architecture]] | [[Pawstation Documentation and Parts]]
+Part of [[Index]] | Related: [[Fynsec UI and Landing Page Architecture]] | [[Security Architecture and Hardening]] | [[Design System and Apple UI]] | [[Supabase and Backend Architecture]] | [[Pawstation Documentation and Parts]]
 
 ## 1. Project Analysis & Current State
 
-PawStation is an integrated IoT pet feeder, water dispenser, and digital weighing scale built around an ESP32 microcontroller, a HiveMQ Cloud MQTT broker, a [[Supabase and Backend Architecture|Supabase Backend]], and a client-facing web application.
+PawStation is an integrated IoT pet feeder, water dispenser, and digital weighing scale built around an ESP32 microcontroller, a HiveMQ Cloud MQTT broker, a [[Supabase and Backend Architecture|Supabase Backend]], and a client-facing web application based on the [[Fynsec UI and Landing Page Architecture|Fynsec UI Architecture]].
 
 ### Current Inventory
 - **Hardware & Firmware Specs:** Complete bill of materials, circuit diagram, pinouts, and calibration instructions documented in [[Pawstation Documentation and Parts]].
@@ -57,7 +57,16 @@ flowchart TD
 - [ ] Enable Row Level Security (RLS) policies and test role access.
 - [ ] Provision HiveMQ Cloud access credentials (`esp32` and `pawstation-web`) with topic isolation.
 
-### Phase 3: Frontend Project Foundation
+### Phase 3: Frontend Project Foundation & Fynsec Architecture
+- [x] Full-screen edge-to-edge layout (`w-full min-h-screen bg-[#161618]`) without outer margins or letterboxing.
+- [x] Interlocking cream canvas with mathematically exact SVG concave fillets (`InverseCorner.tsx`, `FilletCorner.tsx`).
+- [x] High-end 3D Baltic birch industrial hardware sculpture (`pawstation-hero-3d.jpg`) with floating glass telemetry chips.
+- [x] Single global Dark Mode toggle docked in hero's bottom-right notch, scrolling with the hero.
+- [x] Infinite horizontal marquee of partner cards (`espressif`, `supabase`, `HiveMQ`, `HX711`, `FreeRTOS`).
+- [x] Three numbered interactive feature cards (`/ 01`, `/ 02`, `/ 03`) with hover-expand details.
+- [x] Hardware architecture blueprint section with decoupled subsystem emulation.
+- [x] Apple iOS spring physics and scroll parallax transitions (`useScroll`, `useSpring`, `[0.16, 1, 0.3, 1]`).
+- [x] Verified with Next.js Turbopack (`next build` compiled with 0 errors).
 - [x] Core dependencies installed (`next`, `react`, `react-dom`, `framer-motion`, `@supabase/supabase-js`, `@supabase/ssr`).
 - [ ] Configure Apple HIG typography (`SF Pro` font stack) and translucent glassmorphism utility classes (`backdrop-blur`, specular borders).
 - [ ] Set up state management and routing.

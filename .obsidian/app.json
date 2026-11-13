@@ -1,1 +1,9 @@
-{}
+{
+  "userIgnoreFilters": [
+    "node_modules",
+    ".next",
+    ".git",
+    ".obsidian",
+    "package-lock.json"
+  ]
+}

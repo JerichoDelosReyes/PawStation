@@ -15,7 +15,7 @@ status: Approved
 
 # PawStation: Smart Cat Feeding and Watering Station
 
-Part of [[Index]] | Related: [[Security Architecture and Hardening]] | [[Supabase and Backend Architecture]] | [[Design System and Apple UI]] | [[Implementation Plan and Roadmap]]
+Part of [[Index]] | Related: [[Fynsec UI and Landing Page Architecture]] | [[Security Architecture and Hardening]] | [[Supabase and Backend Architecture]] | [[Design System and Apple UI]] | [[Implementation Plan and Roadmap]]
 
 Project documentation for an ESP32-based feeder, water dispenser and weighing scale that is monitored and controlled from a website on any phone or laptop.
 

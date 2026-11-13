@@ -16,7 +16,7 @@ status: Approved
 
 # PawStation Design System & Anti-Vibe-Code Principles
 
-Part of [[Index]] | Related: [[Security Architecture and Hardening]] | [[Supabase and Backend Architecture]] | [[Implementation Plan and Roadmap]] | [[Privacy Policy]] | [[Terms of Service]]
+Part of [[Index]] | Related: [[Fynsec UI and Landing Page Architecture]] | [[Security Architecture and Hardening]] | [[Supabase and Backend Architecture]] | [[Implementation Plan and Roadmap]] | [[Privacy Policy]] | [[Terms of Service]]
 
 ## 1. The Anti-Vibe-Code Manifesto
 

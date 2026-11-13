@@ -16,7 +16,7 @@ status: Planned
 
 # PawStation Supabase & Backend Architecture
 
-Part of [[Index]] | Related: [[Security Architecture and Hardening]] | [[Design System and Apple UI]] | [[Implementation Plan and Roadmap]]
+Part of [[Index]] | Related: [[Fynsec UI and Landing Page Architecture]] | [[Security Architecture and Hardening]] | [[Design System and Apple UI]] | [[Implementation Plan and Roadmap]]
 
 ## 1. Role of Supabase in PawStation
 
