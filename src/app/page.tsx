@@ -3,7 +3,6 @@
 import Hero from "@/components/Hero";
 import EcosystemBand from "@/components/EcosystemBand";
 import HowPawStationHelps from "@/components/HowPawStationHelps";
-import HardwareBlueprintSection from "@/components/HardwareBlueprintSection";
 import FAQ from "@/components/FAQ";
 import CtaSection from "@/components/CtaSection";
 import Footer from "@/components/Footer";
@@ -22,10 +21,7 @@ export default function HomePage() {
         {/* Section 3: How Can PawStation Help? (3 Numbered Cards / 01, / 02, / 03) */}
         <HowPawStationHelps />
 
-        {/* Section 4: Engineered for Feline Senses (Minimalist Architecture Blueprint) */}
-        <HardwareBlueprintSection />
-
-        {/* Section 5: Minimalist Technical FAQ */}
+        {/* Section 4: Minimalist Technical FAQ */}
         <FAQ />
 
         {/* Section 6: Minimalist CTA */}

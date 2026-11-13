@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { motion } from "framer-motion";
 import { PawIcon, MenuIcon, CloseIcon } from "./Icons";
 import { useAuth } from "@/lib/auth-context";
 
@@ -14,7 +15,23 @@ const navLinks = [
 
 export default function Navbar() {
   const [open, setOpen] = useState(false);
+  const [activeNav, setActiveNav] = useState<string | null>(null);
   const { user, openAuthModal, signOut } = useAuth();
+
+  const handleNavClick = (e: React.MouseEvent<HTMLAnchorElement>, href: string, label: string) => {
+    setActiveNav(label);
+    if (href.startsWith("/#") || href.startsWith("#")) {
+      const targetId = href.replace("/#", "").replace("#", "");
+      const elem = document.getElementById(targetId);
+      if (elem) {
+        e.preventDefault();
+        window.history.pushState(null, "", `#${targetId}`);
+        const yOffset = -24;
+        const y = elem.getBoundingClientRect().top + window.pageYOffset + yOffset;
+        window.scrollTo({ top: y, behavior: "smooth" });
+      }
+    }
+  };
 
   return (
     <header className="fixed top-0 left-0 right-0 z-40 px-4 sm:px-6 md:px-8 pt-3 sm:pt-4 pointer-events-none">
@@ -30,16 +47,34 @@ export default function Navbar() {
         </Link>
 
         {/* Centered Desktop Navigation */}
-        <nav className="hidden md:flex items-center gap-7">
-          {navLinks.map((link) => (
-            <a
-              key={link.label}
-              href={link.href}
-              className="text-[13px] font-medium text-[#4A4A4F] dark:text-[#A1A1AA] hover:text-black dark:hover:text-white transition-colors"
-            >
-              {link.label}
-            </a>
-          ))}
+        <nav className="hidden md:flex items-center gap-1.5 sm:gap-2">
+          {navLinks.map((link) => {
+            const isActive = activeNav === link.label;
+            return (
+              <motion.a
+                key={link.label}
+                href={link.href}
+                onClick={(e) => handleNavClick(e, link.href, link.label)}
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.91 }}
+                transition={{ type: "spring", stiffness: 450, damping: 24 }}
+                className={`relative px-3.5 py-1.5 rounded-full text-[13px] font-medium transition-colors duration-200 whitespace-nowrap select-none ${
+                  isActive
+                    ? "text-black dark:text-white font-semibold"
+                    : "text-[#4A4A4F] dark:text-[#A1A1AA] hover:text-black dark:hover:text-white"
+                }`}
+              >
+                {isActive && (
+                  <motion.div
+                    layoutId="navbar-active-pill"
+                    className="absolute inset-0 rounded-full bg-black/[0.07] dark:bg-white/15 -z-10 shadow-sm"
+                    transition={{ type: "spring", stiffness: 420, damping: 30 }}
+                  />
+                )}
+                {link.label}
+              </motion.a>
+            );
+          })}
         </nav>
 
         {/* Right Action Area */}

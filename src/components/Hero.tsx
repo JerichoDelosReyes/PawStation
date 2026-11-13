@@ -12,13 +12,28 @@ import ThemeTogglePill from "./ThemeTogglePill";
 const navLinks = [
   { label: "Features", href: "/#features" },
   { label: "Materials", href: "/#materials" },
-  { label: "Architecture", href: "/#blueprint" },
   { label: "FAQ", href: "/#faq" },
 ];
 
 export default function Hero() {
   const { user, openAuthModal, signOut } = useAuth();
   const [activeHotspot, setActiveHotspot] = useState<string | null>(null);
+  const [activeNav, setActiveNav] = useState<string | null>(null);
+
+  const handleNavClick = (e: React.MouseEvent<HTMLAnchorElement>, href: string, label: string) => {
+    setActiveNav(label);
+    if (href.startsWith("/#") || href.startsWith("#")) {
+      const targetId = href.replace("/#", "").replace("#", "");
+      const elem = document.getElementById(targetId);
+      if (elem) {
+        e.preventDefault();
+        window.history.pushState(null, "", `#${targetId}`);
+        const yOffset = -24;
+        const y = elem.getBoundingClientRect().top + window.pageYOffset + yOffset;
+        window.scrollTo({ top: y, behavior: "smooth" });
+      }
+    }
+  };
 
   // Subtle 3D mouse parallax with zero layout reflows (window metrics)
   const mouseX = useMotionValue(0);
@@ -43,7 +58,7 @@ export default function Hero() {
 
   return (
     <section
-      className="relative w-full min-h-[100dvh] lg:h-[100dvh] bg-[var(--frame-bg)] text-white select-none p-2 sm:p-3 lg:p-4 flex flex-col justify-between overflow-hidden"
+      className="relative w-full min-h-[100dvh] lg:h-[100dvh] bg-[var(--frame-bg)] text-white select-none p-2 sm:p-3 lg:p-4 flex flex-col justify-between overflow-x-hidden lg:overflow-hidden"
     >
       {/* ─────────────────────────────────────────────────────────────
           UNIFIED HERO CARD (CHASSIS + SEAMLESS INTEGRATED HEADER + BODY)
@@ -53,30 +68,30 @@ export default function Hero() {
         <div
           onMouseMove={handleMouseMove}
           onMouseLeave={handleMouseLeave}
-          className="relative w-full flex-1 min-h-0 bg-[var(--panel-bg)] text-[var(--panel-text)] rounded-bl-[26px] sm:rounded-bl-[38px] overflow-hidden flex flex-col justify-between transition-colors duration-200"
+          className="relative w-full flex-1 min-h-0 bg-[var(--panel-bg)] text-[var(--panel-text)] rounded-bl-[22px] sm:rounded-bl-[38px] flex flex-col justify-start lg:justify-between transition-colors duration-200 overflow-visible lg:overflow-hidden"
         >
           {/* ─────────────────────────────────────────────────────────
               1. DOCKED TOP-LEFT NOTCH (BRAND LOGO)
           ───────────────────────────────────────────────────────── */}
           <div className="absolute top-0 left-0 z-30 flex items-start">
-            <div className="bg-[var(--frame-bg)] pt-2.5 sm:pt-3.5 pb-2.5 sm:pb-3.5 pl-4 sm:pl-7 pr-5 sm:pr-8 rounded-br-[24px] sm:rounded-br-[28px] flex items-center">
-              <Link href="/" className="flex items-center gap-2.5 sm:gap-3 group" aria-label="PawStation Home">
-                <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-xl bg-white flex items-center justify-center text-black shadow-sm transition-transform duration-200 group-hover:scale-105">
-                  <PawIcon className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-black fill-current" />
+            <div className="bg-[var(--frame-bg)] pt-2 pb-2 pl-3.5 pr-4 sm:pt-3 sm:pb-3 sm:pl-7 sm:pr-8 rounded-br-[20px] sm:rounded-br-[28px] flex items-center">
+              <Link href="/" className="flex items-center gap-2 sm:gap-3 group" aria-label="PawStation Home">
+                <div className="w-6 h-6 sm:w-8 sm:h-8 rounded-lg sm:rounded-xl bg-white flex items-center justify-center text-black shadow-sm transition-transform duration-200 group-hover:scale-105">
+                  <PawIcon className="w-3 h-3 sm:w-4 sm:h-4 text-black fill-current" />
                 </div>
-                <span className="text-[15px] sm:text-[17px] font-bold tracking-tight uppercase text-white font-sans">
+                <span className="text-[14px] sm:text-[17px] font-bold tracking-tight uppercase text-white font-sans">
                   PawStation
                 </span>
               </Link>
             </div>
             {/* Inverted Fillet Curve to Right of Notch */}
             <div className="text-[var(--frame-bg)]">
-              <InverseCorner type="top-left-right" size={24} />
+              <InverseCorner type="top-left-right" size={20} className="w-5 h-5 sm:w-6 sm:h-6" />
             </div>
           </div>
           {/* Inverted Fillet Curve Below Logo Notch */}
-          <div className="absolute left-0 top-[49px] sm:top-[60px] z-30 text-[var(--frame-bg)]">
-            <InverseCorner type="top-left-bottom" size={24} />
+          <div className="absolute left-0 top-[40px] sm:top-[56px] z-30 text-[var(--frame-bg)]">
+            <InverseCorner type="top-left-bottom" size={20} className="w-5 h-5 sm:w-6 sm:h-6" />
           </div>
 
           {/* ─────────────────────────────────────────────────────────
@@ -85,14 +100,14 @@ export default function Hero() {
           <div className="absolute top-0 right-0 z-30 flex items-start">
             {/* Inverted Fillet Curve to Left of Notch */}
             <div className="text-[var(--frame-bg)]">
-              <InverseCorner type="top-right-left" size={24} />
+              <InverseCorner type="top-right-left" size={20} className="w-5 h-5 sm:w-6 sm:h-6" />
             </div>
-            <div className="bg-[var(--frame-bg)] pt-2.5 sm:pt-3.5 pb-2.5 sm:pb-3.5 pl-5 sm:pl-8 pr-4 sm:pr-6 rounded-bl-[24px] sm:rounded-bl-[28px] flex items-center">
+            <div className="bg-[var(--frame-bg)] pt-2 pb-2 pl-4 pr-3.5 sm:pt-3 sm:pb-3 sm:pl-8 sm:pr-6 rounded-bl-[20px] sm:rounded-bl-[28px] flex items-center">
               {user ? (
-                <div className="flex items-center gap-2.5">
+                <div className="flex items-center gap-2 sm:gap-2.5">
                   <Link
                     href="/dashboard"
-                    className="group inline-flex items-center gap-2 px-4 sm:px-5 py-1.5 sm:py-2 rounded-full bg-white text-black hover:bg-[#F2EFE9] text-[12px] sm:text-[13px] font-semibold tracking-tight shadow-sm transition-all duration-200 active:scale-[0.98]"
+                    className="group inline-flex items-center gap-1.5 sm:gap-2 px-3.5 sm:px-5 py-1.5 sm:py-2 rounded-full bg-white text-black hover:bg-[#F2EFE9] text-[11.5px] sm:text-[13px] font-semibold tracking-tight shadow-sm transition-all duration-200 active:scale-[0.98]"
                   >
                     <span>Dashboard</span>
                     <span className="w-4 h-4 sm:w-4.5 sm:h-4.5 rounded-full bg-black text-white flex items-center justify-center text-[9px] font-bold">
@@ -102,7 +117,7 @@ export default function Hero() {
                   <button
                     type="button"
                     onClick={signOut}
-                    className="text-[12px] font-medium text-neutral-400 hover:text-white px-1.5 py-1 transition-colors"
+                    className="text-[11px] sm:text-[12px] font-medium text-neutral-400 hover:text-white px-1 sm:px-1.5 py-1 transition-colors"
                   >
                     Sign Out
                   </button>
@@ -111,10 +126,10 @@ export default function Hero() {
                 <button
                   type="button"
                   onClick={() => openAuthModal("login")}
-                  className="group inline-flex items-center gap-2 sm:gap-2.5 px-4.5 sm:px-6 py-1.5 sm:py-2 rounded-full bg-white text-black hover:bg-[#F2EFE9] text-[12px] sm:text-[13px] font-semibold tracking-tight shadow-sm transition-all duration-200 active:scale-[0.98]"
+                  className="group inline-flex items-center gap-1.5 sm:gap-2.5 px-3.5 sm:px-6 py-1.5 sm:py-2 rounded-full bg-white text-black hover:bg-[#F2EFE9] text-[11.5px] sm:text-[13px] font-semibold tracking-tight shadow-sm transition-all duration-200 active:scale-[0.98]"
                 >
                   <span>Log In</span>
-                  <span className="w-4 h-4 sm:w-4.5 sm:h-4.5 rounded-full bg-black text-white flex items-center justify-center text-[9px] sm:text-[10px] font-bold transition-transform duration-200 group-hover:translate-x-0.5">
+                  <span className="w-4 h-4 sm:w-4.5 sm:h-4.5 rounded-full bg-black text-white flex items-center justify-center text-[8.5px] sm:text-[10px] font-bold transition-transform duration-200 group-hover:translate-x-0.5">
                     ›
                   </span>
                 </button>
@@ -122,43 +137,61 @@ export default function Hero() {
             </div>
           </div>
           {/* Inverted Fillet Curve Below CTA Notch */}
-          <div className="absolute right-0 top-[49px] sm:top-[60px] z-30 text-[var(--frame-bg)]">
-            <InverseCorner type="top-right-bottom" size={24} />
+          <div className="absolute right-0 top-[40px] sm:top-[56px] z-30 text-[var(--frame-bg)]">
+            <InverseCorner type="top-right-bottom" size={20} className="w-5 h-5 sm:w-6 sm:h-6" />
           </div>
 
           {/* ─────────────────────────────────────────────────────────
-              3. TOP-CENTER NAVIGATION PILL
+              3. TOP-CENTER NAVIGATION PILL (RESPONSIVE LG+ TO AVOID NOTCH COLLISION)
           ───────────────────────────────────────────────────────── */}
-          <div className="relative z-20 w-full flex items-center justify-center pt-3 sm:pt-4 px-4 flex-shrink-0">
+          <div className="relative z-20 w-full flex items-center justify-center pt-3 sm:pt-4 px-4 flex-shrink-0 pointer-events-none">
             <nav
               aria-label="Main navigation"
-              className="hidden md:flex items-center gap-8 xl:gap-12 px-10 sm:px-14 xl:px-18 py-2.5 sm:py-3 rounded-full border border-black/15 dark:border-white/20 bg-white/40 dark:bg-black/25 backdrop-blur-md shadow-[0_2px_12px_rgba(0,0,0,0.03)] text-[14px] font-medium text-neutral-800 dark:text-neutral-200 transition-all"
+              className="hidden lg:flex items-center gap-1.5 xl:gap-2 px-3 xl:px-4 py-1.5 xl:py-2 rounded-full border border-black/15 dark:border-white/20 bg-white/45 dark:bg-black/30 backdrop-blur-md shadow-[0_2px_12px_rgba(0,0,0,0.03)] text-[13px] xl:text-[14px] font-medium text-neutral-800 dark:text-neutral-200 transition-all pointer-events-auto"
             >
-              {navLinks.map((link) => (
-                <a
-                  key={link.label}
-                  href={link.href}
-                  className="hover:opacity-60 transition-opacity whitespace-nowrap tracking-tight px-1.5"
-                >
-                  {link.label}
-                </a>
-              ))}
+              {navLinks.map((link) => {
+                const isActive = activeNav === link.label;
+                return (
+                  <motion.a
+                    key={link.label}
+                    href={link.href}
+                    onClick={(e) => handleNavClick(e, link.href, link.label)}
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.91 }}
+                    transition={{ type: "spring", stiffness: 450, damping: 24 }}
+                    className={`relative px-3.5 xl:px-4 py-1.5 rounded-full transition-colors duration-200 whitespace-nowrap tracking-tight select-none ${
+                      isActive
+                        ? "text-neutral-950 dark:text-white font-semibold"
+                        : "text-neutral-700 dark:text-neutral-300 hover:text-neutral-950 dark:hover:text-white"
+                    }`}
+                  >
+                    {isActive && (
+                      <motion.div
+                        layoutId="hero-nav-active-pill"
+                        className="absolute inset-0 rounded-full bg-black/10 dark:bg-white/15 shadow-sm -z-10"
+                        transition={{ type: "spring", stiffness: 420, damping: 30 }}
+                      />
+                    )}
+                    {link.label}
+                  </motion.a>
+                );
+              })}
             </nav>
           </div>
 
           {/* ─────────────────────────────────────────────────────────
               4. HERO CONTENT: BOTTOM-ALIGNED CLEAN TYPOGRAPHY + ELEVATED 3D FIGURE
           ───────────────────────────────────────────────────────── */}
-          <div className="relative z-10 flex-1 grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-8 xl:gap-12 w-full max-w-[1720px] mx-auto px-6 sm:px-10 lg:px-14 pt-2 sm:pt-4 pb-6 sm:pb-8 lg:pb-12 min-h-0">
+          <div className="relative z-10 flex-1 grid grid-cols-1 lg:grid-cols-12 gap-6 sm:gap-8 lg:gap-8 xl:gap-12 w-full max-w-[1720px] mx-auto px-5 sm:px-10 lg:px-14 pt-24 sm:pt-28 lg:pt-4 pb-12 sm:pb-16 lg:pb-12 min-h-0 items-start lg:items-end">
             {/* Left Column: Bottom-Aligned, Clean & Non-Bold Typography */}
-            <div className="lg:col-span-5 xl:col-span-5 flex flex-col items-start text-left z-20 self-end pb-2 sm:pb-4">
-              {/* Headline matching Reference Screenshot (Non-Bold / Regular Weight) */}
-              <h1 className="text-[clamp(3.5rem,5.8vw,5.7rem)] xl:text-[clamp(3.9rem,6.2vw,6.4rem)] font-normal tracking-[-0.035em] leading-[1.0] text-neutral-900 dark:text-neutral-100 mb-6 sm:mb-7">
+            <div className="lg:col-span-5 xl:col-span-5 flex flex-col items-start text-left z-20 self-start lg:self-end pb-1 sm:pb-4">
+              {/* Responsive Headline with Fluid Scaling */}
+              <h1 className="text-[clamp(2.35rem,6.8vw,3.6rem)] sm:text-[clamp(3.2rem,5.2vw,4.8rem)] lg:text-[clamp(3.5rem,5.6vw,5.6rem)] xl:text-[clamp(3.9rem,6.2vw,6.4rem)] font-normal tracking-[-0.035em] leading-[1.0] text-neutral-900 dark:text-neutral-100 mb-5 sm:mb-6">
                 There is a
                 <br />
-                <span className="inline-flex items-center gap-3.5 sm:gap-4 my-1.5">
-                  <span className="inline-flex items-center justify-center w-14 h-14 sm:w-16 sm:h-16 lg:w-[4.8rem] lg:h-[4.8rem] xl:w-[5.2rem] xl:h-[5.2rem] rounded-2xl sm:rounded-[22px] bg-black/[0.03] dark:bg-white/[0.06] border border-black/15 dark:border-white/20 text-neutral-800 dark:text-neutral-200 shadow-sm flex-shrink-0">
-                    <PawOutlineIcon className="w-7 h-7 sm:w-8 sm:h-8 lg:w-9 lg:h-9 xl:w-10 xl:h-10" />
+                <span className="inline-flex items-center gap-2.5 sm:gap-4 my-1 sm:my-1.5">
+                  <span className="inline-flex items-center justify-center w-11 h-11 sm:w-14 sm:h-14 lg:w-[4.4rem] lg:h-[4.4rem] xl:w-[5.2rem] xl:h-[5.2rem] rounded-xl sm:rounded-2xl lg:rounded-[22px] bg-black/[0.03] dark:bg-white/[0.06] border border-black/15 dark:border-white/20 text-neutral-800 dark:text-neutral-200 shadow-sm flex-shrink-0">
+                    <PawOutlineIcon className="w-5 h-5 sm:w-7 sm:h-7 lg:w-9 lg:h-9 xl:w-10 xl:h-10" />
                   </span>
                   <span>Better Way</span>
                 </span>
@@ -166,45 +199,66 @@ export default function Hero() {
                 to Nourish.
               </h1>
 
-              {/* Redesigned Dual Button Group directly below "to Nourish" */}
-              <div className="flex flex-wrap items-center gap-3 sm:gap-3.5 w-full mb-5 sm:mb-6">
+              {/* Responsive Compact Dual Button Group */}
+              <div className="flex flex-row flex-wrap items-center gap-2.5 sm:gap-3.5 w-auto mb-5 sm:mb-6">
                 <button
                   type="button"
                   onClick={() => user ? (window.location.href = "/dashboard") : openAuthModal("signup")}
-                  className="group inline-flex items-center gap-2.5 px-6 sm:px-7 py-3 sm:py-3.5 rounded-full bg-neutral-900 dark:bg-white text-white dark:text-neutral-900 text-[14px] font-semibold tracking-tight shadow-md hover:bg-neutral-800 dark:hover:bg-neutral-100 active:scale-[0.98] transition-all"
+                  className="group inline-flex items-center justify-center gap-2 px-5 sm:px-6 py-2.5 sm:py-3 rounded-full bg-neutral-900 dark:bg-white text-white dark:text-neutral-900 text-[13px] sm:text-[14px] font-semibold tracking-tight shadow-md hover:bg-neutral-800 dark:hover:bg-neutral-100 active:scale-[0.98] transition-all w-auto cursor-pointer whitespace-nowrap"
                 >
                   <span>{user ? "Go to Dashboard" : "Get Started"}</span>
-                  <span className="w-5 h-5 rounded-full bg-white/20 dark:bg-black/10 flex items-center justify-center text-[10px] font-bold transition-transform duration-200 group-hover:translate-x-0.5">
+                  <span className="w-4 h-4 sm:w-4.5 sm:h-4.5 rounded-full bg-white/20 dark:bg-black/10 flex items-center justify-center text-[9px] sm:text-[10px] font-bold transition-transform duration-200 group-hover:translate-x-0.5">
                     ›
                   </span>
                 </button>
 
                 <a
-                  href="#blueprint"
-                  className="group inline-flex items-center gap-2 px-5 sm:px-6 py-3 sm:py-3.5 rounded-full border border-black/15 dark:border-white/20 bg-black/[0.03] dark:bg-white/[0.06] hover:bg-black/[0.06] dark:hover:bg-white/10 text-neutral-800 dark:text-neutral-200 text-[14px] font-medium tracking-tight shadow-sm active:scale-[0.98] transition-all"
+                  href="#features"
+                  onClick={(e) => handleNavClick(e, "#features", "Features")}
+                  className="group inline-flex items-center justify-center gap-2 px-4.5 sm:px-5.5 py-2.5 sm:py-3 rounded-full border border-black/15 dark:border-white/20 bg-black/[0.03] dark:bg-white/[0.06] hover:bg-black/[0.06] dark:hover:bg-white/10 text-neutral-800 dark:text-neutral-200 text-[13px] sm:text-[14px] font-medium tracking-tight shadow-sm active:scale-[0.98] transition-all w-auto cursor-pointer whitespace-nowrap"
                 >
                   <span>Explore Architecture</span>
-                  <span className="transition-transform duration-200 group-hover:translate-x-0.5 opacity-60 group-hover:opacity-100">
+                  <span className="transition-transform duration-200 group-hover:translate-x-0.5 opacity-60 group-hover:opacity-100 text-[13px] sm:text-[14px]">
                     →
                   </span>
                 </a>
               </div>
 
               {/* Clean Readable Description */}
-              <p className="text-[14px] sm:text-[15px] leading-relaxed text-neutral-600 dark:text-neutral-400 max-w-md sm:max-w-lg font-normal">
+              <p className="text-[13.5px] sm:text-[15px] leading-relaxed text-neutral-600 dark:text-neutral-400 max-w-md sm:max-w-lg font-normal">
                 PawStation is an open-hardware feline workstation that automates controlled micro-portion kibble dispensing, fresh water replenishment, and gram-level health telemetry to avoid costly vet emergencies.
               </p>
             </div>
 
             {/* Right Column: Giant, Showy 3D Hardware Sculpture with Hotspots */}
-            <div className="lg:col-span-7 xl:col-span-7 relative flex justify-center lg:justify-end items-center select-none w-full self-center lg:-translate-y-4 xl:-translate-y-6 lg:translate-x-6 xl:translate-x-12">
+            <div className="lg:col-span-7 xl:col-span-7 relative flex justify-center lg:justify-end items-center select-none w-full self-start lg:self-end lg:-translate-y-4 xl:-translate-y-6 lg:translate-x-6 xl:translate-x-12 mt-4 sm:mt-6 lg:mt-0">
+              {/* Contextual Telemetry Flyout (Placed outside scaled 3D canvas so it is always horizontally centered and never clipped) */}
+              <AnimatePresence>
+                {activeHotspot && (
+                  <div className="absolute -top-3 sm:top-1 inset-x-0 flex justify-center px-3 sm:px-4 pointer-events-none z-50">
+                    <motion.div
+                      initial={{ opacity: 0, y: -6, scale: 0.96 }}
+                      animate={{ opacity: 1, y: 0, scale: 1 }}
+                      exit={{ opacity: 0, y: -4, scale: 0.96 }}
+                      transition={{ duration: 0.2 }}
+                      className="px-4 py-2.5 rounded-xl bg-black/95 dark:bg-white text-white dark:text-black text-[11px] sm:text-[12px] font-medium shadow-2xl backdrop-blur-md border border-white/20 dark:border-black/10 max-w-sm text-center leading-snug font-sans pointer-events-none"
+                    >
+                      {activeHotspot === "scale" && "HX711 24-bit strain gauge with digital low-pass filtering on suspended birch plate."}
+                      {activeHotspot === "kibble" && "SG90 anti-jam reverse rotation servo disengages PWM hold duty after dispensing 35g."}
+                      {activeHotspot === "water" && "PWM soft-stop pump ramps motor down over 600ms to completely eliminate splash."}
+                      {activeHotspot === "power" && "Dual-rail isolated power bank design prevents ESP32 resets during motor draw."}
+                    </motion.div>
+                  </div>
+                )}
+              </AnimatePresence>
+
               <motion.div
                 style={{
                   rotateX,
                   rotateY,
                   transformStyle: "preserve-3d",
                 }}
-                className="relative w-full max-w-[660px] sm:max-w-[820px] lg:max-w-[1050px] xl:max-w-[1250px] 2xl:max-w-[1380px] aspect-[2872/1656] flex items-center justify-center scale-115 sm:scale-125 lg:scale-[1.4] xl:scale-[1.48] transform-gpu origin-center lg:origin-right"
+                className="relative w-full max-w-[480px] sm:max-w-[640px] lg:max-w-[1050px] xl:max-w-[1250px] 2xl:max-w-[1380px] aspect-[2872/1656] flex items-center justify-center scale-100 lg:scale-[1.38] xl:scale-[1.48] transform-gpu origin-center lg:origin-right"
               >
                 {/* Seamless High-Resolution PawStation 3D Hardware Sculpture */}
                 <div className="relative w-full h-full flex items-center justify-center">
@@ -301,17 +355,17 @@ export default function Hero() {
                 <div
                   onMouseEnter={() => setActiveHotspot("scale")}
                   onMouseLeave={() => setActiveHotspot(null)}
-                  className={`animate-float absolute top-[28%] sm:top-[30%] left-[4%] sm:left-[7%] lg:left-[8%] px-3.5 py-1.5 rounded-full bg-white/95 dark:bg-[#1C1F2E]/95 border shadow-md flex items-center gap-2.5 text-[11px] text-[var(--panel-text)] cursor-pointer transition-all duration-300 z-30 will-change-transform ${
+                  className={`animate-float absolute top-[22%] sm:top-[30%] left-[3%] sm:left-[7%] lg:left-[8%] px-2.5 sm:px-3.5 py-1 sm:py-1.5 rounded-full bg-white/95 dark:bg-[#1C1F2E]/95 border shadow-md flex items-center gap-1.5 sm:gap-2.5 text-[9.5px] sm:text-[11px] text-[var(--panel-text)] cursor-pointer transition-all duration-300 z-30 will-change-transform ${
                     activeHotspot === "scale"
                       ? "border-emerald-500 ring-2 ring-emerald-500/30 scale-105 shadow-emerald-500/20"
                       : "border-black/10 dark:border-white/10 hover:border-black/20 dark:hover:border-white/20"
                   }`}
                 >
                   <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse flex-shrink-0" />
-                  <ScaleIcon className="w-3.5 h-3.5 text-emerald-500 flex-shrink-0" />
+                  <ScaleIcon className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-emerald-500 flex-shrink-0" />
                   <div className="flex flex-col text-left leading-none">
                     <span className="font-semibold tracking-tight text-neutral-900 dark:text-white">Tare Scale · ±0.1g</span>
-                    <span className="text-[9.5px] font-mono text-neutral-500 dark:text-neutral-400 mt-0.5">4.2 kg Presence Active</span>
+                    <span className="text-[8.5px] sm:text-[9.5px] font-mono text-neutral-500 dark:text-neutral-400 mt-0.5">4.2 kg Presence Active</span>
                   </div>
                 </div>
 
@@ -336,16 +390,16 @@ export default function Hero() {
                 <div
                   onMouseEnter={() => setActiveHotspot("water")}
                   onMouseLeave={() => setActiveHotspot(null)}
-                  className={`animate-float absolute bottom-[10%] sm:bottom-[12%] left-[38%] sm:left-[46%] lg:left-[48%] px-3.5 py-1.5 rounded-full bg-white/95 dark:bg-[#1C1F2E]/95 border shadow-md flex items-center gap-2.5 text-[11px] text-[var(--panel-text)] cursor-pointer transition-all duration-300 z-30 will-change-transform ${
+                  className={`animate-float absolute bottom-[8%] sm:bottom-[12%] left-[30%] sm:left-[46%] lg:left-[48%] px-2.5 sm:px-3.5 py-1 sm:py-1.5 rounded-full bg-white/95 dark:bg-[#1C1F2E]/95 border shadow-md flex items-center gap-1.5 sm:gap-2.5 text-[9.5px] sm:text-[11px] text-[var(--panel-text)] cursor-pointer transition-all duration-300 z-30 will-change-transform ${
                     activeHotspot === "water"
                       ? "border-sky-500 ring-2 ring-sky-500/30 scale-105 shadow-sky-500/20"
                       : "border-black/10 dark:border-white/10 hover:border-black/20 dark:hover:border-white/20"
                   }`}
                 >
-                  <WaterDropIcon className="w-3.5 h-3.5 text-sky-500 flex-shrink-0" />
+                  <WaterDropIcon className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-sky-500 flex-shrink-0" />
                   <div className="flex flex-col text-left leading-none">
                     <span className="font-semibold tracking-tight text-neutral-900 dark:text-white">Soft-Stop Alcove</span>
-                    <span className="text-[9.5px] font-mono text-neutral-500 dark:text-neutral-400 mt-0.5">720ml Fresh Water</span>
+                    <span className="text-[8.5px] sm:text-[9.5px] font-mono text-neutral-500 dark:text-neutral-400 mt-0.5">720ml Fresh Water</span>
                   </div>
                 </div>
 
@@ -367,23 +421,7 @@ export default function Hero() {
                   </div>
                 </div>
 
-                {/* Hover Details Flyout (Contextual Telemetry Card) */}
-                <AnimatePresence>
-                  {activeHotspot && (
-                    <motion.div
-                      initial={{ opacity: 0, y: 8, scale: 0.96 }}
-                      animate={{ opacity: 1, y: 0, scale: 1 }}
-                      exit={{ opacity: 0, y: 6, scale: 0.96 }}
-                      transition={{ duration: 0.2 }}
-                      className="absolute -bottom-10 left-1/2 -translate-x-1/2 px-4 py-2 rounded-xl bg-black/90 dark:bg-white/95 text-white dark:text-black text-[11px] shadow-2xl backdrop-blur-md border border-white/20 dark:border-black/10 pointer-events-none z-40 max-w-xs text-center whitespace-normal font-sans"
-                    >
-                      {activeHotspot === "scale" && "HX711 24-bit strain gauge with digital low-pass filtering on suspended birch plate."}
-                      {activeHotspot === "kibble" && "SG90 anti-jam reverse rotation servo disengages PWM hold duty after dispensing 35g."}
-                      {activeHotspot === "water" && "PWM soft-stop pump ramps motor down over 600ms to completely eliminate splash."}
-                      {activeHotspot === "power" && "Dual-rail isolated power bank design prevents ESP32 resets during motor draw."}
-                    </motion.div>
-                  )}
-                </AnimatePresence>
+
               </motion.div>
             </div>
           </div>
@@ -393,17 +431,17 @@ export default function Hero() {
           ───────────────────────────────────────────────────────── */}
           <div className="absolute bottom-0 right-0 z-30 flex items-end">
             {/* Top Inverted Concave Curve */}
-            <div className="absolute -top-[24px] right-0 text-[var(--frame-bg)]">
-              <InverseCorner type="notch-top" size={24} />
+            <div className="absolute -top-[20px] sm:-top-[24px] right-0 text-[var(--frame-bg)]">
+              <InverseCorner type="notch-top" size={20} className="w-5 h-5 sm:w-6 sm:h-6" />
             </div>
 
             {/* Left Inverted Concave Curve */}
-            <div className="absolute bottom-0 -left-[24px] text-[var(--frame-bg)]">
-              <InverseCorner type="notch-left" size={24} />
+            <div className="absolute bottom-0 -left-[20px] sm:-left-[24px] text-[var(--frame-bg)]">
+              <InverseCorner type="notch-left" size={20} className="w-5 h-5 sm:w-6 sm:h-6" />
             </div>
 
             {/* The Single Global Dark Mode Pill Cutout */}
-            <div className="bg-[var(--frame-bg)] pt-2.5 pb-2.5 pl-4 pr-5 rounded-tl-[24px] flex items-center">
+            <div className="bg-[var(--frame-bg)] pt-2 pb-2 pl-3.5 pr-4 sm:pt-2.5 sm:pb-2.5 sm:pl-4 sm:pr-5 rounded-tl-[20px] sm:rounded-tl-[24px] flex items-center">
               <ThemeTogglePill />
             </div>
           </div>

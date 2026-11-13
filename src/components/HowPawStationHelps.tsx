@@ -106,11 +106,11 @@ export default function HowPawStationHelps() {
               With strong foundations in feline nutrition and open hardware, our automated workstation solves common challenges cat owners face—preventing obesity, reducing mealtime stress, and detecting health issues days in advance.
             </p>
             <a
-              href="#blueprint"
+              href="#faq"
               className="group inline-flex items-center gap-2 text-[13px] font-semibold text-white hover:opacity-75 transition-opacity"
             >
               <span className="w-1.5 h-1.5 rounded-full bg-white" />
-              <span>Features</span>
+              <span>FAQ</span>
               <span className="transition-transform duration-200 group-hover:translate-x-1">→</span>
             </a>
           </div>

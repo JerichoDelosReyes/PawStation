@@ -4,6 +4,63 @@ import { useState } from "react";
 import Link from "next/link";
 import { PawIcon, CloseIcon } from "./Icons";
 
+/* Bespoke SVG social icons matching the reference design */
+function FacebookIcon({ className = "w-5 h-5" }: { className?: string }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+      <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" />
+    </svg>
+  );
+}
+
+function XTwitterIcon({ className = "w-5 h-5" }: { className?: string }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+      <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
+    </svg>
+  );
+}
+
+function InstagramIcon({ className = "w-5 h-5" }: { className?: string }) {
+  return (
+    <svg
+      className={className}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
+      <rect x="2" y="2" width="20" height="20" rx="5" ry="5" />
+      <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z" />
+      <line x1="17.5" y1="6.5" x2="17.51" y2="6.5" strokeWidth="2.5" strokeLinecap="round" />
+    </svg>
+  );
+}
+
+function LinkedInIcon({ className = "w-5 h-5" }: { className?: string }) {
+  return (
+    <svg
+      className={className}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.8"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
+      <rect x="2" y="2" width="20" height="20" rx="4.5" />
+      <path d="M7 10.5v6.5" />
+      <circle cx="7" cy="6.8" r="1.1" fill="currentColor" stroke="none" />
+      <path d="M11 17v-4.2a2.3 2.3 0 0 1 4.6 0V17" />
+      <path d="M11 12.8V10.5" />
+    </svg>
+  );
+}
+
 interface ModalProps {
   title: string;
   children: React.ReactNode;
@@ -23,7 +80,7 @@ function Modal({ title, children, isOpen, onClose }: ModalProps) {
           <button
             type="button"
             onClick={onClose}
-            className="p-1 rounded-lg hover:bg-white/10 text-[#9CA3AF] hover:text-white"
+            className="p-1 rounded-lg hover:bg-white/10 text-[#9CA3AF] hover:text-white transition-colors"
           >
             <CloseIcon className="w-4 h-4" />
           </button>
@@ -40,67 +97,174 @@ export default function Footer() {
 
   return (
     <>
-      <footer className="py-16 px-6 sm:px-10 lg:px-14 bg-[#111113] text-white border-t border-white/[0.08]">
-        <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-8">
-          {/* Brand */}
-          <div className="flex items-center gap-3">
-            <div className="w-7 h-7 rounded-full bg-white flex items-center justify-center text-black">
-              <PawIcon className="w-3.5 h-3.5" />
-            </div>
-            <span className="text-[14px] font-bold tracking-tight uppercase">PawStation</span>
-          </div>
+      <footer className="relative w-full bg-black text-white py-16 sm:py-20 lg:py-24 px-6 border-t border-white/[0.06] overflow-hidden">
+        {/* Subtle Low-Opacity Cat Footprints Ambient Background */}
+        <div className="absolute inset-0 pointer-events-none overflow-hidden select-none opacity-[0.065]">
+          <svg className="w-full h-full" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <pattern
+                id="cat-footprint-pattern"
+                width="220"
+                height="220"
+                patternUnits="userSpaceOnUse"
+                patternTransform="rotate(-15)"
+              >
+                {/* Walking Track 1: Left Paw (Enlarged) */}
+                <g transform="translate(45, 150) rotate(-16) scale(1.15)" fill="currentColor">
+                  <ellipse cx="7" cy="5.5" rx="2.2" ry="2.8" />
+                  <ellipse cx="12" cy="4" rx="2" ry="2.5" />
+                  <ellipse cx="17" cy="5.5" rx="2.2" ry="2.8" />
+                  <ellipse cx="4.5" cy="10" rx="2" ry="2.5" />
+                  <ellipse cx="19.5" cy="10" rx="2" ry="2.5" />
+                  <path d="M12 22c-4 0-7-3.5-7-6.5 0-2 1.5-3.5 3-4.5 1-.7 2.5-1 4-1s3 .3 4 1c1.5 1 3 2.5 3 4.5 0 3-3 6.5-7 6.5z" />
+                </g>
+                {/* Walking Track 1: Right Paw (Enlarged) */}
+                <g transform="translate(145, 55) rotate(18) scale(1.15)" fill="currentColor">
+                  <ellipse cx="7" cy="5.5" rx="2.2" ry="2.8" />
+                  <ellipse cx="12" cy="4" rx="2" ry="2.5" />
+                  <ellipse cx="17" cy="5.5" rx="2.2" ry="2.8" />
+                  <ellipse cx="4.5" cy="10" rx="2" ry="2.5" />
+                  <ellipse cx="19.5" cy="10" rx="2" ry="2.5" />
+                  <path d="M12 22c-4 0-7-3.5-7-6.5 0-2 1.5-3.5 3-4.5 1-.7 2.5-1 4-1s3 .3 4 1c1.5 1 3 2.5 3 4.5 0 3-3 6.5-7 6.5z" />
+                </g>
+                {/* Walking Track 2: Secondary Paws (Enlarged) */}
+                <g transform="translate(190, 175) rotate(-32) scale(0.85)" fill="currentColor">
+                  <ellipse cx="7" cy="5.5" rx="2.2" ry="2.8" />
+                  <ellipse cx="12" cy="4" rx="2" ry="2.5" />
+                  <ellipse cx="17" cy="5.5" rx="2.2" ry="2.8" />
+                  <ellipse cx="4.5" cy="10" rx="2" ry="2.5" />
+                  <ellipse cx="19.5" cy="10" rx="2" ry="2.5" />
+                  <path d="M12 22c-4 0-7-3.5-7-6.5 0-2 1.5-3.5 3-4.5 1-.7 2.5-1 4-1s3 .3 4 1c1.5 1 3 2.5 3 4.5 0 3-3 6.5-7 6.5z" />
+                </g>
+                <g transform="translate(25, 30) rotate(-8) scale(0.85)" fill="currentColor">
+                  <ellipse cx="7" cy="5.5" rx="2.2" ry="2.8" />
+                  <ellipse cx="12" cy="4" rx="2" ry="2.5" />
+                  <ellipse cx="17" cy="5.5" rx="2.2" ry="2.8" />
+                  <ellipse cx="4.5" cy="10" rx="2" ry="2.5" />
+                  <ellipse cx="19.5" cy="10" rx="2" ry="2.5" />
+                  <path d="M12 22c-4 0-7-3.5-7-6.5 0-2 1.5-3.5 3-4.5 1-.7 2.5-1 4-1s3 .3 4 1c1.5 1 3 2.5 3 4.5 0 3-3 6.5-7 6.5z" />
+                </g>
+              </pattern>
+            </defs>
+            <rect width="100%" height="100%" fill="url(#cat-footprint-pattern)" className="text-white" />
+          </svg>
+        </div>
 
-          {/* Links */}
-          <div className="flex flex-wrap items-center justify-center gap-6 text-[13px] text-[#9CA3AF]">
-            <a href="#features" className="hover:text-white transition-colors">
+        {/* Foreground Content */}
+        <div className="relative z-10 max-w-4xl mx-auto flex flex-col items-center justify-center text-center">
+          {/* Row 1: White Brand Logo Badge & Name */}
+          <Link
+            href="/"
+            className="inline-flex items-center gap-3 group transition-transform duration-200 hover:scale-[1.02]"
+            aria-label="PawStation Home"
+          >
+            <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl sm:rounded-2xl bg-white flex items-center justify-center text-black shadow-[0_2px_14px_rgba(255,255,255,0.18)] transition-transform duration-200 group-hover:scale-105">
+              <PawIcon className="w-5 h-5 fill-black" />
+            </div>
+            <span className="text-[18px] sm:text-[19px] font-bold tracking-tight text-white">
+              PawStation
+            </span>
+          </Link>
+
+          {/* Row 2: Navigation Links */}
+          <nav className="mt-8 sm:mt-10 flex flex-wrap items-center justify-center gap-x-7 sm:gap-x-9 gap-y-3 text-[14px] sm:text-[15px] font-medium text-white/80">
+            <Link
+              href="/"
+              className="hover:text-white transition-colors duration-200"
+            >
+              Homepage
+            </Link>
+            <a
+              href="/#features"
+              className="hover:text-white transition-colors duration-200"
+            >
               Features
             </a>
-            <a href="#ecosystem" className="hover:text-white transition-colors">
-              Ecosystem
+            <a
+              href="/#materials"
+              className="hover:text-white transition-colors duration-200"
+            >
+              Materials
             </a>
-            <a href="#blueprint" className="hover:text-white transition-colors">
-              Blueprint
+            <a
+              href="/#blueprint"
+              className="hover:text-white transition-colors duration-200"
+            >
+              Architecture
             </a>
-            <a href="#faq" className="hover:text-white transition-colors">
+            <a
+              href="/#faq"
+              className="hover:text-white transition-colors duration-200"
+            >
               FAQ
             </a>
             <button
               type="button"
               onClick={() => setPrivacyOpen(true)}
-              className="hover:text-white transition-colors"
+              className="hover:text-white transition-colors duration-200 cursor-pointer"
             >
               Privacy
             </button>
             <button
               type="button"
               onClick={() => setTermsOpen(true)}
-              className="hover:text-white transition-colors"
+              className="hover:text-white transition-colors duration-200 cursor-pointer"
             >
               Terms
             </button>
-          </div>
+          </nav>
 
-          {/* Status */}
-          <div className="flex items-center gap-2 text-[12px] font-mono text-[#6B7280]">
-            <span className="w-1.5 h-1.5 rounded-full bg-[#10B981]" />
-            <span>MQTTS 8883 Nominal</span>
+          {/* Row 3: Social Media Icons */}
+          <div className="mt-8 sm:mt-10 flex items-center justify-center gap-7 sm:gap-8 text-white/80">
+            <a
+              href="https://facebook.com"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="hover:text-white transition-colors duration-200 hover:scale-110 transform"
+              aria-label="Facebook"
+            >
+              <FacebookIcon className="w-5 h-5" />
+            </a>
+            <a
+              href="https://x.com"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="hover:text-white transition-colors duration-200 hover:scale-110 transform"
+              aria-label="X (Twitter)"
+            >
+              <XTwitterIcon className="w-5 h-5" />
+            </a>
+            <a
+              href="https://instagram.com"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="hover:text-white transition-colors duration-200 hover:scale-110 transform"
+              aria-label="Instagram"
+            >
+              <InstagramIcon className="w-5 h-5" />
+            </a>
+            <a
+              href="https://linkedin.com"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="hover:text-white transition-colors duration-200 hover:scale-110 transform"
+              aria-label="LinkedIn"
+            >
+              <LinkedInIcon className="w-5 h-5" />
+            </a>
           </div>
-        </div>
-
-        <div className="max-w-7xl mx-auto mt-8 pt-8 border-t border-white/5 text-center text-[12px] text-[#6B7280]">
-          © {new Date().getFullYear()} PawStation. Open Hardware Feline Care Workstation.
         </div>
       </footer>
 
-      {/* Privacy Modal */}
+      {/* Privacy Policy Modal */}
       <Modal title="Privacy Policy" isOpen={privacyOpen} onClose={() => setPrivacyOpen(false)}>
         <p>
-          PawStation stores your cat feeding and weight metrics locally on your private Supabase database.
+          PawStation stores your cat feeding and weight metrics locally on your private database.
           No video feeds or biometric information are shared with third parties.
         </p>
       </Modal>
 
-      {/* Terms Modal */}
+      {/* Terms of Service Modal */}
       <Modal title="Terms of Service" isOpen={termsOpen} onClose={() => setTermsOpen(false)}>
         <p>
           PawStation is an open hardware and software project. Hardware implementations must follow food-grade

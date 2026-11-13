@@ -106,16 +106,6 @@ export default function FAQ() {
     }
   };
 
-  // Split into two independent columns for masonry packing on desktop (eliminates CSS Grid row stretching)
-  const leftColumnItems = useMemo(
-    () => FAQ_ITEMS.filter((_, idx) => idx % 2 === 0),
-    []
-  );
-  const rightColumnItems = useMemo(
-    () => FAQ_ITEMS.filter((_, idx) => idx % 2 === 1),
-    []
-  );
-
   return (
     <section
       id="faq"
@@ -179,36 +169,19 @@ export default function FAQ() {
         </motion.div>
 
         {/* 
-          Dual-Column Independent Masonry Grid:
-          Each column stacks independently (flex flex-col gap-4) so that an expanded card on one side
-          never forces the adjacent card on the other side to stretch vertically or leave blank voids.
+          Unified 2-Column Responsive Grid:
+          Pairs each row equally across columns so side-by-side cards maintain identical heights.
         */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-start">
-          {/* Column 1 (Left Column) */}
-          <div className="flex flex-col gap-4">
-            {leftColumnItems.map((item, idx) => (
-              <FAQCard
-                key={item.id}
-                item={item}
-                isOpen={!!openIds[item.id]}
-                onToggle={() => toggleOpen(item.id)}
-                delay={idx * 0.08}
-              />
-            ))}
-          </div>
-
-          {/* Column 2 (Right Column) */}
-          <div className="flex flex-col gap-4">
-            {rightColumnItems.map((item, idx) => (
-              <FAQCard
-                key={item.id}
-                item={item}
-                isOpen={!!openIds[item.id]}
-                onToggle={() => toggleOpen(item.id)}
-                delay={(idx + 1) * 0.08}
-              />
-            ))}
-          </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-stretch">
+          {FAQ_ITEMS.map((item, idx) => (
+            <FAQCard
+              key={item.id}
+              item={item}
+              isOpen={!!openIds[item.id]}
+              onToggle={() => toggleOpen(item.id)}
+              delay={idx * 0.05}
+            />
+          ))}
         </div>
       </div>
     </section>
@@ -239,7 +212,7 @@ function FAQCard({
         delay,
         ease: IOS_EASE,
       }}
-      className={`rounded-2xl bg-[#161619] border transition-all duration-200 select-none overflow-hidden h-fit ${
+      className={`rounded-2xl bg-[#161619] border transition-all duration-200 select-none overflow-hidden h-full flex flex-col justify-between ${
         isOpen
           ? "border-white/25 shadow-lg shadow-black/40 bg-[#18181c]"
           : "border-white/10 hover:border-white/20"
@@ -297,14 +270,14 @@ function FAQCard({
             animate={{ height: "auto", opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
             transition={{ duration: 0.35, ease: IOS_EASE }}
-            className="overflow-hidden"
+            className="overflow-hidden flex-1 flex flex-col justify-between"
           >
-            <div className="px-6 sm:px-7 pb-6 sm:pb-7 pt-0">
-              <div className="pt-4 border-t border-white/10">
-                <p className="text-[13px] sm:text-[14px] leading-relaxed text-[#9CA3AF]">
+            <div className="px-6 sm:px-7 pb-6 sm:pb-7 pt-0 flex-1 flex flex-col justify-between">
+              <div className="pt-4 border-t border-white/10 flex-1 flex flex-col justify-between">
+                <p className="text-[13px] sm:text-[14px] leading-relaxed text-[#9CA3AF] mb-4">
                   {item.a}
                 </p>
-                <div className="mt-4 inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-white/[0.03] border border-white/10 text-[11px] font-mono text-neutral-300">
+                <div className="mt-auto inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-white/[0.03] border border-white/10 text-[11px] font-mono text-neutral-300 w-fit">
                   <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
                   <span>{item.highlight}</span>
                 </div>
