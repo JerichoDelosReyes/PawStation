@@ -183,6 +183,9 @@
   },
   "active": "7dbc362d75ef2a51",
   "lastOpenFiles": [
+    "src/components/ConsoleNavbar.tsx",
+    "capture.mjs",
+    "src/components/ScrollProgressBar.tsx",
     "public/hero-figure-dark.png",
     "public/hero-figure-dark.webp",
     "public/hero-figure-light.png",
@@ -200,8 +203,6 @@
     "src/components/ThemeTogglePill.tsx",
     "node_modules/next/dist/docs/01-app/03-api-reference/05-config/01-next-config-js/generateEtags.md",
     "src/components/PrototypeSchematic.tsx",
-    "src/components/Prototype3DSchematic.tsx",
-    "node_modules/three/examples/jsm/libs/basis/basis_transcoder.wasm",
     "node_modules/three/README.md",
     "node_modules/three/examples/jsm/libs/mikktspace.README.md",
     "node_modules/three/examples/jsm/libs/basis/README.md",

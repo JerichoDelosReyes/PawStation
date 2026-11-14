@@ -149,9 +149,20 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     initAuth();
 
     const { data: authListener } = supabase.auth.onAuthStateChange(
-      async (_event, currentSession) => {
+      async (event, currentSession) => {
         setSession(currentSession);
         setUser(currentSession?.user ?? null);
+
+        if (event === "SIGNED_OUT" || !currentSession?.user) {
+          setUser(null);
+          setSession(null);
+          setCatProfileState(null);
+          try {
+            localStorage.removeItem("pawstation-cat-profile");
+          } catch {
+            /* ignore */
+          }
+        }
 
         if (currentSession?.user) {
           await syncProfileFromDatabase(
@@ -245,6 +256,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
     setUser(null);
     setSession(null);
+    setCatProfileState(null);
+    try {
+      localStorage.removeItem("pawstation-cat-profile");
+    } catch {
+      /* ignore */
+    }
+    if (typeof window !== "undefined" && window.location.pathname.startsWith("/dashboard")) {
+      window.location.href = "/";
+    }
   };
 
   return (
