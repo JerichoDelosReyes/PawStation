@@ -6,7 +6,6 @@ import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   CloseIcon,
-  CheckIcon,
   PawIcon,
   ShieldIcon,
   EyeIcon,
@@ -15,7 +14,24 @@ import {
 import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/lib/auth-context";
 
-// Carousel slides for the left showcase card
+export const CAT_BREEDS = [
+  "Domestic Shorthair",
+  "Domestic Longhair",
+  "Maine Coon",
+  "British Shorthair",
+  "Siamese",
+  "Ragdoll",
+  "Persian",
+  "Bengal",
+  "Scottish Fold",
+  "Sphynx",
+  "Russian Blue",
+  "Abyssinian",
+  "Birman",
+  "Other / Mixed",
+];
+
+// Showcase slides on left column
 const SHOWCASE_SLIDES = [
   {
     tag: "Biometric Nutrition",
@@ -62,11 +78,18 @@ export default function AuthModal() {
   } = useAuth();
 
   const [mode, setMode] = useState<"login" | "signup">(authModalMode);
-  const [firstName, setFirstName] = useState("");
-  const [lastName, setLastName] = useState("");
+
+  // Database-aligned fields: cat_profiles table
+  const [catName, setCatName] = useState("");
+  const [catBreed, setCatBreed] = useState("Domestic Shorthair");
+  const [stationName, setStationName] = useState("PawStation Unit 1");
+
+  // Database-aligned credentials: auth.users table
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+
+  // UX states
   const [agreeTerms, setAgreeTerms] = useState(false);
   const [rememberMe, setRememberMe] = useState(true);
   const [activeSlide, setActiveSlide] = useState(0);
@@ -87,7 +110,7 @@ export default function AuthModal() {
     }
   }, [authModalMode, isSubmitting, showVerificationScreen]);
 
-  // Auto-advance carousel slide every 5 seconds
+  // Auto-advance showcase slides every 5 seconds
   useEffect(() => {
     if (!isAuthModalOpen) return;
     const interval = setInterval(() => {
@@ -96,13 +119,8 @@ export default function AuthModal() {
     return () => clearInterval(interval);
   }, [isAuthModalOpen]);
 
-  // Password requirements calculation
+  // Password validation
   const hasMinLength = password.length >= 8;
-  const hasLetter = /[a-zA-Z]/.test(password);
-  const hasDigitOrSpecial = /[0-9]|[^A-Za-z0-9\s]/.test(password);
-  const isPasswordValid = hasMinLength && hasLetter;
-
-  // Real-time strength score: 0 to 4
   const strengthScore = [
     password.length >= 6,
     password.length >= 8,
@@ -175,20 +193,27 @@ export default function AuthModal() {
     setErrorMessage(null);
     setSuccessNotice(null);
 
-    const cleanFirstName = sanitizeInput(firstName, 40);
-    const cleanLastName = sanitizeInput(lastName, 40);
-
-    if (!cleanFirstName) {
-      setErrorMessage("Please enter your first name.");
+    // Database alignment: public.cat_profiles.cat_name (TEXT NOT NULL, 1-60 chars)
+    const cleanCatName = sanitizeInput(catName, 60);
+    if (!cleanCatName) {
+      setErrorMessage("Please enter your cat's name.");
       return;
     }
 
+    // Database alignment: public.cat_profiles.cat_breed (TEXT NOT NULL DEFAULT 'Domestic Shorthair')
+    const cleanBreed = sanitizeInput(catBreed, 60) || "Domestic Shorthair";
+
+    // Database alignment: public.cat_profiles.station_name (TEXT NOT NULL DEFAULT 'PawStation Unit 1', 1-80 chars)
+    const cleanStationName = sanitizeInput(stationName, 80) || "PawStation Unit 1";
+
+    // Database alignment: auth.users.email
     const cleanEmail = email.trim().toLowerCase();
     if (!cleanEmail || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(cleanEmail)) {
       setErrorMessage("Please enter a valid email address.");
       return;
     }
 
+    // Database alignment: auth.users.password
     if (!hasMinLength) {
       setErrorMessage("Password must be at least 8 characters long.");
       return;
@@ -199,11 +224,6 @@ export default function AuthModal() {
       return;
     }
 
-    const fullName = [cleanFirstName, cleanLastName].filter(Boolean).join(" ");
-    const defaultCatName = cleanFirstName ? `${cleanFirstName}'s Cat` : "Whiskers";
-    const defaultCatBreed = "Domestic Shorthair";
-    const defaultStation = "PawStation Unit 1";
-
     setIsSubmitting(true);
 
     try {
@@ -212,12 +232,9 @@ export default function AuthModal() {
         password,
         options: {
           data: {
-            first_name: cleanFirstName,
-            last_name: cleanLastName,
-            full_name: fullName,
-            cat_name: defaultCatName,
-            cat_breed: defaultCatBreed,
-            station_name: defaultStation,
+            cat_name: cleanCatName,
+            cat_breed: cleanBreed,
+            station_name: cleanStationName,
           },
         },
       });
@@ -228,10 +245,11 @@ export default function AuthModal() {
         return;
       }
 
+      // Synchronize with cat_profiles table in Supabase
       await setCatProfile({
-        catName: defaultCatName,
-        catBreed: defaultCatBreed,
-        stationName: defaultStation,
+        catName: cleanCatName,
+        catBreed: cleanBreed,
+        stationName: cleanStationName,
       });
 
       setShowVerificationScreen(true);
@@ -313,7 +331,7 @@ export default function AuthModal() {
       >
         <div className="grid grid-cols-1 md:grid-cols-2 p-2 sm:p-3 gap-2 sm:gap-3">
           {/* ================= LEFT COLUMN: SHOWCASE CARD ================= */}
-          <div className="hidden md:flex flex-col justify-between relative rounded-[22px] sm:rounded-[24px] bg-[#141416] border border-white/[0.08] p-6 lg:p-7 overflow-hidden min-h-[560px]">
+          <div className="hidden md:flex flex-col justify-between relative rounded-[22px] sm:rounded-[24px] bg-[#141416] border border-white/[0.08] p-6 lg:p-7 overflow-hidden min-h-[580px]">
             {/* Ambient background glow */}
             <div className="pointer-events-none absolute -top-24 -left-24 w-72 h-72 bg-amber-500/10 rounded-full blur-3xl" />
             <div className="pointer-events-none absolute -bottom-24 -right-24 w-72 h-72 bg-indigo-500/10 rounded-full blur-3xl" />
@@ -408,7 +426,7 @@ export default function AuthModal() {
           {/* ================= RIGHT COLUMN: FORM CARD ================= */}
           <div className="flex flex-col justify-between p-5 sm:p-7 lg:p-8 relative">
             {/* Close Button top-right */}
-            <div className="flex items-center justify-between md:justify-end mb-4">
+            <div className="flex items-center justify-between md:justify-end mb-3">
               <div className="flex md:hidden items-center gap-2">
                 <div className="w-7 h-7 rounded-lg bg-white/10 border border-white/10 flex items-center justify-center text-amber-400">
                   <PawIcon className="w-3.5 h-3.5" />
@@ -442,7 +460,23 @@ export default function AuthModal() {
                   </p>
                 </div>
 
-                <div className="pt-3 space-y-2.5 max-w-sm mx-auto">
+                {/* Database Profile Confirmation */}
+                <div className="p-3.5 rounded-xl bg-[#202024] border border-white/10 text-left text-xs space-y-1.5 max-w-sm mx-auto">
+                  <div className="flex justify-between">
+                    <span className="text-neutral-400">Registered Cat:</span>
+                    <span className="font-semibold text-white">
+                      {catName} ({catBreed})
+                    </span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-neutral-400">Station Unit:</span>
+                    <span className="font-semibold text-white">
+                      {stationName}
+                    </span>
+                  </div>
+                </div>
+
+                <div className="pt-2 space-y-2.5 max-w-sm mx-auto">
                   <button
                     onClick={handleVerifyLater}
                     className="w-full bg-white hover:bg-neutral-200 text-black font-semibold py-3 px-4 rounded-xl text-sm transition-all shadow-md active:scale-[0.99]"
@@ -512,8 +546,8 @@ export default function AuthModal() {
               </div>
             ) : (
               /* Main Auth View (Sign Up / Log In) */
-              <div className="my-auto space-y-5">
-                {/* Titles matching screenshot */}
+              <div className="my-auto space-y-4">
+                {/* Titles */}
                 <div>
                   <h3 className="text-2xl sm:text-[26px] font-bold text-white tracking-tight">
                     {mode === "signup" ? "Create an account" : "Welcome back"}
@@ -552,39 +586,47 @@ export default function AuthModal() {
                   </div>
                 )}
 
-                {/* Forms */}
+                {/* SIGN UP FORM (Aligned with cat_profiles & auth.users tables) */}
                 {mode === "signup" ? (
-                  <form onSubmit={handleSignUp} className="space-y-3.5">
-                    {/* First & Last Name row */}
-                    <div className="grid grid-cols-2 gap-2.5">
+                  <form onSubmit={handleSignUp} className="space-y-3">
+                    {/* Database row 1: cat_name & cat_breed */}
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
                       <InputField
-                        label="First Name"
+                        label="Cat Name"
                         type="text"
-                        value={firstName}
-                        onChange={(e) => setFirstName(e.target.value)}
+                        value={catName}
+                        onChange={(e) => setCatName(e.target.value)}
                         required
-                        placeholder="e.g. John"
+                        placeholder="e.g. Whiskers"
                       />
-                      <InputField
-                        label="Last Name"
-                        type="text"
-                        value={lastName}
-                        onChange={(e) => setLastName(e.target.value)}
-                        placeholder="e.g. Doe"
+                      <SelectField
+                        label="Cat Breed"
+                        value={catBreed}
+                        onChange={(e) => setCatBreed(e.target.value)}
+                        options={CAT_BREEDS}
                       />
                     </div>
 
-                    {/* Email address */}
-                    <InputField
-                      label="Email Address"
-                      type="email"
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                      required
-                      placeholder="name@example.com"
-                    />
+                    {/* Database row 2: station_name & email */}
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                      <InputField
+                        label="Station Device Name"
+                        type="text"
+                        value={stationName}
+                        onChange={(e) => setStationName(e.target.value)}
+                        placeholder="PawStation Unit 1"
+                      />
+                      <InputField
+                        label="Email Address"
+                        type="email"
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                        required
+                        placeholder="name@example.com"
+                      />
+                    </div>
 
-                    {/* Password with eye toggle */}
+                    {/* Database row 3: password */}
                     <div>
                       <PasswordField
                         label="Password"
@@ -592,13 +634,13 @@ export default function AuthModal() {
                         onChange={(e) => setPassword(e.target.value)}
                         showPassword={showPassword}
                         setShowPassword={setShowPassword}
-                        placeholder="Create a password"
+                        placeholder="Minimum 8 characters"
                         required
                       />
 
                       {/* Password strength bar */}
                       {password.length > 0 && (
-                        <div className="mt-2 space-y-1">
+                        <div className="mt-1.5 space-y-1">
                           <div className="flex items-center justify-between text-[11px]">
                             <span className="text-neutral-400">Strength</span>
                             <span className={`font-semibold ${strengthColor.split(" ")[1]}`}>
@@ -622,7 +664,7 @@ export default function AuthModal() {
                     </div>
 
                     {/* Terms & Conditions Checkbox */}
-                    <label className="flex items-start gap-2.5 cursor-pointer pt-1 select-none">
+                    <label className="flex items-start gap-2.5 cursor-pointer pt-0.5 select-none">
                       <input
                         type="checkbox"
                         checked={agreeTerms}
@@ -645,7 +687,7 @@ export default function AuthModal() {
                     <button
                       type="submit"
                       disabled={isSubmitting}
-                      className="w-full bg-white hover:bg-neutral-200 text-black font-semibold py-3 px-4 rounded-xl text-sm transition-all shadow-md active:scale-[0.99] disabled:opacity-50 mt-2"
+                      className="w-full bg-white hover:bg-neutral-200 text-black font-semibold py-3 px-4 rounded-xl text-sm transition-all shadow-md active:scale-[0.99] disabled:opacity-50 mt-1"
                     >
                       {isSubmitting ? "Creating account..." : "Create account"}
                     </button>
@@ -710,7 +752,7 @@ export default function AuthModal() {
             )}
 
             {/* Bottom Security / Guarantee note */}
-            <div className="pt-4 border-t border-white/[0.06] flex items-center justify-between text-[11px] text-neutral-500">
+            <div className="pt-3 border-t border-white/[0.06] flex items-center justify-between text-[11px] text-neutral-500 mt-2">
               <span className="flex items-center gap-1.5">
                 <ShieldIcon className="w-3.5 h-3.5 text-neutral-400" />
                 256-bit Hardware-grade Encryption
@@ -741,10 +783,10 @@ function InputField({
 }) {
   const id = useId();
   return (
-    <div>
+    <div className="min-w-0">
       <label
         htmlFor={id}
-        className="block text-xs font-medium text-neutral-300 mb-1.5"
+        className="block text-xs font-medium text-neutral-300 mb-1.5 truncate"
       >
         {label}
         {required && <span className="text-amber-400 ml-0.5">*</span>}
@@ -758,6 +800,49 @@ function InputField({
         placeholder={placeholder}
         className="w-full rounded-xl border border-white/10 bg-[#202024] px-3.5 py-2.5 text-sm text-white placeholder:text-neutral-500 focus:outline-none focus:ring-1 focus:ring-white/40 focus:border-white/40 transition-all"
       />
+    </div>
+  );
+}
+
+function SelectField({
+  label,
+  value,
+  onChange,
+  options,
+}: {
+  label: string;
+  value: string;
+  onChange: (e: React.ChangeEvent<HTMLSelectElement>) => void;
+  options: string[];
+}) {
+  const id = useId();
+  return (
+    <div className="min-w-0">
+      <label
+        htmlFor={id}
+        className="block text-xs font-medium text-neutral-300 mb-1.5 truncate"
+      >
+        {label}
+      </label>
+      <div className="relative">
+        <select
+          id={id}
+          value={value}
+          onChange={onChange}
+          className="w-full appearance-none rounded-xl border border-white/10 bg-[#202024] pl-3.5 pr-8 py-2.5 text-sm text-white focus:outline-none focus:ring-1 focus:ring-white/40 focus:border-white/40 transition-all cursor-pointer truncate"
+        >
+          {options.map((opt) => (
+            <option key={opt} value={opt} className="bg-[#18181B] text-white">
+              {opt}
+            </option>
+          ))}
+        </select>
+        <div className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-neutral-400">
+          <svg className="w-3.5 h-3.5" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="2">
+            <path d="M6 8l4 4 4-4" strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
+        </div>
+      </div>
     </div>
   );
 }
