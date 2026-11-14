@@ -1,34 +1,52 @@
 "use client";
 
-import { useState, useId } from "react";
+import { useState, useEffect, useId } from "react";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { motion } from "framer-motion";
-import { CloseIcon, CheckIcon, PawIcon, ShieldIcon } from "./Icons";
+import { motion, AnimatePresence } from "framer-motion";
+import {
+  CloseIcon,
+  CheckIcon,
+  PawIcon,
+  ShieldIcon,
+  EyeIcon,
+  EyeOffIcon,
+} from "./Icons";
 import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/lib/auth-context";
 
-const CAT_BREEDS = [
-  "Domestic Shorthair",
-  "Domestic Longhair",
-  "Maine Coon",
-  "British Shorthair",
-  "Siamese",
-  "Ragdoll",
-  "Persian",
-  "Bengal",
-  "Scottish Fold",
-  "Sphynx",
-  "Russian Blue",
-  "Abyssinian",
-  "Birman",
-  "Other / Mixed",
+// Carousel slides for the left showcase card
+const SHOWCASE_SLIDES = [
+  {
+    tag: "Biometric Nutrition",
+    title: "Precision Micro-Portioning",
+    description:
+      "Automated 0.5g kibble dispensing calibrated to your feline's metabolic index and target body condition score.",
+    metric: "0.5g Precision",
+    status: "Active Telemetry",
+  },
+  {
+    tag: "Clinical Hydration",
+    title: "Continuous Fluidics",
+    description:
+      "Medical-grade peristaltic circulation with automatic UV sterilization preventing feline urinary tract complications.",
+    metric: "100% Sterile",
+    status: "UV-C Clean",
+  },
+  {
+    tag: "24/7 Health Cloud",
+    title: "Real-time Biometrics",
+    description:
+      "Dual load-cell tare sensors detect feeding duration, consumption cadence, and alert you to subtle health shifts.",
+    metric: "99.8% Accuracy",
+    status: "Live Sync",
+  },
 ];
 
-// Input sanitization helper to prevent script injection
 function sanitizeInput(str: string, maxLen = 60): string {
   return str
-    .replace(/<[^>]*>/g, "") // Strip HTML tags
-    .replace(/[^\w\s\-'.]/gi, "") // Keep safe alphanumeric & common punctuation
+    .replace(/<[^>]*>/g, "")
+    .replace(/[^\w\s\-'.]/gi, "")
     .trim()
     .slice(0, maxLen);
 }
@@ -44,51 +62,69 @@ export default function AuthModal() {
   } = useAuth();
 
   const [mode, setMode] = useState<"login" | "signup">(authModalMode);
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [catName, setCatName] = useState("");
-  const [catBreed, setCatBreed] = useState("Domestic Shorthair");
-  const [stationName, setStationName] = useState("PawStation Unit 1");
+  const [showPassword, setShowPassword] = useState(false);
+  const [agreeTerms, setAgreeTerms] = useState(false);
+  const [rememberMe, setRememberMe] = useState(true);
+  const [activeSlide, setActiveSlide] = useState(0);
+
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [successNotice, setSuccessNotice] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showVerificationScreen, setShowVerificationScreen] = useState(false);
+  const [showForgotPassword, setShowForgotPassword] = useState(false);
 
   // Sync mode with context
-  if (authModalMode !== mode && !isSubmitting && !showVerificationScreen) {
-    setMode(authModalMode);
-  }
+  useEffect(() => {
+    if (authModalMode !== mode && !isSubmitting && !showVerificationScreen) {
+      setMode(authModalMode);
+      setErrorMessage(null);
+      setSuccessNotice(null);
+      setShowForgotPassword(false);
+    }
+  }, [authModalMode, isSubmitting, showVerificationScreen]);
 
-  // Strong password requirements validation
+  // Auto-advance carousel slide every 5 seconds
+  useEffect(() => {
+    if (!isAuthModalOpen) return;
+    const interval = setInterval(() => {
+      setActiveSlide((prev) => (prev + 1) % SHOWCASE_SLIDES.length);
+    }, 5000);
+    return () => clearInterval(interval);
+  }, [isAuthModalOpen]);
+
+  // Password requirements calculation
   const hasMinLength = password.length >= 8;
-  const hasUppercase = /[A-Z]/.test(password);
-  const hasLowercase = /[a-z]/.test(password);
-  const hasDigit = /[0-9]/.test(password);
-  const hasSpecial = /[^A-Za-z0-9\s]/.test(password);
-  const isPasswordValid =
-    hasMinLength && hasUppercase && hasLowercase && hasDigit && hasSpecial;
+  const hasLetter = /[a-zA-Z]/.test(password);
+  const hasDigitOrSpecial = /[0-9]|[^A-Za-z0-9\s]/.test(password);
+  const isPasswordValid = hasMinLength && hasLetter;
 
   // Real-time strength score: 0 to 4
   const strengthScore = [
-    hasMinLength,
-    hasUppercase && hasLowercase,
-    hasDigit,
-    hasSpecial,
+    password.length >= 6,
+    password.length >= 8,
+    /[A-Z]/.test(password) && /[a-z]/.test(password),
+    /[0-9]/.test(password) || /[^A-Za-z0-9\s]/.test(password),
   ].filter(Boolean).length;
 
   const strengthLabels = ["Too Weak", "Weak", "Fair", "Good", "Strong"];
-  const strengthLabel = password.length === 0 ? "Empty" : strengthLabels[strengthScore];
+  const strengthLabel = password.length === 0 ? "" : strengthLabels[strengthScore];
   const strengthColor =
     strengthScore === 4
-      ? "bg-periwinkle text-periwinkle"
+      ? "bg-emerald-500 text-emerald-400"
       : strengthScore === 3
-      ? "bg-sky-500 text-sky-500"
+      ? "bg-sky-400 text-sky-400"
       : strengthScore === 2
-      ? "bg-amber-500 text-amber-500"
-      : "bg-accent-crimson text-accent-crimson";
+      ? "bg-amber-400 text-amber-400"
+      : "bg-red-500 text-red-400";
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMessage(null);
+    setSuccessNotice(null);
 
     const cleanEmail = email.trim().toLowerCase();
     if (!cleanEmail || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(cleanEmail)) {
@@ -137,25 +173,36 @@ export default function AuthModal() {
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMessage(null);
+    setSuccessNotice(null);
+
+    const cleanFirstName = sanitizeInput(firstName, 40);
+    const cleanLastName = sanitizeInput(lastName, 40);
+
+    if (!cleanFirstName) {
+      setErrorMessage("Please enter your first name.");
+      return;
+    }
 
     const cleanEmail = email.trim().toLowerCase();
     if (!cleanEmail || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(cleanEmail)) {
-      setErrorMessage("Please provide a valid email address.");
+      setErrorMessage("Please enter a valid email address.");
       return;
     }
 
-    if (!isPasswordValid) {
-      setErrorMessage("Please fulfill all password requirements.");
+    if (!hasMinLength) {
+      setErrorMessage("Password must be at least 8 characters long.");
       return;
     }
 
-    const cleanCatName = sanitizeInput(catName, 50);
-    if (!cleanCatName) {
-      setErrorMessage("Please enter your cat's name.");
+    if (!agreeTerms) {
+      setErrorMessage("Please agree to the Terms & Conditions to proceed.");
       return;
     }
 
-    const cleanStationName = sanitizeInput(stationName, 60) || "PawStation Unit 1";
+    const fullName = [cleanFirstName, cleanLastName].filter(Boolean).join(" ");
+    const defaultCatName = cleanFirstName ? `${cleanFirstName}'s Cat` : "Whiskers";
+    const defaultCatBreed = "Domestic Shorthair";
+    const defaultStation = "PawStation Unit 1";
 
     setIsSubmitting(true);
 
@@ -165,9 +212,12 @@ export default function AuthModal() {
         password,
         options: {
           data: {
-            cat_name: cleanCatName,
-            cat_breed: catBreed,
-            station_name: cleanStationName,
+            first_name: cleanFirstName,
+            last_name: cleanLastName,
+            full_name: fullName,
+            cat_name: defaultCatName,
+            cat_breed: defaultCatBreed,
+            station_name: defaultStation,
           },
         },
       });
@@ -178,17 +228,47 @@ export default function AuthModal() {
         return;
       }
 
-      // Synchronize cat profile to session cache and database
       await setCatProfile({
-        catName: cleanCatName,
-        catBreed,
-        stationName: cleanStationName,
+        catName: defaultCatName,
+        catBreed: defaultCatBreed,
+        stationName: defaultStation,
       });
 
-      // Show verification view with verify-later option
       setShowVerificationScreen(true);
     } catch (err: unknown) {
-      setErrorMessage(err instanceof Error ? err.message : "Failed to register account");
+      setErrorMessage(
+        err instanceof Error ? err.message : "Failed to register account"
+      );
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleForgotPassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setErrorMessage(null);
+    setSuccessNotice(null);
+
+    const cleanEmail = email.trim().toLowerCase();
+    if (!cleanEmail || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(cleanEmail)) {
+      setErrorMessage("Please enter your email to receive recovery instructions.");
+      return;
+    }
+
+    setIsSubmitting(true);
+    try {
+      const { error } = await supabase.auth.resetPasswordForEmail(cleanEmail);
+      if (error) {
+        setErrorMessage(error.message);
+      } else {
+        setSuccessNotice(
+          `Password reset link sent to ${cleanEmail}. Check your inbox.`
+        );
+      }
+    } catch (err: unknown) {
+      setErrorMessage(
+        err instanceof Error ? err.message : "Failed to send password reset"
+      );
     } finally {
       setIsSubmitting(false);
     }
@@ -200,355 +280,451 @@ export default function AuthModal() {
     router.push("/dashboard");
   };
 
+  const switchMode = (newMode: "login" | "signup") => {
+    setMode(newMode);
+    openAuthModal(newMode);
+    setErrorMessage(null);
+    setSuccessNotice(null);
+    setShowForgotPassword(false);
+  };
+
   if (!isAuthModalOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
-      {/* Backdrop */}
+    <div className="fixed inset-0 z-[100] flex items-center justify-center p-3 sm:p-5 overflow-y-auto">
+      {/* Dark backdrop */}
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
-        className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+        className="fixed inset-0 bg-black/75 backdrop-blur-md"
         onClick={() => {
           if (!isSubmitting) closeAuthModal();
         }}
       />
 
-      {/* Modal Dialog */}
+      {/* 2-Column Split Modal Card */}
       <motion.div
-        initial={{ opacity: 0, scale: 0.95, y: 10 }}
+        initial={{ opacity: 0, scale: 0.96, y: 14 }}
         animate={{ opacity: 1, scale: 1, y: 0 }}
-        exit={{ opacity: 0, scale: 0.95, y: 10 }}
-        transition={{ duration: 0.2 }}
-        className="relative bg-white dark:bg-[#1C1C1E] rounded-apple-lg border border-black/[0.08] dark:border-white/[0.1] max-w-md w-full max-h-[90vh] overflow-y-auto shadow-2xl z-10 transition-colors"
+        exit={{ opacity: 0, scale: 0.96, y: 14 }}
+        transition={{ duration: 0.22, ease: [0.16, 1, 0.3, 1] }}
+        className="relative bg-[#161618] border border-white/10 rounded-[28px] sm:rounded-[32px] w-full max-w-4xl shadow-2xl z-10 overflow-hidden my-auto"
       >
-        {/* Header */}
-        <div className="sticky top-0 bg-white/95 dark:bg-[#1C1C1E]/95 backdrop-blur-md border-b border-black/[0.06] dark:border-white/[0.08] px-6 py-4 flex items-center justify-between z-20">
-          <div className="flex items-center gap-2">
-            <PawIcon className="w-5 h-5 text-accent-amber" />
-            <h3 className="text-[17px] font-semibold text-[#18181B] dark:text-[#F4F4F5]">
-              {showVerificationScreen
-                ? "Verify Your Email"
-                : mode === "login"
-                ? "Sign In to PawStation"
-                : "Create PawStation Account"}
-            </h3>
-          </div>
-          <button
-            onClick={closeAuthModal}
-            className="p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-[#2C2C2E] transition-colors"
-            aria-label="Close"
-          >
-            <CloseIcon className="w-4 h-4 text-[#71717A] dark:text-[#A1A1AA]" />
-          </button>
-        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 p-2 sm:p-3 gap-2 sm:gap-3">
+          {/* ================= LEFT COLUMN: SHOWCASE CARD ================= */}
+          <div className="hidden md:flex flex-col justify-between relative rounded-[22px] sm:rounded-[24px] bg-[#141416] border border-white/[0.08] p-6 lg:p-7 overflow-hidden min-h-[560px]">
+            {/* Ambient background glow */}
+            <div className="pointer-events-none absolute -top-24 -left-24 w-72 h-72 bg-amber-500/10 rounded-full blur-3xl" />
+            <div className="pointer-events-none absolute -bottom-24 -right-24 w-72 h-72 bg-indigo-500/10 rounded-full blur-3xl" />
 
-        <div className="p-6">
-          {/* Verification Screen with Verify Later */}
-          {showVerificationScreen ? (
-            <div className="text-center space-y-5 py-2">
-              <div className="w-14 h-14 rounded-full bg-accent-amber/10 dark:bg-accent-amber/20 flex items-center justify-center mx-auto text-accent-amber">
-                <ShieldIcon className="w-7 h-7" />
-              </div>
-              <div>
-                <h4 className="text-[18px] font-bold text-[#18181B] dark:text-[#F4F4F5] mb-2">
-                  Verification Link Sent
-                </h4>
-                <p className="text-[13px] text-[#71717A] dark:text-[#A1A1AA] leading-relaxed">
-                  We sent a confirmation link to{" "}
-                  <span className="font-semibold text-[#18181B] dark:text-[#F4F4F5]">
-                    {email}
-                  </span>
-                  . You can verify your email now or proceed directly to your
-                  hardware dashboard.
-                </p>
-              </div>
-
-              {/* Station summary chip */}
-              <div className="p-3.5 rounded-apple bg-canvas-light dark:bg-[#121214] border border-black/[0.04] dark:border-white/[0.06] text-left text-[12px] space-y-1">
-                <div className="flex justify-between">
-                  <span className="text-[#71717A] dark:text-[#A1A1AA]">Registered Cat:</span>
-                  <span className="font-semibold text-[#18181B] dark:text-[#F4F4F5]">
-                    {catName} ({catBreed})
-                  </span>
+            {/* Top Brand Header */}
+            <div className="relative z-10 flex items-center justify-between">
+              <div className="flex items-center gap-2.5">
+                <div className="w-8 h-8 rounded-lg bg-white/10 border border-white/10 flex items-center justify-center text-amber-400">
+                  <PawIcon className="w-4 h-4" />
                 </div>
-                <div className="flex justify-between">
-                  <span className="text-[#71717A] dark:text-[#A1A1AA]">Station Name:</span>
-                  <span className="font-semibold text-[#18181B] dark:text-[#F4F4F5]">
-                    {stationName}
-                  </span>
-                </div>
+                <span className="text-sm font-semibold tracking-tight text-white">
+                  PawStation
+                </span>
               </div>
-
-              {/* Action buttons */}
-              <div className="space-y-2.5 pt-2">
-                <button
-                  onClick={handleVerifyLater}
-                  className="apple-button w-full bg-[#18181B] text-white hover:bg-[#27272A] dark:bg-white dark:text-[#18181B] dark:hover:bg-gray-100 py-3 text-[14px]"
-                >
-                  Verify Later &amp; Continue to Dashboard
-                </button>
-                <button
-                  onClick={() => setShowVerificationScreen(false)}
-                  className="w-full text-center text-[12px] text-[#71717A] dark:text-[#A1A1AA] hover:text-[#18181B] dark:hover:text-[#F4F4F5] py-1 transition-colors"
-                >
-                  Change Account Details
-                </button>
+              <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-white/[0.06] border border-white/[0.08] text-[11px] font-medium text-neutral-300">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                {SHOWCASE_SLIDES[activeSlide].status}
               </div>
             </div>
-          ) : (
-            <>
-              {/* Mode Tabs */}
-              <div className="flex rounded-apple p-1 bg-canvas-light dark:bg-[#121214] border border-black/[0.04] dark:border-white/[0.06] mb-6">
-                <button
-                  type="button"
-                  onClick={() => {
-                    setMode("login");
-                    openAuthModal("login");
-                    setErrorMessage(null);
-                  }}
-                  className={`flex-1 py-1.5 text-[13px] font-semibold rounded-lg transition-all ${
-                    mode === "login"
-                      ? "bg-white dark:bg-[#2C2C2E] text-[#18181B] dark:text-[#F4F4F5] shadow-sm"
-                      : "text-[#71717A] dark:text-[#A1A1AA] hover:text-[#18181B] dark:hover:text-[#F4F4F5]"
-                  }`}
-                >
-                  Sign In
-                </button>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setMode("signup");
-                    openAuthModal("signup");
-                    setErrorMessage(null);
-                  }}
-                  className={`flex-1 py-1.5 text-[13px] font-semibold rounded-lg transition-all ${
-                    mode === "signup"
-                      ? "bg-white dark:bg-[#2C2C2E] text-[#18181B] dark:text-[#F4F4F5] shadow-sm"
-                      : "text-[#71717A] dark:text-[#A1A1AA] hover:text-[#18181B] dark:hover:text-[#F4F4F5]"
-                  }`}
-                >
-                  Create Account
-                </button>
+
+            {/* Middle: 3D Hardware Presentation */}
+            <div className="relative z-10 my-auto py-2 flex flex-col items-center justify-center">
+              <div
+                className="relative w-full max-w-[300px] aspect-[4/3] flex items-center justify-center"
+                style={{
+                  WebkitMaskImage:
+                    "radial-gradient(ellipse at center, rgba(0,0,0,1) 45%, rgba(0,0,0,0) 80%)",
+                  maskImage:
+                    "radial-gradient(ellipse at center, rgba(0,0,0,1) 45%, rgba(0,0,0,0) 80%)",
+                }}
+              >
+                <Image
+                  src="/hero-figure-dark.webp"
+                  alt="PawStation Smart Feeder"
+                  fill
+                  sizes="300px"
+                  priority
+                  className="object-contain drop-shadow-[0_20px_30px_rgba(0,0,0,0.65)] hover:scale-105 transition-transform duration-500"
+                />
               </div>
 
-              {/* Error banner */}
-              {errorMessage && (
-                <div className="mb-4 p-3 rounded-apple bg-accent-crimson/10 border border-accent-crimson/20 text-accent-crimson text-[12px] leading-relaxed">
-                  {errorMessage}
-                </div>
-              )}
+              {/* Floating Telemetry Pill */}
+              <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/[0.08] border border-white/10 backdrop-blur-md text-xs text-neutral-200 mt-2">
+                <span className="font-semibold text-amber-400">
+                  {SHOWCASE_SLIDES[activeSlide].metric}
+                </span>
+                <span className="text-neutral-500">•</span>
+                <span>{SHOWCASE_SLIDES[activeSlide].tag}</span>
+              </div>
+            </div>
 
-              {/* Form Content */}
-              {mode === "login" ? (
-                <form onSubmit={handleLogin} className="space-y-4">
-                  <FormInput
+            {/* Bottom Content & Carousel Indicators */}
+            <div className="relative z-10 space-y-4 pt-2">
+              <div className="space-y-1.5 min-h-[74px]">
+                <AnimatePresence mode="wait">
+                  <motion.div
+                    key={activeSlide}
+                    initial={{ opacity: 0, y: 8 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -8 }}
+                    transition={{ duration: 0.25 }}
+                  >
+                    <h4 className="text-base font-semibold text-white tracking-tight">
+                      {SHOWCASE_SLIDES[activeSlide].title}
+                    </h4>
+                    <p className="text-xs text-neutral-400 leading-relaxed mt-1">
+                      {SHOWCASE_SLIDES[activeSlide].description}
+                    </p>
+                  </motion.div>
+                </AnimatePresence>
+              </div>
+
+              {/* Dash Carousel Indicators (---) */}
+              <div className="flex items-center gap-1.5 pt-1">
+                {SHOWCASE_SLIDES.map((_, index) => (
+                  <button
+                    key={index}
+                    type="button"
+                    onClick={() => setActiveSlide(index)}
+                    aria-label={`Go to slide ${index + 1}`}
+                    className={`h-1.5 rounded-full transition-all duration-300 ${
+                      index === activeSlide
+                        ? "w-8 bg-white"
+                        : "w-2.5 bg-white/20 hover:bg-white/40"
+                    }`}
+                  />
+                ))}
+              </div>
+            </div>
+          </div>
+
+          {/* ================= RIGHT COLUMN: FORM CARD ================= */}
+          <div className="flex flex-col justify-between p-5 sm:p-7 lg:p-8 relative">
+            {/* Close Button top-right */}
+            <div className="flex items-center justify-between md:justify-end mb-4">
+              <div className="flex md:hidden items-center gap-2">
+                <div className="w-7 h-7 rounded-lg bg-white/10 border border-white/10 flex items-center justify-center text-amber-400">
+                  <PawIcon className="w-3.5 h-3.5" />
+                </div>
+                <span className="text-sm font-semibold text-white">PawStation</span>
+              </div>
+              <button
+                type="button"
+                onClick={closeAuthModal}
+                className="w-8 h-8 rounded-full bg-white/[0.06] hover:bg-white/15 border border-white/10 flex items-center justify-center text-neutral-400 hover:text-white transition-colors"
+                aria-label="Close modal"
+              >
+                <CloseIcon className="w-4 h-4" />
+              </button>
+            </div>
+
+            {/* Verification Flow Screen */}
+            {showVerificationScreen ? (
+              <div className="my-auto text-center space-y-5 py-4">
+                <div className="w-14 h-14 rounded-full bg-amber-500/10 border border-amber-500/20 flex items-center justify-center mx-auto text-amber-400">
+                  <ShieldIcon className="w-7 h-7" />
+                </div>
+                <div className="space-y-2">
+                  <h3 className="text-xl font-bold text-white tracking-tight">
+                    Check your email
+                  </h3>
+                  <p className="text-xs sm:text-sm text-neutral-400 leading-relaxed max-w-sm mx-auto">
+                    We sent a confirmation link to{" "}
+                    <span className="font-semibold text-white">{email}</span>.
+                    Verify to unlock cloud backups, or dive straight into your dashboard.
+                  </p>
+                </div>
+
+                <div className="pt-3 space-y-2.5 max-w-sm mx-auto">
+                  <button
+                    onClick={handleVerifyLater}
+                    className="w-full bg-white hover:bg-neutral-200 text-black font-semibold py-3 px-4 rounded-xl text-sm transition-all shadow-md active:scale-[0.99]"
+                  >
+                    Continue to Dashboard
+                  </button>
+                  <button
+                    onClick={() => setShowVerificationScreen(false)}
+                    className="w-full text-xs text-neutral-400 hover:text-white py-1 transition-colors"
+                  >
+                    Edit Registration Details
+                  </button>
+                </div>
+              </div>
+            ) : showForgotPassword ? (
+              /* Forgot Password View */
+              <div className="my-auto space-y-5 py-2">
+                <div>
+                  <h3 className="text-2xl font-bold text-white tracking-tight">
+                    Reset your password
+                  </h3>
+                  <p className="text-xs text-neutral-400 mt-1">
+                    Enter the email associated with your PawStation hardware account.
+                  </p>
+                </div>
+
+                {errorMessage && (
+                  <div className="p-3 rounded-xl bg-red-500/10 border border-red-500/20 text-red-400 text-xs">
+                    {errorMessage}
+                  </div>
+                )}
+
+                {successNotice && (
+                  <div className="p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs">
+                    {successNotice}
+                  </div>
+                )}
+
+                <form onSubmit={handleForgotPassword} className="space-y-4">
+                  <InputField
                     label="Email Address"
                     type="email"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     required
-                    placeholder="catparent@example.com"
-                  />
-                  <FormInput
-                    label="Password"
-                    type="password"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    required
-                    placeholder="Enter your password"
+                    placeholder="name@example.com"
                   />
                   <button
                     type="submit"
                     disabled={isSubmitting}
-                    className="apple-button w-full bg-[#18181B] text-white hover:bg-[#27272A] dark:bg-white dark:text-[#18181B] dark:hover:bg-gray-100 py-3 text-[14px] disabled:opacity-50 mt-2"
+                    className="w-full bg-white hover:bg-neutral-200 text-black font-semibold py-3 px-4 rounded-xl text-sm transition-all shadow-md disabled:opacity-50"
                   >
-                    {isSubmitting ? "Signing In..." : "Sign In to Dashboard"}
+                    {isSubmitting ? "Sending instructions..." : "Send Reset Link"}
                   </button>
-
-                  <div className="text-center pt-3 text-[12px] text-[#71717A] dark:text-[#A1A1AA]">
-                    Need an account?{" "}
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setMode("signup");
-                        setErrorMessage(null);
-                      }}
-                      className="font-semibold text-accent-amber hover:underline"
-                    >
-                      Sign Up
-                    </button>
-                  </div>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setShowForgotPassword(false);
+                      setErrorMessage(null);
+                      setSuccessNotice(null);
+                    }}
+                    className="w-full text-center text-xs text-neutral-400 hover:text-white transition-colors pt-1"
+                  >
+                    Back to Log in
+                  </button>
                 </form>
-              ) : (
-                <form onSubmit={handleSignUp} className="space-y-4">
-                  {/* Account credentials */}
-                  <FormInput
-                    label="Email Address"
-                    type="email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    required
-                    placeholder="catparent@example.com"
-                  />
-
-                  {/* Password with strength meter */}
-                  <div>
-                    <FormInput
-                      label="Password"
-                      type="password"
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
-                      required
-                      placeholder="Minimum 8 characters"
-                    />
-
-                    {/* Real-time strength meter bar */}
-                    {password.length > 0 && (
-                      <div className="mt-2 space-y-1.5">
-                        <div className="flex items-center justify-between text-[11px]">
-                          <span className="text-[#71717A] dark:text-[#A1A1AA]">
-                            Password Strength
-                          </span>
-                          <span className={`font-semibold ${strengthColor.split(" ")[1]}`}>
-                            {strengthLabel}
-                          </span>
-                        </div>
-                        <div className="grid grid-cols-4 gap-1.5 h-1.5">
-                          {[0, 1, 2, 3].map((step) => (
-                            <div
-                              key={step}
-                              className={`h-full rounded-full transition-all duration-200 ${
-                                step < strengthScore
-                                  ? strengthColor.split(" ")[0]
-                                  : "bg-gray-200 dark:bg-[#2C2C2E]"
-                              }`}
-                            />
-                          ))}
-                        </div>
-                      </div>
+              </div>
+            ) : (
+              /* Main Auth View (Sign Up / Log In) */
+              <div className="my-auto space-y-5">
+                {/* Titles matching screenshot */}
+                <div>
+                  <h3 className="text-2xl sm:text-[26px] font-bold text-white tracking-tight">
+                    {mode === "signup" ? "Create an account" : "Welcome back"}
+                  </h3>
+                  <p className="text-xs sm:text-sm text-neutral-400 mt-1">
+                    {mode === "signup" ? (
+                      <>
+                        Already have an account?{" "}
+                        <button
+                          type="button"
+                          onClick={() => switchMode("login")}
+                          className="text-white hover:text-amber-400 font-semibold underline underline-offset-2 transition-colors"
+                        >
+                          Log in
+                        </button>
+                      </>
+                    ) : (
+                      <>
+                        Don&apos;t have an account?{" "}
+                        <button
+                          type="button"
+                          onClick={() => switchMode("signup")}
+                          className="text-white hover:text-amber-400 font-semibold underline underline-offset-2 transition-colors"
+                        >
+                          Sign up
+                        </button>
+                      </>
                     )}
-                  </div>
+                  </p>
+                </div>
 
-                  {/* Feline & Station details */}
-                  <div className="pt-2 border-t border-black/[0.06] dark:border-white/[0.08] space-y-4">
-                    <div className="flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-[0.04em] text-accent-amber">
-                      <PawIcon className="w-3.5 h-3.5" />
-                      Cat Profile &amp; Station Setup
+                {/* Error Banner */}
+                {errorMessage && (
+                  <div className="p-3 rounded-xl bg-red-500/10 border border-red-500/20 text-red-400 text-xs leading-relaxed">
+                    {errorMessage}
+                  </div>
+                )}
+
+                {/* Forms */}
+                {mode === "signup" ? (
+                  <form onSubmit={handleSignUp} className="space-y-3.5">
+                    {/* First & Last Name row */}
+                    <div className="grid grid-cols-2 gap-2.5">
+                      <InputField
+                        label="First Name"
+                        type="text"
+                        value={firstName}
+                        onChange={(e) => setFirstName(e.target.value)}
+                        required
+                        placeholder="e.g. John"
+                      />
+                      <InputField
+                        label="Last Name"
+                        type="text"
+                        value={lastName}
+                        onChange={(e) => setLastName(e.target.value)}
+                        placeholder="e.g. Doe"
+                      />
                     </div>
 
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                      <div className="min-w-0">
-                        <FormInput
-                          label="Cat Name"
-                          type="text"
-                          value={catName}
-                          onChange={(e) => setCatName(e.target.value)}
-                          required
-                          placeholder="e.g. Whiskers"
-                        />
-                      </div>
+                    {/* Email address */}
+                    <InputField
+                      label="Email Address"
+                      type="email"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      required
+                      placeholder="name@example.com"
+                    />
 
-                      <div className="min-w-0">
-                        <label className="block text-[12px] font-medium text-[#71717A] dark:text-[#A1A1AA] mb-1.5">
-                          Cat Breed
-                        </label>
-                        <div className="relative w-full min-w-0">
-                          <select
-                            value={catBreed}
-                            onChange={(e) => setCatBreed(e.target.value)}
-                            className="w-full min-w-0 appearance-none rounded-apple border border-black/[0.1] dark:border-white/[0.12] bg-canvas-light dark:bg-[#121214] pl-3 pr-8 py-2.5 text-[13px] text-[#18181B] dark:text-[#F4F4F5] focus:outline-none focus:ring-2 focus:ring-accent-amber/40 transition-all cursor-pointer truncate"
-                          >
-                            {CAT_BREEDS.map((b) => (
-                              <option key={b} value={b} className="bg-white dark:bg-[#1C1C1E] text-[#18181B] dark:text-[#F4F4F5]">
-                                {b}
-                              </option>
+                    {/* Password with eye toggle */}
+                    <div>
+                      <PasswordField
+                        label="Password"
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                        showPassword={showPassword}
+                        setShowPassword={setShowPassword}
+                        placeholder="Create a password"
+                        required
+                      />
+
+                      {/* Password strength bar */}
+                      {password.length > 0 && (
+                        <div className="mt-2 space-y-1">
+                          <div className="flex items-center justify-between text-[11px]">
+                            <span className="text-neutral-400">Strength</span>
+                            <span className={`font-semibold ${strengthColor.split(" ")[1]}`}>
+                              {strengthLabel}
+                            </span>
+                          </div>
+                          <div className="grid grid-cols-4 gap-1 h-1">
+                            {[0, 1, 2, 3].map((step) => (
+                              <div
+                                key={step}
+                                className={`h-full rounded-full transition-all duration-200 ${
+                                  step < strengthScore
+                                    ? strengthColor.split(" ")[0]
+                                    : "bg-white/10"
+                                }`}
+                              />
                             ))}
-                          </select>
-                          <div className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 text-navy-muted dark:text-navy-lightMuted flex items-center justify-center">
-                            <svg className="w-4 h-4" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.75">
-                              <path d="M6 8l4 4 4-4" strokeLinecap="round" strokeLinejoin="round" />
-                            </svg>
                           </div>
                         </div>
-                      </div>
+                      )}
                     </div>
 
-                    <FormInput
-                      label="Station Device Name"
-                      type="text"
-                      value={stationName}
-                      onChange={(e) => setStationName(e.target.value)}
-                      placeholder="PawStation Unit 1"
-                    />
-                  </div>
+                    {/* Terms & Conditions Checkbox */}
+                    <label className="flex items-start gap-2.5 cursor-pointer pt-1 select-none">
+                      <input
+                        type="checkbox"
+                        checked={agreeTerms}
+                        onChange={(e) => setAgreeTerms(e.target.checked)}
+                        className="mt-0.5 w-4 h-4 rounded border-white/20 bg-[#222226] text-amber-500 focus:ring-0 focus:ring-offset-0 cursor-pointer accent-amber-500"
+                      />
+                      <span className="text-xs text-neutral-400 leading-normal">
+                        I agree to the{" "}
+                        <span className="text-white hover:underline">
+                          Terms &amp; Conditions
+                        </span>{" "}
+                        and{" "}
+                        <span className="text-white hover:underline">
+                          Privacy Policy
+                        </span>
+                      </span>
+                    </label>
 
-                  <button
-                    type="submit"
-                    disabled={isSubmitting || !isPasswordValid}
-                    className="apple-button w-full bg-[#18181B] text-white hover:bg-[#27272A] dark:bg-white dark:text-[#18181B] dark:hover:bg-gray-100 py-3 text-[14px] disabled:opacity-50 mt-4"
-                  >
-                    {isSubmitting
-                      ? "Registering Account..."
-                      : "Register & Connect Station"}
-                  </button>
-
-                  <div className="text-center pt-3 text-[12px] text-[#71717A] dark:text-[#A1A1AA]">
-                    Already have an account?{" "}
+                    {/* CTA Button */}
                     <button
-                      type="button"
-                      onClick={() => {
-                        setMode("login");
-                        setErrorMessage(null);
-                      }}
-                      className="font-semibold text-accent-amber hover:underline"
+                      type="submit"
+                      disabled={isSubmitting}
+                      className="w-full bg-white hover:bg-neutral-200 text-black font-semibold py-3 px-4 rounded-xl text-sm transition-all shadow-md active:scale-[0.99] disabled:opacity-50 mt-2"
                     >
-                      Sign In
+                      {isSubmitting ? "Creating account..." : "Create account"}
                     </button>
-                  </div>
-                </form>
-              )}
-            </>
-          )}
+                  </form>
+                ) : (
+                  /* LOGIN FORM */
+                  <form onSubmit={handleLogin} className="space-y-3.5">
+                    <InputField
+                      label="Email Address"
+                      type="email"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      required
+                      placeholder="name@example.com"
+                    />
+
+                    <PasswordField
+                      label="Password"
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      showPassword={showPassword}
+                      setShowPassword={setShowPassword}
+                      placeholder="Enter your password"
+                      required
+                    />
+
+                    {/* Remember me & Forgot password row */}
+                    <div className="flex items-center justify-between text-xs pt-1 select-none">
+                      <label className="flex items-center gap-2 cursor-pointer text-neutral-400 hover:text-neutral-300">
+                        <input
+                          type="checkbox"
+                          checked={rememberMe}
+                          onChange={(e) => setRememberMe(e.target.checked)}
+                          className="w-4 h-4 rounded border-white/20 bg-[#222226] text-amber-500 focus:ring-0 focus:ring-offset-0 cursor-pointer accent-amber-500"
+                        />
+                        <span>Remember me</span>
+                      </label>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setShowForgotPassword(true);
+                          setErrorMessage(null);
+                          setSuccessNotice(null);
+                        }}
+                        className="text-neutral-400 hover:text-white transition-colors"
+                      >
+                        Forgot password?
+                      </button>
+                    </div>
+
+                    {/* CTA Button */}
+                    <button
+                      type="submit"
+                      disabled={isSubmitting}
+                      className="w-full bg-white hover:bg-neutral-200 text-black font-semibold py-3 px-4 rounded-xl text-sm transition-all shadow-md active:scale-[0.99] disabled:opacity-50 mt-2"
+                    >
+                      {isSubmitting ? "Logging in..." : "Log in"}
+                    </button>
+                  </form>
+                )}
+              </div>
+            )}
+
+            {/* Bottom Security / Guarantee note */}
+            <div className="pt-4 border-t border-white/[0.06] flex items-center justify-between text-[11px] text-neutral-500">
+              <span className="flex items-center gap-1.5">
+                <ShieldIcon className="w-3.5 h-3.5 text-neutral-400" />
+                256-bit Hardware-grade Encryption
+              </span>
+              <span>PawStation v2.4</span>
+            </div>
+          </div>
         </div>
       </motion.div>
     </div>
   );
 }
 
-function RequirementItem({
-  satisfied,
-  text,
-}: {
-  satisfied: boolean;
-  text: string;
-}) {
-  return (
-    <div className="flex items-center gap-2">
-      <div
-        className={`w-3.5 h-3.5 rounded-full flex items-center justify-center shrink-0 ${
-          satisfied
-            ? "bg-periwinkle text-white"
-            : "bg-gray-200 dark:bg-[#2C2C2E] text-transparent"
-        }`}
-      >
-        <CheckIcon className="w-2.5 h-2.5 stroke-[3]" />
-      </div>
-      <span
-        className={
-          satisfied
-            ? "text-[#18181B] dark:text-[#F4F4F5]"
-            : "text-[#71717A] dark:text-[#A1A1AA]"
-        }
-      >
-        {text}
-      </span>
-    </div>
-  );
-}
-
-function FormInput({
+function InputField({
   label,
   type,
   value,
@@ -568,10 +744,10 @@ function FormInput({
     <div>
       <label
         htmlFor={id}
-        className="block text-[12px] font-medium text-[#71717A] dark:text-[#A1A1AA] mb-1.5"
+        className="block text-xs font-medium text-neutral-300 mb-1.5"
       >
         {label}
-        {required && <span className="text-accent-crimson ml-0.5">*</span>}
+        {required && <span className="text-amber-400 ml-0.5">*</span>}
       </label>
       <input
         id={id}
@@ -580,8 +756,62 @@ function FormInput({
         onChange={onChange}
         required={required}
         placeholder={placeholder}
-        className="w-full rounded-apple border border-black/[0.1] dark:border-white/[0.12] bg-canvas-light dark:bg-[#121214] px-3.5 py-2.5 text-[14px] text-[#18181B] dark:text-[#F4F4F5] placeholder:text-[#A1A1AA] dark:placeholder:text-[#52525B] focus:outline-none focus:ring-2 focus:ring-accent-amber/40 focus:border-accent-amber/50 transition-all"
+        className="w-full rounded-xl border border-white/10 bg-[#202024] px-3.5 py-2.5 text-sm text-white placeholder:text-neutral-500 focus:outline-none focus:ring-1 focus:ring-white/40 focus:border-white/40 transition-all"
       />
+    </div>
+  );
+}
+
+function PasswordField({
+  label,
+  value,
+  onChange,
+  showPassword,
+  setShowPassword,
+  required,
+  placeholder,
+}: {
+  label: string;
+  value: string;
+  onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  showPassword: boolean;
+  setShowPassword: (show: boolean) => void;
+  required?: boolean;
+  placeholder?: string;
+}) {
+  const id = useId();
+  return (
+    <div>
+      <label
+        htmlFor={id}
+        className="block text-xs font-medium text-neutral-300 mb-1.5"
+      >
+        {label}
+        {required && <span className="text-amber-400 ml-0.5">*</span>}
+      </label>
+      <div className="relative">
+        <input
+          id={id}
+          type={showPassword ? "text" : "password"}
+          value={value}
+          onChange={onChange}
+          required={required}
+          placeholder={placeholder}
+          className="w-full rounded-xl border border-white/10 bg-[#202024] pl-3.5 pr-11 py-2.5 text-sm text-white placeholder:text-neutral-500 focus:outline-none focus:ring-1 focus:ring-white/40 focus:border-white/40 transition-all"
+        />
+        <button
+          type="button"
+          onClick={() => setShowPassword(!showPassword)}
+          className="absolute right-3 top-1/2 -translate-y-1/2 text-neutral-400 hover:text-white p-1 rounded-md transition-colors"
+          aria-label={showPassword ? "Hide password" : "Show password"}
+        >
+          {showPassword ? (
+            <EyeOffIcon className="w-4 h-4" />
+          ) : (
+            <EyeIcon className="w-4 h-4" />
+          )}
+        </button>
+      </div>
     </div>
   );
 }

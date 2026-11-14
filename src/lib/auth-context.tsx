@@ -167,6 +167,22 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     };
   }, []);
 
+  // Support direct ?auth=login or ?auth=signup query parameters
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      try {
+        const params = new URLSearchParams(window.location.search);
+        const authParam = params.get("auth");
+        if (authParam === "signup" || authParam === "login") {
+          setAuthModalMode(authParam);
+          setIsAuthModalOpen(true);
+        }
+      } catch {
+        /* ignore */
+      }
+    }
+  }, []);
+
   const openAuthModal = (mode: "login" | "signup" = "login") => {
     setAuthModalMode(mode);
     setIsAuthModalOpen(true);
