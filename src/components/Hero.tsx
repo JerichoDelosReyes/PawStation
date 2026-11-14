@@ -195,7 +195,7 @@ export default function Hero() {
   return (
     <section
       ref={heroRef}
-      className="relative w-full min-h-[100dvh] lg:h-[100dvh] bg-[var(--frame-bg)] text-white select-none p-2 sm:p-3 lg:p-4 flex flex-col justify-between overflow-x-hidden lg:overflow-hidden"
+      className="relative w-full min-h-[100dvh] lg:h-[100dvh] bg-[var(--frame-bg)] text-white select-none p-0 flex flex-col justify-between overflow-x-hidden lg:overflow-hidden"
     >
       {/* ─────────────────────────────────────────────────────────────
           ALL-BLACK MOBILE HEADER BAR (< lg)
@@ -284,7 +284,7 @@ export default function Hero() {
           }}
           onMouseMove={handleMouseMove}
           onMouseLeave={handleMouseLeave}
-          className="relative w-full flex-1 min-h-0 bg-[var(--panel-bg)] text-[var(--panel-text)] rounded-[20px] sm:rounded-[28px] lg:rounded-none lg:rounded-bl-[38px] flex flex-col justify-start lg:justify-between transition-colors duration-200 overflow-visible lg:overflow-hidden origin-bottom"
+          className="relative w-full flex-1 min-h-0 bg-[var(--panel-bg)] text-[var(--panel-text)] rounded-none flex flex-col justify-start lg:justify-between transition-colors duration-200 overflow-visible lg:overflow-hidden origin-bottom"
         >
           {/* ─────────────────────────────────────────────────────────
               1. DOCKED TOP-LEFT NOTCH (BRAND LOGO - DESKTOP ONLY)
