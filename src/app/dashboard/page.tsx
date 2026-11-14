@@ -8,8 +8,6 @@ import Scheduler from "@/components/Scheduler";
 import Footer from "@/components/Footer";
 import AuthModal from "@/components/AuthModal";
 import { CatIcon, CloseIcon } from "@/components/Icons";
-import InverseCorner from "@/components/InverseCorner";
-import ThemeTogglePill from "@/components/ThemeTogglePill";
 import { useAuth } from "@/lib/auth-context";
 import type { StationStatus } from "@/lib/mqtt";
 
@@ -86,6 +84,8 @@ export default function DashboardPage() {
         <ConsoleNavbar
           stationStatus={stationStatus}
           catName={displayCatName}
+          catBreed={displayCatBreed}
+          stationName={displayStationName}
           onOpenEditProfile={handleOpenEdit}
         />
 
@@ -180,28 +180,6 @@ export default function DashboardPage() {
 
           {/* Routine Automation & Hardware Blueprint */}
           <Scheduler catName={displayCatName} />
-        </div>
-
-        {/* ─────────────────────────────────────────────────────────────
-            DOCKED BOTTOM-RIGHT NOTCH (THEME TOGGLE PILL)
-        ───────────────────────────────────────────────────────────── */}
-        <div className="relative w-full flex justify-end">
-          <div className="flex items-end">
-            {/* Top Inverted Concave Curve */}
-            <div className="absolute -top-[20px] sm:-top-[24px] right-0 text-[var(--frame-bg)]">
-              <InverseCorner type="notch-top" size={20} className="w-5 h-5 sm:w-6 sm:h-6" />
-            </div>
-
-            {/* Left Inverted Concave Curve */}
-            <div className="text-[var(--frame-bg)]">
-              <InverseCorner type="notch-left" size={20} className="w-5 h-5 sm:w-6 sm:h-6" />
-            </div>
-
-            {/* Bottom-right theme toggle notch cutout */}
-            <div className="bg-[var(--frame-bg)] pt-2 pb-2 pl-3.5 pr-4 sm:pt-2.5 sm:pb-2.5 sm:pl-4 sm:pr-5 rounded-tl-[20px] sm:rounded-tl-[24px] flex items-center">
-              <ThemeTogglePill />
-            </div>
-          </div>
         </div>
       </main>
 
