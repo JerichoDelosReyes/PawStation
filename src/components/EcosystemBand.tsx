@@ -526,7 +526,7 @@ export default function EcosystemBand() {
               PawStation is built from low-cost, easy-to-find parts. An ESP32 reads the scale and the water sensor, turns the feeder, runs the pump, and reports everything to this website over Wi-Fi. No special equipment needed, just a handful of modules and a bit of wiring.
             </p>
 
-            <div className="flex flex-wrap items-center justify-between gap-4">
+            <div>
               <button
                 type="button"
                 onClick={() => openAuthModal("signup")}
@@ -537,12 +537,6 @@ export default function EcosystemBand() {
                 </span>
                 <span>Get Started</span>
               </button>
-
-              <div className="inline-flex items-center gap-2 text-[12px] font-mono text-[#6B7280]">
-                <span>←</span>
-                <span>Scroll or drag horizontally</span>
-                <span>→</span>
-              </div>
             </div>
           </div>
         </div>

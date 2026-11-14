@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 import { KibbleIcon, WaterDropIcon, ScaleIcon, ShieldIcon } from "./Icons";
 
 const IOS_EASE = [0.16, 1, 0.3, 1] as const;
@@ -76,10 +76,13 @@ const CARDS: HelpCard[] = [
 ];
 
 export default function HowPawStationHelps() {
-  const [expandedIdx, setExpandedIdx] = useState<number | null>(null);
+  const [expandedCards, setExpandedCards] = useState<Record<number, boolean>>({});
 
   const toggleCard = (idx: number) => {
-    setExpandedIdx((prev) => (prev === idx ? null : idx));
+    setExpandedCards((prev) => ({
+      ...prev,
+      [idx]: !prev[idx],
+    }));
   };
 
   return (
@@ -119,7 +122,7 @@ export default function HowPawStationHelps() {
         {/* 3 Numbered Minimalist Feature Cards with Click / Touch Expansion */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {CARDS.map((card, idx) => {
-            const isExpanded = expandedIdx === idx;
+            const isExpanded = !!expandedCards[idx];
             return (
               <motion.div
                 key={card.number}

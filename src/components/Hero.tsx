@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { motion, useMotionValue, useSpring, useTransform, AnimatePresence } from "framer-motion";
@@ -103,6 +103,44 @@ function MagneticHeroButton({
 export default function Hero() {
   const { user, openAuthModal, signOut } = useAuth();
   const [activeHotspot, setActiveHotspot] = useState<string | null>(null);
+  const hoverTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const leaveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Responsive hover activation with a micro-buffer (60ms) to feel instant yet avoid jitter
+  const handleHotspotEnter = (id: string) => {
+    if (leaveTimeoutRef.current) {
+      clearTimeout(leaveTimeoutRef.current);
+      leaveTimeoutRef.current = null;
+    }
+    if (hoverTimeoutRef.current) {
+      clearTimeout(hoverTimeoutRef.current);
+    }
+    // Snappy 60ms buffer: feels instantaneous while debouncing sub-frame jitter
+    hoverTimeoutRef.current = setTimeout(() => {
+      setActiveHotspot(id);
+    }, 60);
+  };
+
+  const handleHotspotLeave = () => {
+    if (hoverTimeoutRef.current) {
+      clearTimeout(hoverTimeoutRef.current);
+      hoverTimeoutRef.current = null;
+    }
+    if (leaveTimeoutRef.current) {
+      clearTimeout(leaveTimeoutRef.current);
+    }
+    // Snappy 80ms grace period on boundary exit
+    leaveTimeoutRef.current = setTimeout(() => {
+      setActiveHotspot(null);
+    }, 80);
+  };
+
+  useEffect(() => {
+    return () => {
+      if (hoverTimeoutRef.current) clearTimeout(hoverTimeoutRef.current);
+      if (leaveTimeoutRef.current) clearTimeout(leaveTimeoutRef.current);
+    };
+  }, []);
   const [activeNav, setActiveNav] = useState<string | null>(null);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
@@ -344,13 +382,13 @@ export default function Hero() {
               4. HERO CONTENT: CENTER-ALIGNED CLEAN TYPOGRAPHY + ELEVATED 3D FIGURE
           ───────────────────────────────────────────────────────── */}
           <div className="relative z-10 flex-1 grid grid-cols-1 lg:grid-cols-12 gap-6 sm:gap-8 lg:gap-8 xl:gap-12 w-full max-w-[1720px] mx-auto px-5 sm:px-10 lg:px-14 pt-6 sm:pt-8 lg:pt-0 pb-8 sm:pb-10 lg:pb-0 min-h-0 items-center">
-            {/* Left Column: Center-Aligned, Clean & Non-Bold Typography */}
-            <div className="lg:col-span-5 xl:col-span-5 flex flex-col items-start text-left z-20 self-center pb-1 sm:pb-4">
+            {/* Left Column: Center-Aligned on Mobile, Left-Aligned on Desktop */}
+            <div className="lg:col-span-5 xl:col-span-5 flex flex-col items-center text-center lg:items-start lg:text-left z-20 self-center pb-1 sm:pb-4">
               {/* Responsive Headline with Fluid Scaling */}
-              <h1 className="text-[clamp(2.35rem,6.8vw,3.6rem)] sm:text-[clamp(3.2rem,5.2vw,4.8rem)] lg:text-[clamp(3.5rem,5.6vw,5.6rem)] xl:text-[clamp(3.9rem,6.2vw,6.4rem)] font-normal tracking-[-0.035em] leading-[1.0] text-neutral-900 dark:text-neutral-100 mb-5 sm:mb-6">
+              <h1 className="text-center lg:text-left text-[clamp(2.35rem,6.8vw,3.6rem)] sm:text-[clamp(3.2rem,5.2vw,4.8rem)] lg:text-[clamp(3.5rem,5.6vw,5.6rem)] xl:text-[clamp(3.9rem,6.2vw,6.4rem)] font-normal tracking-[-0.035em] leading-[1.0] text-neutral-900 dark:text-neutral-100 mb-5 sm:mb-6">
                 There is a
                 <br />
-                <span className="inline-flex items-center gap-2.5 sm:gap-4 my-1 sm:my-1.5">
+                <span className="inline-flex items-center justify-center gap-2.5 sm:gap-4 my-1 sm:my-1.5">
                   <span className="inline-flex items-center justify-center w-11 h-11 sm:w-14 sm:h-14 lg:w-[4.4rem] lg:h-[4.4rem] xl:w-[5.2rem] xl:h-[5.2rem] rounded-xl sm:rounded-2xl lg:rounded-[22px] bg-black/[0.03] dark:bg-white/[0.06] border border-black/15 dark:border-white/20 text-neutral-800 dark:text-neutral-200 shadow-sm flex-shrink-0">
                     <PawOutlineIcon className="w-5 h-5 sm:w-7 sm:h-7 lg:w-9 lg:h-9 xl:w-10 xl:h-10" />
                   </span>
@@ -361,7 +399,7 @@ export default function Hero() {
               </h1>
 
               {/* Innovative Unified Hardware Capsule Dock (Fluid Responsive & Magnetic) */}
-              <div className="w-full sm:w-auto max-w-md sm:max-w-none mb-5 sm:mb-6">
+              <div className="w-full sm:w-auto max-w-md sm:max-w-none mb-5 sm:mb-6 flex justify-center lg:justify-start">
                 <div className="flex flex-row items-center gap-1 sm:gap-1.5 p-1 sm:p-1.5 rounded-full bg-black/[0.04] dark:bg-white/[0.07] border border-black/10 dark:border-white/15 backdrop-blur-xl shadow-[0_2px_12px_rgba(0,0,0,0.04)] dark:shadow-[0_4px_20px_rgba(0,0,0,0.25)]">
                   {/* Primary Action Button: Get Started / Dashboard */}
                   <MagneticHeroButton
@@ -390,7 +428,7 @@ export default function Hero() {
               </div>
 
               {/* Clean Readable Description */}
-              <p className="text-[13.5px] sm:text-[15px] leading-relaxed text-neutral-600 dark:text-neutral-400 max-w-md sm:max-w-lg font-normal">
+              <p className="text-[13.5px] sm:text-[15px] leading-relaxed text-neutral-600 dark:text-neutral-400 max-w-md sm:max-w-lg font-normal text-center lg:text-left">
                 PawStation is an open-hardware feline workstation that automates controlled micro-portion kibble dispensing, fresh water replenishment, and gram-level health telemetry to avoid costly vet emergencies.
               </p>
             </div>
@@ -400,12 +438,12 @@ export default function Hero() {
               {/* Contextual Telemetry Flyout (Placed outside scaled 3D canvas so it is always horizontally centered and never clipped) */}
               <AnimatePresence>
                 {activeHotspot && (
-                  <div className="absolute -top-3 sm:top-1 inset-x-0 flex justify-center px-3 sm:px-4 pointer-events-none z-50">
+                  <div className="absolute -top-6 sm:-top-8 lg:top-auto lg:-bottom-12 xl:-bottom-14 inset-x-0 flex justify-center px-3 sm:px-4 pointer-events-none z-50">
                     <motion.div
-                      initial={{ opacity: 0, y: -6, scale: 0.96 }}
-                      animate={{ opacity: 1, y: 0, scale: 1 }}
-                      exit={{ opacity: 0, y: -4, scale: 0.96 }}
-                      transition={{ duration: 0.2 }}
+                      initial={{ opacity: 0, scale: 0.96 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      exit={{ opacity: 0, scale: 0.96 }}
+                      transition={{ duration: 0.15, ease: "easeOut" }}
                       className="px-4 py-2.5 rounded-xl bg-black/95 dark:bg-white text-white dark:text-black text-[11px] sm:text-[12px] font-medium shadow-2xl backdrop-blur-md border border-white/20 dark:border-black/10 max-w-sm text-center leading-snug font-sans pointer-events-none"
                     >
                       {activeHotspot === "scale" && "HX711 24-bit strain gauge with digital low-pass filtering on suspended birch plate."}
@@ -452,138 +490,174 @@ export default function Hero() {
 
                 {/* ── INTERACTIVE HOTSPOT PINS ON HARDWARE ─────────────────── */}
                 {/* Hotspot 1: Scale Tare Platform (Under the Cat) */}
-                <div
-                  className="absolute top-[65%] left-[28%] -translate-x-1/2 -translate-y-1/2 cursor-pointer z-20 group"
-                  onMouseEnter={() => setActiveHotspot("scale")}
-                  onMouseLeave={() => setActiveHotspot(null)}
+                <button
+                  type="button"
+                  aria-label="Scale Tare Platform Hotspot"
+                  onClick={() => setActiveHotspot(activeHotspot === "scale" ? null : "scale")}
+                  onMouseEnter={() => handleHotspotEnter("scale")}
+                  onMouseLeave={handleHotspotLeave}
+                  className="absolute top-[65%] left-[28%] -translate-x-1/2 -translate-y-1/2 cursor-pointer z-20 group p-3 -m-3 rounded-full flex items-center justify-center focus:outline-none"
                 >
-                  <span className="absolute -inset-1.5 rounded-full bg-emerald-500/30 animate-ping pointer-events-none" />
+                  <span className="absolute inset-1.5 rounded-full bg-emerald-500/30 animate-ping pointer-events-none" />
                   <span
-                    className={`relative block w-3.5 h-3.5 rounded-full border-2 border-white dark:border-black transition-transform duration-200 ${
+                    className={`relative block w-3.5 h-3.5 rounded-full border-2 border-white dark:border-black transition-transform duration-150 pointer-events-none ${
                       activeHotspot === "scale"
                         ? "scale-125 bg-emerald-400 shadow-[0_0_12px_#10B981]"
                         : "bg-emerald-500 group-hover:scale-125"
                     }`}
                   />
-                </div>
+                </button>
 
                 {/* Hotspot 2: Kibble Chute Servo */}
-                <div
-                  className="absolute top-[52%] left-[54%] -translate-x-1/2 -translate-y-1/2 cursor-pointer z-20 group"
-                  onMouseEnter={() => setActiveHotspot("kibble")}
-                  onMouseLeave={() => setActiveHotspot(null)}
+                <button
+                  type="button"
+                  aria-label="Kibble Chute Hotspot"
+                  onClick={() => setActiveHotspot(activeHotspot === "kibble" ? null : "kibble")}
+                  onMouseEnter={() => handleHotspotEnter("kibble")}
+                  onMouseLeave={handleHotspotLeave}
+                  className="absolute top-[52%] left-[54%] -translate-x-1/2 -translate-y-1/2 cursor-pointer z-20 group p-3 -m-3 rounded-full flex items-center justify-center focus:outline-none"
                 >
-                  <span className="absolute -inset-1.5 rounded-full bg-amber-500/30 animate-ping pointer-events-none" />
+                  <span className="absolute inset-1.5 rounded-full bg-amber-500/30 animate-ping pointer-events-none" />
                   <span
-                    className={`relative block w-3.5 h-3.5 rounded-full border-2 border-white dark:border-black transition-transform duration-200 ${
+                    className={`relative block w-3.5 h-3.5 rounded-full border-2 border-white dark:border-black transition-transform duration-150 pointer-events-none ${
                       activeHotspot === "kibble"
                         ? "scale-125 bg-amber-400 shadow-[0_0_12px_#F59E0B]"
                         : "bg-amber-500 group-hover:scale-125"
                     }`}
                   />
-                </div>
+                </button>
 
                 {/* Hotspot 3: Water Alcove Soft-Stop */}
-                <div
-                  className="absolute top-[68%] left-[68%] -translate-x-1/2 -translate-y-1/2 cursor-pointer z-20 group"
-                  onMouseEnter={() => setActiveHotspot("water")}
-                  onMouseLeave={() => setActiveHotspot(null)}
+                <button
+                  type="button"
+                  aria-label="Water Alcove Hotspot"
+                  onClick={() => setActiveHotspot(activeHotspot === "water" ? null : "water")}
+                  onMouseEnter={() => handleHotspotEnter("water")}
+                  onMouseLeave={handleHotspotLeave}
+                  className="absolute top-[68%] left-[68%] -translate-x-1/2 -translate-y-1/2 cursor-pointer z-20 group p-3 -m-3 rounded-full flex items-center justify-center focus:outline-none"
                 >
-                  <span className="absolute -inset-1.5 rounded-full bg-sky-500/30 animate-ping pointer-events-none" />
+                  <span className="absolute inset-1.5 rounded-full bg-sky-500/30 animate-ping pointer-events-none" />
                   <span
-                    className={`relative block w-3.5 h-3.5 rounded-full border-2 border-white dark:border-black transition-transform duration-200 ${
+                    className={`relative block w-3.5 h-3.5 rounded-full border-2 border-white dark:border-black transition-transform duration-150 pointer-events-none ${
                       activeHotspot === "water"
                         ? "scale-125 bg-sky-400 shadow-[0_0_12px_#0EA5E9]"
                         : "bg-sky-500 group-hover:scale-125"
                     }`}
                   />
-                </div>
+                </button>
 
                 {/* Hotspot 4: Isolated 5V Power Unit */}
-                <div
-                  className="absolute top-[52%] left-[82%] -translate-x-1/2 -translate-y-1/2 cursor-pointer z-20 group"
-                  onMouseEnter={() => setActiveHotspot("power")}
-                  onMouseLeave={() => setActiveHotspot(null)}
+                <button
+                  type="button"
+                  aria-label="Power Unit Hotspot"
+                  onClick={() => setActiveHotspot(activeHotspot === "power" ? null : "power")}
+                  onMouseEnter={() => handleHotspotEnter("power")}
+                  onMouseLeave={handleHotspotLeave}
+                  className="absolute top-[52%] left-[82%] -translate-x-1/2 -translate-y-1/2 cursor-pointer z-20 group p-3 -m-3 rounded-full flex items-center justify-center focus:outline-none"
                 >
-                  <span className="absolute -inset-1.5 rounded-full bg-indigo-500/30 animate-ping pointer-events-none" />
+                  <span className="absolute inset-1.5 rounded-full bg-indigo-500/30 animate-ping pointer-events-none" />
                   <span
-                    className={`relative block w-3.5 h-3.5 rounded-full border-2 border-white dark:border-black transition-transform duration-200 ${
+                    className={`relative block w-3.5 h-3.5 rounded-full border-2 border-white dark:border-black transition-transform duration-150 pointer-events-none ${
                       activeHotspot === "power"
                         ? "scale-125 bg-indigo-400 shadow-[0_0_12px_#6366F1]"
                         : "bg-indigo-500 group-hover:scale-125"
                     }`}
                   />
-                </div>
+                </button>
 
                 {/* ── FLOATING GLASS LABELS WITH INDEPENDENT BOBBING ─────────── */}
                 {/* Floating Glass Label 1: Birch Tare Scale (Top-Left of Cat) */}
                 <div
-                  onMouseEnter={() => setActiveHotspot("scale")}
-                  onMouseLeave={() => setActiveHotspot(null)}
-                  className={`animate-float absolute top-[22%] sm:top-[30%] left-[3%] sm:left-[7%] lg:left-[8%] px-2.5 sm:px-3.5 py-1 sm:py-1.5 rounded-full bg-white/95 dark:bg-[#1C1F2E]/95 border shadow-md flex items-center gap-1.5 sm:gap-2.5 text-[9.5px] sm:text-[11px] text-[var(--panel-text)] cursor-pointer transition-all duration-300 z-30 will-change-transform ${
-                    activeHotspot === "scale"
-                      ? "border-emerald-500 ring-2 ring-emerald-500/30 scale-105 shadow-emerald-500/20"
-                      : "border-black/10 dark:border-white/10 hover:border-black/20 dark:hover:border-white/20"
-                  }`}
+                  className="animate-float absolute top-[22%] sm:top-[30%] left-[3%] sm:left-[7%] lg:left-[8%] z-30"
                 >
-                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse flex-shrink-0" />
-                  <ScaleIcon className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-emerald-500 flex-shrink-0" />
-                  <div className="flex flex-col text-left leading-none">
-                    <span className="font-semibold tracking-tight text-neutral-900 dark:text-white">Tare Scale · ±0.1g</span>
-                    <span className="text-[8.5px] sm:text-[9.5px] font-mono text-neutral-500 dark:text-neutral-400 mt-0.5">4.2 kg Presence Active</span>
-                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setActiveHotspot(activeHotspot === "scale" ? null : "scale")}
+                    onMouseEnter={() => handleHotspotEnter("scale")}
+                    onMouseLeave={handleHotspotLeave}
+                    className={`px-2.5 sm:px-3.5 py-1 sm:py-1.5 rounded-full bg-white/95 dark:bg-[#1C1F2E]/95 border shadow-md flex items-center gap-1.5 sm:gap-2.5 text-[9.5px] sm:text-[11px] text-[var(--panel-text)] cursor-pointer transition-all duration-150 transform-gpu select-none focus:outline-none ${
+                      activeHotspot === "scale"
+                        ? "border-emerald-500 ring-2 ring-emerald-500/30 scale-105 shadow-emerald-500/20"
+                        : "border-black/10 dark:border-white/10 hover:border-black/20 dark:hover:border-white/20"
+                    }`}
+                  >
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse flex-shrink-0 pointer-events-none" />
+                    <ScaleIcon className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-emerald-500 flex-shrink-0 pointer-events-none" />
+                    <div className="flex flex-col text-left leading-none pointer-events-none">
+                      <span className="font-semibold tracking-tight text-neutral-900 dark:text-white">Tare Scale · ±0.1g</span>
+                      <span className="text-[8.5px] sm:text-[9.5px] font-mono text-neutral-500 dark:text-neutral-400 mt-0.5">4.2 kg Presence Active</span>
+                    </div>
+                  </button>
                 </div>
 
                 {/* Floating Glass Label 2: Kibble Chute (Top-Center) */}
                 <div
-                  onMouseEnter={() => setActiveHotspot("kibble")}
-                  onMouseLeave={() => setActiveHotspot(null)}
-                  className={`animate-float-delayed hidden sm:flex absolute -top-[4%] sm:-top-[2%] left-[36%] sm:left-[42%] lg:left-[44%] px-3.5 py-1.5 rounded-full bg-white/95 dark:bg-[#1C1F2E]/95 border shadow-md items-center gap-2.5 text-[11px] text-[var(--panel-text)] cursor-pointer transition-all duration-300 z-30 will-change-transform ${
-                    activeHotspot === "kibble"
-                      ? "border-amber-500 ring-2 ring-amber-500/30 scale-105 shadow-amber-500/20"
-                      : "border-black/10 dark:border-white/10 hover:border-black/20 dark:hover:border-white/20"
-                  }`}
+                  className="animate-float-delayed hidden sm:block absolute -top-[4%] sm:-top-[2%] left-[36%] sm:left-[42%] lg:left-[44%] z-30"
                 >
-                  <KibbleIcon className="w-3.5 h-3.5 text-amber-500 flex-shrink-0" />
-                  <div className="flex flex-col text-left leading-none">
-                    <span className="font-semibold tracking-tight text-neutral-900 dark:text-white">Micro-Portion Chute</span>
-                    <span className="text-[9.5px] font-mono text-neutral-500 dark:text-neutral-400 mt-0.5">35g · 85% Full</span>
-                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setActiveHotspot(activeHotspot === "kibble" ? null : "kibble")}
+                    onMouseEnter={() => handleHotspotEnter("kibble")}
+                    onMouseLeave={handleHotspotLeave}
+                    className={`px-3.5 py-1.5 rounded-full bg-white/95 dark:bg-[#1C1F2E]/95 border shadow-md flex items-center gap-2.5 text-[11px] text-[var(--panel-text)] cursor-pointer transition-all duration-150 transform-gpu select-none focus:outline-none ${
+                      activeHotspot === "kibble"
+                        ? "border-amber-500 ring-2 ring-amber-500/30 scale-105 shadow-amber-500/20"
+                        : "border-black/10 dark:border-white/10 hover:border-black/20 dark:hover:border-white/20"
+                    }`}
+                  >
+                    <KibbleIcon className="w-3.5 h-3.5 text-amber-500 flex-shrink-0 pointer-events-none" />
+                    <div className="flex flex-col text-left leading-none pointer-events-none">
+                      <span className="font-semibold tracking-tight text-neutral-900 dark:text-white">Micro-Portion Chute</span>
+                      <span className="text-[9.5px] font-mono text-neutral-500 dark:text-neutral-400 mt-0.5">35g · 85% Full</span>
+                    </div>
+                  </button>
                 </div>
 
                 {/* Floating Glass Label 3: Water Alcove (Bottom-Center) */}
                 <div
-                  onMouseEnter={() => setActiveHotspot("water")}
-                  onMouseLeave={() => setActiveHotspot(null)}
-                  className={`animate-float absolute bottom-[8%] sm:bottom-[12%] left-[30%] sm:left-[46%] lg:left-[48%] px-2.5 sm:px-3.5 py-1 sm:py-1.5 rounded-full bg-white/95 dark:bg-[#1C1F2E]/95 border shadow-md flex items-center gap-1.5 sm:gap-2.5 text-[9.5px] sm:text-[11px] text-[var(--panel-text)] cursor-pointer transition-all duration-300 z-30 will-change-transform ${
-                    activeHotspot === "water"
-                      ? "border-sky-500 ring-2 ring-sky-500/30 scale-105 shadow-sky-500/20"
-                      : "border-black/10 dark:border-white/10 hover:border-black/20 dark:hover:border-white/20"
-                  }`}
+                  className="animate-float absolute bottom-[8%] sm:bottom-[12%] left-[30%] sm:left-[46%] lg:left-[48%] z-30"
                 >
-                  <WaterDropIcon className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-sky-500 flex-shrink-0" />
-                  <div className="flex flex-col text-left leading-none">
-                    <span className="font-semibold tracking-tight text-neutral-900 dark:text-white">Soft-Stop Alcove</span>
-                    <span className="text-[8.5px] sm:text-[9.5px] font-mono text-neutral-500 dark:text-neutral-400 mt-0.5">720ml Fresh Water</span>
-                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setActiveHotspot(activeHotspot === "water" ? null : "water")}
+                    onMouseEnter={() => handleHotspotEnter("water")}
+                    onMouseLeave={handleHotspotLeave}
+                    className={`px-2.5 sm:px-3.5 py-1 sm:py-1.5 rounded-full bg-white/95 dark:bg-[#1C1F2E]/95 border shadow-md flex items-center gap-1.5 sm:gap-2.5 text-[9.5px] sm:text-[11px] text-[var(--panel-text)] cursor-pointer transition-all duration-150 transform-gpu select-none focus:outline-none ${
+                      activeHotspot === "water"
+                        ? "border-sky-500 ring-2 ring-sky-500/30 scale-105 shadow-sky-500/20"
+                        : "border-black/10 dark:border-white/10 hover:border-black/20 dark:hover:border-white/20"
+                    }`}
+                  >
+                    <WaterDropIcon className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-sky-500 flex-shrink-0 pointer-events-none" />
+                    <div className="flex flex-col text-left leading-none pointer-events-none">
+                      <span className="font-semibold tracking-tight text-neutral-900 dark:text-white">Soft-Stop Alcove</span>
+                      <span className="text-[8.5px] sm:text-[9.5px] font-mono text-neutral-500 dark:text-neutral-400 mt-0.5">720ml Fresh Water</span>
+                    </div>
+                  </button>
                 </div>
 
                 {/* Floating Glass Label 4: Telemetry & Power (Bottom-Right) */}
                 <div
-                  onMouseEnter={() => setActiveHotspot("power")}
-                  onMouseLeave={() => setActiveHotspot(null)}
-                  className={`animate-float-delayed hidden sm:flex absolute bottom-[3%] sm:bottom-[5%] right-[2%] sm:right-[4%] lg:right-[5%] px-3.5 py-1.5 rounded-full bg-white/95 dark:bg-[#1C1F2E]/95 border shadow-md items-center gap-2.5 text-[11px] text-[var(--panel-text)] cursor-pointer transition-all duration-300 z-30 will-change-transform ${
-                    activeHotspot === "power"
-                      ? "border-indigo-500 ring-2 ring-indigo-500/30 scale-105 shadow-indigo-500/20"
-                      : "border-black/10 dark:border-white/10 hover:border-black/20 dark:hover:border-white/20"
-                  }`}
+                  className="animate-float-delayed hidden sm:block absolute bottom-[3%] sm:bottom-[5%] right-[2%] sm:right-[4%] lg:right-[5%] z-30"
                 >
-                  <span className="w-1.5 h-1.5 rounded-full bg-indigo-500 animate-pulse flex-shrink-0" />
-                  <SignalIcon className="w-3.5 h-3.5 text-indigo-500 flex-shrink-0" />
-                  <div className="flex flex-col text-left leading-none">
-                    <span className="font-semibold tracking-tight text-neutral-900 dark:text-white">ESP32-S3 Telemetry</span>
-                    <span className="text-[9.5px] font-mono text-neutral-500 dark:text-neutral-400 mt-0.5">Dual-Rail 5V Isolation</span>
-                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setActiveHotspot(activeHotspot === "power" ? null : "power")}
+                    onMouseEnter={() => handleHotspotEnter("power")}
+                    onMouseLeave={handleHotspotLeave}
+                    className={`px-3.5 py-1.5 rounded-full bg-white/95 dark:bg-[#1C1F2E]/95 border shadow-md flex items-center gap-2.5 text-[11px] text-[var(--panel-text)] cursor-pointer transition-all duration-150 transform-gpu select-none focus:outline-none ${
+                      activeHotspot === "power"
+                        ? "border-indigo-500 ring-2 ring-indigo-500/30 scale-105 shadow-indigo-500/20"
+                        : "border-black/10 dark:border-white/10 hover:border-black/20 dark:hover:border-white/20"
+                    }`}
+                  >
+                    <span className="w-1.5 h-1.5 rounded-full bg-indigo-500 animate-pulse flex-shrink-0 pointer-events-none" />
+                    <SignalIcon className="w-3.5 h-3.5 text-indigo-500 flex-shrink-0 pointer-events-none" />
+                    <div className="flex flex-col text-left leading-none pointer-events-none">
+                      <span className="font-semibold tracking-tight text-neutral-900 dark:text-white">ESP32-S3 Telemetry</span>
+                      <span className="text-[9.5px] font-mono text-neutral-500 dark:text-neutral-400 mt-0.5">Dual-Rail 5V Isolation</span>
+                    </div>
+                  </button>
                 </div>
 
 

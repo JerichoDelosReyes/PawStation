@@ -65,7 +65,7 @@ const FAQ_ITEMS: FAQItem[] = [
     tag: "Food-Grade Standard",
     highlight: "BPA-free plastic · Non-toxic silicone",
     q: "Are the materials safe for contact with cat food and water?",
-    a: "You are responsible for using food-grade plastics, non-toxic silicone tubing, and sanitary food storage containers for all parts that contact food or water. The electronics and breadboard must be kept away from water and out of reach of the cat. Route tubing so a leak cannot reach the wiring. The structural frame can be built from cardboard, plywood, or food-safe plastic.",
+    a: "You are responsible for using food-grade plastics, non-toxic silicone tubing, and sanitary food storage containers for all parts that contact food or water. All sensitive electronics and breadboard wiring must be kept away from water reservoirs and out of reach of the cat. Route and clamp tubing securely so any accidental leak cannot reach the circuitry. The structural workstation chassis can be built from cardboard, plywood, acrylic, or food-safe plastic.",
   },
   {
     id: "power",
@@ -171,10 +171,10 @@ export default function FAQ() {
         </motion.div>
 
         {/* 
-          Smooth 2-Column Responsive Grid:
-          Each card expands with silky hardware spring height, avoiding grid row squishing.
+          Unified 2-Column Responsive Grid:
+          Pairs each row equally across columns so side-by-side cards maintain identical heights.
         */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-start">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-stretch">
           {FAQ_ITEMS.map((item, idx) => (
             <FAQCard
               key={item.id}
@@ -213,7 +213,7 @@ function FAQCard({
         delay,
         ease: IOS_EASE,
       }}
-      className={`rounded-2xl bg-[#161619] border select-none overflow-hidden transition-colors duration-200 shadow-sm ${
+      className={`rounded-2xl bg-[#161619] border select-none overflow-hidden transition-colors duration-200 shadow-sm h-full flex flex-col justify-between ${
         isOpen
           ? "border-white/25 shadow-lg shadow-black/40 bg-[#18181c]"
           : "border-white/10 hover:border-white/20"
@@ -297,14 +297,14 @@ function FAQCard({
                 },
               },
             }}
-            className="overflow-hidden"
+            className="overflow-hidden flex-1 flex flex-col justify-between"
           >
-            <div className="px-6 sm:px-7 pb-6 sm:pb-7 pt-0">
-              <div className="pt-4 border-t border-white/10">
+            <div className="px-6 sm:px-7 pb-6 sm:pb-7 pt-0 flex-1 flex flex-col justify-between">
+              <div className="pt-4 border-t border-white/10 flex-1 flex flex-col justify-between">
                 <p className="text-[13px] sm:text-[14px] leading-relaxed text-[#9CA3AF] mb-4">
                   {item.a}
                 </p>
-                <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-white/[0.03] border border-white/10 text-[11px] font-mono text-neutral-300 w-fit">
+                <div className="mt-auto inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-white/[0.03] border border-white/10 text-[11px] font-mono text-neutral-300 w-fit">
                   <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
                   <span>{item.highlight}</span>
                 </div>
