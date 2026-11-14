@@ -22,7 +22,7 @@ export default function ThemeTogglePill({
   const isDark = theme === "dark";
 
   const renderLabel = showLabel !== undefined ? showLabel : !compact;
-  const renderIcons = useIcons !== undefined ? useIcons : compact;
+  const renderIcons = useIcons !== undefined ? useIcons : true;
 
   const isAdaptive = variant === "adaptive";
 

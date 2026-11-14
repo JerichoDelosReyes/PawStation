@@ -2,10 +2,12 @@
 
 import { useState, useRef, useEffect } from "react";
 import Link from "next/link";
-import { PawIcon, CatIcon, CloseIcon } from "./Icons";
+import { useRouter } from "next/navigation";
+import { PawIcon, CatIcon, CloseIcon, SunIcon, MoonIcon } from "./Icons";
 import InverseCorner from "./InverseCorner";
 import ThemeTogglePill from "./ThemeTogglePill";
 import { useAuth } from "@/lib/auth-context";
+import { useTheme } from "./ThemeProvider";
 import type { StationStatus } from "@/lib/mqtt";
 
 interface ConsoleNavbarProps {
@@ -23,7 +25,10 @@ export default function ConsoleNavbar({
   stationName = "PawStation Unit 1",
   onOpenEditProfile,
 }: ConsoleNavbarProps) {
-  const { user, signOut, openAuthModal } = useAuth();
+  const { user, signOut } = useAuth();
+  const { theme, setTheme } = useTheme();
+  const isDark = theme === "dark";
+  const router = useRouter();
   const [profileOpen, setProfileOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const triggerRef = useRef<HTMLButtonElement>(null);
@@ -65,9 +70,12 @@ export default function ConsoleNavbar({
     onOpenEditProfile?.();
   };
 
-  const handleSignOut = () => {
+  const handleSignOutAndReturnHome = async () => {
     setProfileOpen(false);
-    signOut();
+    if (user) {
+      await signOut();
+    }
+    router.push("/");
   };
 
   return (
@@ -81,14 +89,9 @@ export default function ConsoleNavbar({
           <div className="w-7 h-7 rounded-lg bg-white flex items-center justify-center text-black shadow-sm transition-transform group-hover:scale-105">
             <PawIcon className="w-3.5 h-3.5 text-black fill-current" />
           </div>
-          <div className="flex items-center gap-1.5">
-            <span className="text-[13px] font-bold tracking-tight uppercase text-white font-sans">
-              PawStation
-            </span>
-            <span className="text-[9px] font-mono uppercase px-1.5 py-0.5 rounded-full bg-white/10 text-neutral-300">
-              Console
-            </span>
-          </div>
+          <span className="text-[13px] font-bold tracking-tight uppercase text-white font-sans">
+            PawStation
+          </span>
         </Link>
 
         {/* Cat Profile Trigger Pill on Mobile */}
@@ -146,10 +149,10 @@ export default function ConsoleNavbar({
                     </h3>
                     <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
                   </div>
-                  <p className="text-[11.5px] text-neutral-500 dark:text-neutral-400 truncate">
+                  <p className="text-[11.5px] font-medium text-neutral-500 dark:text-neutral-400 truncate">
                     {catBreed}
                   </p>
-                  <p className="text-[10px] font-mono text-neutral-400 dark:text-neutral-500 truncate mt-0.5">
+                  <p className="text-[11px] font-medium text-neutral-400 dark:text-neutral-500 truncate mt-0.5">
                     {stationName}
                   </p>
                 </div>
@@ -164,52 +167,111 @@ export default function ConsoleNavbar({
                 Edit Profile
               </button>
 
-              {user?.email && (
-                <div className="text-[10.5px] font-mono text-neutral-400 dark:text-neutral-500 border-t border-black/[0.06] dark:border-white/[0.08] pt-2 mb-2 truncate">
-                  Owner: {user.email}
+              {/* Device and Account details (Mobile) */}
+              <div className="bg-[#FAF8F5] dark:bg-[#121620] rounded-xl p-2.5 border border-black/[0.04] dark:border-white/[0.06] mb-3 space-y-1.5 text-[11px]">
+                <div className="flex items-center justify-between">
+                  <span className="text-neutral-400 dark:text-neutral-500 font-medium">Device</span>
+                  <span className="text-neutral-700 dark:text-neutral-300 font-medium truncate max-w-[140px]">
+                    {stationName}
+                  </span>
                 </div>
-              )}
-
-              {/* Theme Toggle in Profile Window */}
-              <div className="flex items-center justify-between border-t border-black/[0.06] dark:border-white/[0.08] py-2">
-                <span className="text-[11.5px] font-medium text-neutral-600 dark:text-neutral-300">
-                  Theme
-                </span>
-                <ThemeTogglePill variant="adaptive" compact={false} showLabel={false} />
+                {user?.email && (
+                  <div className="flex items-center justify-between">
+                    <span className="text-neutral-400 dark:text-neutral-500 font-medium">Account</span>
+                    <span className="text-neutral-700 dark:text-neutral-300 font-medium truncate max-w-[140px]">
+                      {user.email}
+                    </span>
+                  </div>
+                )}
               </div>
 
-              {/* Return to Home & Sign Out */}
-              <div className="border-t border-black/[0.06] dark:border-white/[0.08] pt-2 space-y-1">
-                <Link
-                  href="/"
-                  onClick={() => setProfileOpen(false)}
-                  className="flex items-center justify-between w-full px-2.5 py-1.5 rounded-lg text-[12px] font-medium text-neutral-700 dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-white/[0.08] transition-colors"
-                >
-                  <span>Return to Home</span>
-                  <span className="text-[11px] text-neutral-400">←</span>
-                </Link>
+              {/* Appearance / Theme Selector (Mobile) */}
+              <div className="border-t border-black/[0.06] dark:border-white/[0.08] pt-2.5 pb-2.5">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-[12px] font-semibold text-neutral-800 dark:text-neutral-200">
+                    Appearance
+                  </span>
+                  <span className="text-[10.5px] font-medium text-neutral-400 dark:text-neutral-500 capitalize">
+                    {theme} mode
+                  </span>
+                </div>
+                <div className="grid grid-cols-2 gap-1.5 p-1 rounded-xl bg-black/[0.04] dark:bg-white/[0.06] border border-black/[0.04] dark:border-white/[0.06]">
+                  <button
+                    type="button"
+                    onClick={() => setTheme("light")}
+                    className={`flex items-center justify-center gap-1.5 py-1.5 px-2 rounded-lg text-[11.5px] font-semibold transition-all duration-200 ${
+                      !isDark
+                        ? "bg-white text-neutral-900 shadow-sm border border-black/[0.04]"
+                        : "text-neutral-500 hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-white"
+                    }`}
+                  >
+                    <SunIcon className={`w-3.5 h-3.5 ${!isDark ? "text-amber-500" : ""}`} />
+                    <span>Light</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setTheme("dark")}
+                    className={`flex items-center justify-center gap-1.5 py-1.5 px-2 rounded-lg text-[11.5px] font-semibold transition-all duration-200 ${
+                      isDark
+                        ? "bg-[#1E2433] text-white shadow-sm border border-white/10"
+                        : "text-neutral-500 hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-white"
+                    }`}
+                  >
+                    <MoonIcon className={`w-3.5 h-3.5 ${isDark ? "text-sky-400" : ""}`} />
+                    <span>Dark</span>
+                  </button>
+                </div>
+              </div>
 
+              {/* Return to Home & Sign Out (Combined) */}
+              <div className="border-t border-black/[0.06] dark:border-white/[0.08] pt-2 space-y-1">
                 {user ? (
                   <button
                     type="button"
-                    onClick={handleSignOut}
+                    onClick={handleSignOutAndReturnHome}
                     className="flex items-center justify-between w-full px-2.5 py-1.5 rounded-lg text-[12px] font-medium text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-500/10 transition-colors"
                   >
-                    <span>Sign Out</span>
+                    <span className="flex items-center gap-1.5">
+                      <svg
+                        className="w-3.5 h-3.5 text-rose-500"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      >
+                        <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+                        <polyline points="16 17 21 12 16 7" />
+                        <line x1="21" y1="12" x2="9" y2="12" />
+                      </svg>
+                      <span>Sign Out &amp; Return Home</span>
+                    </span>
                     <span className="text-[11px]">→</span>
                   </button>
                 ) : (
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setProfileOpen(false);
-                      openAuthModal("login");
-                    }}
-                    className="flex items-center justify-between w-full px-2.5 py-1.5 rounded-lg text-[12px] font-medium text-sky-600 dark:text-sky-400 hover:bg-sky-50 dark:hover:bg-sky-500/10 transition-colors"
+                  <Link
+                    href="/"
+                    onClick={() => setProfileOpen(false)}
+                    className="flex items-center justify-between w-full px-2.5 py-1.5 rounded-lg text-[12px] font-medium text-neutral-700 dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-white/[0.08] transition-colors"
                   >
-                    <span>Log In</span>
-                    <span className="text-[11px]">→</span>
-                  </button>
+                    <span className="flex items-center gap-1.5">
+                      <svg
+                        className="w-3.5 h-3.5 text-neutral-400"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      >
+                        <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
+                        <polyline points="9 22 9 12 15 12 15 22" />
+                      </svg>
+                      <span>Return to Home</span>
+                    </span>
+                    <span className="text-[11px] text-neutral-400">→</span>
+                  </Link>
                 )}
               </div>
             </div>
@@ -230,7 +292,7 @@ export default function ConsoleNavbar({
               <span className="text-[15px] font-bold tracking-tight uppercase text-white font-sans leading-none">
                 PawStation
               </span>
-              <span className="text-[10px] font-mono uppercase px-2 py-0.5 rounded-full bg-white/10 text-neutral-300 border border-white/10 leading-none">
+              <span className="text-[10px] font-semibold uppercase px-2 py-0.5 rounded-full bg-white/10 text-neutral-300 border border-white/10 leading-none">
                 Console
               </span>
             </div>
@@ -351,7 +413,7 @@ export default function ConsoleNavbar({
                     {catBreed}
                   </p>
                   <div className="flex items-center gap-1.5 mt-1">
-                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 text-[10px] font-mono font-medium border border-emerald-500/20">
+                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 text-[10px] font-semibold border border-emerald-500/20">
                       <span className="w-1 h-1 rounded-full bg-emerald-500" />
                       Station Synced
                     </span>
@@ -360,17 +422,17 @@ export default function ConsoleNavbar({
               </div>
 
               {/* Device and Account details */}
-              <div className="bg-[#FAF8F5] dark:bg-[#121620] rounded-xl p-3 border border-black/[0.04] dark:border-white/[0.06] mb-4 space-y-1 text-[11.5px]">
+              <div className="bg-[#FAF8F5] dark:bg-[#121620] rounded-xl p-3 border border-black/[0.04] dark:border-white/[0.06] mb-3.5 space-y-1.5 text-[11.5px]">
                 <div className="flex items-center justify-between">
-                  <span className="text-neutral-400 dark:text-neutral-500">Device</span>
-                  <span className="font-mono text-neutral-700 dark:text-neutral-300 font-medium">
+                  <span className="text-neutral-400 dark:text-neutral-500 font-medium">Device</span>
+                  <span className="text-neutral-800 dark:text-neutral-200 font-medium">
                     {stationName}
                   </span>
                 </div>
                 {user?.email && (
                   <div className="flex items-center justify-between">
-                    <span className="text-neutral-400 dark:text-neutral-500">Account</span>
-                    <span className="font-mono text-neutral-700 dark:text-neutral-300 truncate max-w-[170px]">
+                    <span className="text-neutral-400 dark:text-neutral-500 font-medium">Account</span>
+                    <span className="text-neutral-800 dark:text-neutral-200 font-medium truncate max-w-[170px]">
                       {user.email}
                     </span>
                   </div>
@@ -381,55 +443,62 @@ export default function ConsoleNavbar({
               <button
                 type="button"
                 onClick={handleEditClick}
-                className="w-full py-2 px-3.5 rounded-xl bg-neutral-900 hover:bg-neutral-800 text-white dark:bg-white dark:hover:bg-neutral-100 dark:text-neutral-900 text-[12px] font-semibold text-center shadow-sm transition-all active:scale-[0.98] mb-4"
+                className="w-full py-2 px-3.5 rounded-xl bg-neutral-900 hover:bg-neutral-800 text-white dark:bg-white dark:hover:bg-neutral-100 dark:text-neutral-900 text-[12px] font-semibold text-center shadow-sm transition-all active:scale-[0.98] mb-3.5"
               >
                 Edit Cat &amp; Station Profile
               </button>
 
-              {/* Theme Toggle Section */}
-              <div className="flex items-center justify-between border-t border-black/[0.06] dark:border-white/[0.08] pt-3.5 pb-3">
-                <div className="flex flex-col">
-                  <span className="text-[12.5px] font-medium text-neutral-800 dark:text-neutral-200">
-                    Appearance
-                  </span>
-                  <span className="text-[10.5px] text-neutral-400 dark:text-neutral-500">
-                    Light or dark console
+              {/* Appearance / Theme Selector */}
+              <div className="border-t border-black/[0.06] dark:border-white/[0.08] pt-3.5 pb-3">
+                <div className="flex items-center justify-between mb-2.5">
+                  <div>
+                    <span className="text-[12px] font-semibold text-neutral-800 dark:text-neutral-200 block">
+                      Appearance
+                    </span>
+                    <span className="text-[10.5px] text-neutral-400 dark:text-neutral-500">
+                      Light or dark console
+                    </span>
+                  </div>
+                  <span className="text-[10.5px] font-medium text-neutral-400 dark:text-neutral-500 capitalize">
+                    {theme} mode
                   </span>
                 </div>
-                <ThemeTogglePill variant="adaptive" compact={false} showLabel={false} />
+
+                {/* macOS-style Dual Segmented Pill Switch */}
+                <div className="grid grid-cols-2 gap-1.5 p-1 rounded-xl bg-black/[0.04] dark:bg-white/[0.06] border border-black/[0.04] dark:border-white/[0.06]">
+                  <button
+                    type="button"
+                    onClick={() => setTheme("light")}
+                    className={`flex items-center justify-center gap-2 py-1.5 px-3 rounded-lg text-[12px] font-semibold transition-all duration-200 ${
+                      !isDark
+                        ? "bg-white text-neutral-900 shadow-sm border border-black/[0.04]"
+                        : "text-neutral-500 hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-white"
+                    }`}
+                  >
+                    <SunIcon className={`w-3.5 h-3.5 ${!isDark ? "text-amber-500" : ""}`} />
+                    <span>Light</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setTheme("dark")}
+                    className={`flex items-center justify-center gap-2 py-1.5 px-3 rounded-lg text-[12px] font-semibold transition-all duration-200 ${
+                      isDark
+                        ? "bg-[#1E2433] text-white shadow-sm border border-white/10"
+                        : "text-neutral-500 hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-white"
+                    }`}
+                  >
+                    <MoonIcon className={`w-3.5 h-3.5 ${isDark ? "text-sky-400" : ""}`} />
+                    <span>Dark</span>
+                  </button>
+                </div>
               </div>
 
-              {/* Navigation & Sign Out */}
+              {/* Navigation & Sign Out (Combined) */}
               <div className="border-t border-black/[0.06] dark:border-white/[0.08] pt-3 space-y-1">
-                <Link
-                  href="/"
-                  onClick={() => setProfileOpen(false)}
-                  className="group flex items-center justify-between w-full px-3 py-2 rounded-xl text-[12.5px] font-medium text-neutral-700 dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-white/[0.08] transition-colors"
-                >
-                  <span className="flex items-center gap-2">
-                    <svg
-                      className="w-4 h-4 text-neutral-400 group-hover:text-neutral-600 dark:group-hover:text-white transition-colors"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    >
-                      <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
-                      <polyline points="9 22 9 12 15 12 15 22" />
-                    </svg>
-                    <span>Return to Home</span>
-                  </span>
-                  <span className="text-[11px] text-neutral-400 group-hover:translate-x-0.5 transition-transform">
-                    →
-                  </span>
-                </Link>
-
                 {user ? (
                   <button
                     type="button"
-                    onClick={handleSignOut}
+                    onClick={handleSignOutAndReturnHome}
                     className="group flex items-center justify-between w-full px-3 py-2 rounded-xl text-[12.5px] font-medium text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-500/10 transition-colors"
                   >
                     <span className="flex items-center gap-2">
@@ -446,24 +515,37 @@ export default function ConsoleNavbar({
                         <polyline points="16 17 21 12 16 7" />
                         <line x1="21" y1="12" x2="9" y2="12" />
                       </svg>
-                      <span>Sign Out</span>
+                      <span>Sign Out &amp; Return Home</span>
                     </span>
                     <span className="text-[11px] text-rose-400/80 group-hover:translate-x-0.5 transition-transform">
                       →
                     </span>
                   </button>
                 ) : (
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setProfileOpen(false);
-                      openAuthModal("login");
-                    }}
-                    className="flex items-center justify-between w-full px-3 py-2 rounded-xl text-[12.5px] font-medium text-sky-600 dark:text-sky-400 hover:bg-sky-50 dark:hover:bg-sky-500/10 transition-colors"
+                  <Link
+                    href="/"
+                    onClick={() => setProfileOpen(false)}
+                    className="group flex items-center justify-between w-full px-3 py-2 rounded-xl text-[12.5px] font-medium text-neutral-700 dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-white/[0.08] transition-colors"
                   >
-                    <span>Log In</span>
-                    <span className="text-[11px]">→</span>
-                  </button>
+                    <span className="flex items-center gap-2">
+                      <svg
+                        className="w-4 h-4 text-neutral-400 group-hover:text-neutral-600 dark:group-hover:text-white transition-colors"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      >
+                        <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
+                        <polyline points="9 22 9 12 15 12 15 22" />
+                      </svg>
+                      <span>Return to Home</span>
+                    </span>
+                    <span className="text-[11px] text-neutral-400 group-hover:translate-x-0.5 transition-transform">
+                      →
+                    </span>
+                  </Link>
                 )}
               </div>
             </div>

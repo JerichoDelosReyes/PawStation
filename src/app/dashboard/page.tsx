@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useCallback } from "react";
-import Link from "next/link";
 import ConsoleNavbar from "@/components/ConsoleNavbar";
 import LiveStation from "@/components/LiveStation";
 import Scheduler from "@/components/Scheduler";
@@ -29,7 +28,7 @@ const CAT_BREEDS = [
 ];
 
 export default function DashboardPage() {
-  const { user, catProfile, setCatProfile, openAuthModal } = useAuth();
+  const { user, catProfile, setCatProfile } = useAuth();
   const [stationStatus, setStationStatus] = useState<StationStatus>("connecting");
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
 
@@ -93,88 +92,6 @@ export default function DashboardPage() {
             CONSOLE MAIN WORKSTATION CONTAINER (EXPANSIVE WIDE LAYOUT)
         ───────────────────────────────────────────────────────────── */}
         <div className="w-full flex-1 pt-6 lg:pt-20 pb-16 px-4 sm:px-6 md:px-8 lg:px-10 xl:px-12 2xl:px-14 max-w-[1760px] mx-auto flex flex-col gap-8">
-          {/* Active Hardware Profile Banner */}
-          <div className="rounded-apple-2xl bg-white dark:bg-[#161B26] border border-black/[0.08] dark:border-white/[0.08] shadow-[0_4px_24px_rgba(0,0,0,0.04)] dark:shadow-[0_8px_32px_rgba(0,0,0,0.35)] p-6 sm:p-8 transition-all">
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
-              <div className="flex items-start sm:items-center gap-4 sm:gap-5">
-                <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-2xl bg-accent-amber/10 dark:bg-accent-amber/20 border border-accent-amber/20 flex items-center justify-center text-accent-amber shrink-0 shadow-inner">
-                  <CatIcon className="w-8 h-8 sm:w-9 sm:h-9 fill-current" />
-                </div>
-                <div>
-                  <div className="flex flex-wrap items-center gap-2 mb-1.5">
-                    <span className="text-[11px] font-bold uppercase tracking-wider text-accent-amber">
-                      Active Hardware Profile
-                    </span>
-                    <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border border-emerald-500/20 text-[11px] font-medium font-mono">
-                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                      Station Synced
-                    </span>
-                    <span className="hidden sm:inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-sky-500/10 text-sky-700 dark:text-sky-400 border border-sky-500/20 text-[11px] font-mono">
-                      &lt; 42ms WSS
-                    </span>
-                  </div>
-
-                  <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-neutral-900 dark:text-white">
-                    {displayCatName}&apos;s Station Console
-                  </h1>
-
-                  <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-[12.5px] text-neutral-500 dark:text-neutral-400 mt-1">
-                    <span>
-                      Breed:{" "}
-                      <strong className="text-neutral-800 dark:text-neutral-200 font-semibold">
-                        {displayCatBreed}
-                      </strong>
-                    </span>
-                    <span>·</span>
-                    <span>
-                      Device:{" "}
-                      <strong className="text-neutral-800 dark:text-neutral-200 font-semibold">
-                        {displayStationName}
-                      </strong>
-                    </span>
-                    {user?.email && (
-                      <>
-                        <span>·</span>
-                        <span>
-                          Owner:{" "}
-                          <code className="text-neutral-700 dark:text-neutral-300 font-mono text-[12px]">
-                            {user.email}
-                          </code>
-                        </span>
-                      </>
-                    )}
-                  </div>
-                </div>
-              </div>
-
-              {/* Status pills / actions */}
-              <div className="flex items-center gap-3">
-                <button
-                  type="button"
-                  onClick={handleOpenEdit}
-                  className="apple-button bg-neutral-900 text-white dark:bg-white dark:text-neutral-900 hover:opacity-90 text-[12.5px] font-semibold px-4 py-2 rounded-apple shadow-sm active:scale-95 transition-all"
-                >
-                  Edit Profile
-                </button>
-                <Link
-                  href="/"
-                  className="apple-button bg-[#FAF8F5] dark:bg-[#181D2A] text-neutral-800 dark:text-neutral-200 border border-black/10 dark:border-white/10 hover:bg-neutral-100 dark:hover:bg-white/10 text-[12.5px] font-semibold px-4 py-2 rounded-apple transition-all"
-                >
-                  Return to Home
-                </Link>
-                {!user && (
-                  <button
-                    type="button"
-                    onClick={() => openAuthModal("signup")}
-                    className="apple-button bg-accent-amber text-white hover:bg-accent-amber/90 text-[12.5px] font-semibold px-4 py-2 rounded-apple shadow-sm transition-all"
-                  >
-                    Sync Profile
-                  </button>
-                )}
-              </div>
-            </div>
-          </div>
-
           {/* Precision Hardware Console */}
           <LiveStation catName={displayCatName} onStatusChange={handleStatusChange} />
 
