@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useEffect, useRef, memo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   ScaleIcon,
@@ -13,12 +13,7 @@ import {
   PawIcon,
   CheckIcon,
 } from "./Icons";
-import {
-  createMqttClient,
-  type TelemetryData,
-  type StationStatus,
-  type MqttConnection,
-} from "@/lib/mqtt";
+import { usePawStationMqtt, type StationStatus } from "@/lib/mqtt";
 import { supabase } from "@/lib/supabase";
 
 interface CatVisit {
@@ -33,49 +28,82 @@ interface LiveStationProps {
   onStatusChange?: (status: StationStatus) => void;
 }
 
-export default function LiveStation({ catName = "Cat", onStatusChange }: LiveStationProps) {
-  const [telemetry, setTelemetry] = useState<TelemetryData | null>(null);
-  const [stationStatus, setStationStatus] = useState<StationStatus>("connecting");
-  const [brokerError, setBrokerError] = useState<string | null>(null);
+const isSupabaseConfigured = Boolean(
+  process.env.NEXT_PUBLIC_SUPABASE_URL &&
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY &&
+    !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY.includes("dummy") &&
+    !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY.includes("your-")
+);
+
+function LiveStation({ catName = "Cat", onStatusChange }: LiveStationProps) {
+  const {
+    telemetry,
+    stationStatus,
+    isStationOnline,
+    statusMessage,
+    brokerError,
+    sendCommand,
+  } = usePawStationMqtt();
+
   const [catVisits, setCatVisits] = useState<CatVisit[]>([]);
   const [lastAction, setLastAction] = useState<string | null>(null);
-  const mqttRef = useRef<MqttConnection | null>(null);
+  const [commandCooldown, setCommandCooldown] = useState(false);
+  const prevCatRef = useRef<boolean>(false);
 
-  const handleTelemetry = useCallback((data: TelemetryData) => {
-    setTelemetry(data);
-    setBrokerError(null);
-  }, []);
-
-  const handleStatus = useCallback(
-    (status: StationStatus) => {
-      setStationStatus(status);
-      onStatusChange?.(status);
-    },
-    [onStatusChange]
-  );
-
-  const handleBrokerError = useCallback((error: string) => {
-    setBrokerError(error);
-  }, []);
-
-  // MQTT connection lifecycle
   useEffect(() => {
-    const conn = createMqttClient(handleTelemetry, handleStatus, handleBrokerError);
-    mqttRef.current = conn;
-    conn.connect();
-    return () => conn.disconnect();
-  }, [handleTelemetry, handleStatus, handleBrokerError]);
+    onStatusChange?.(stationStatus);
+  }, [stationStatus, onStatusChange]);
 
-  // Fetch recent feline visits from Supabase & subscribe to Realtime
+  // Visit log: only add an entry when telemetry.cat changes from false to true.
   useEffect(() => {
+    if (!telemetry) return;
+    const wasCat = prevCatRef.current;
+    const isCat = telemetry.cat;
+    prevCatRef.current = isCat;
+
+    if (!wasCat && isCat) {
+      const newVisit: CatVisit = {
+        id: typeof crypto !== "undefined" && crypto.randomUUID ? crypto.randomUUID() : String(Date.now()),
+        visit_start: new Date().toISOString(),
+        peak_weight_g: telemetry.weight,
+        duration_seconds: null,
+      };
+
+      if (isSupabaseConfigured) {
+        supabase
+          .from("cat_visits")
+          .insert({
+            visit_start: newVisit.visit_start,
+            peak_weight_g: newVisit.peak_weight_g,
+          })
+          .then(({ error }) => {
+            if (error) {
+              setCatVisits((prev) => [newVisit, ...prev].slice(0, 5));
+            } else {
+              setCatVisits((prev) => [newVisit, ...prev].slice(0, 5));
+            }
+          });
+      } else {
+        setCatVisits((prev) => [newVisit, ...prev].slice(0, 5));
+      }
+    }
+  }, [telemetry?.cat, telemetry?.weight]);
+
+  // Initial fetch from Supabase if configured
+  useEffect(() => {
+    if (!isSupabaseConfigured) return;
+
+    let mounted = true;
     async function fetchVisits() {
       try {
-        const { data } = await supabase
+        const { data, error } = await supabase
           .from("cat_visits")
           .select("id, visit_start, peak_weight_g, duration_seconds")
           .order("visit_start", { ascending: false })
           .limit(5);
-        if (data) setCatVisits(data);
+        if (!error && data && mounted) {
+          setCatVisits(data);
+        }
       } catch {
         /* Supabase fallback handled gracefully */
       }
@@ -88,23 +116,24 @@ export default function LiveStation({ catName = "Cat", onStatusChange }: LiveSta
         "postgres_changes",
         { event: "INSERT", schema: "public", table: "cat_visits" },
         (payload) => {
-          setCatVisits((prev) => [payload.new as CatVisit, ...prev].slice(0, 5));
+          if (mounted) {
+            setCatVisits((prev) => [payload.new as CatVisit, ...prev].slice(0, 5));
+          }
         }
       )
       .subscribe();
 
     return () => {
+      mounted = false;
       supabase.removeChannel(channel);
     };
   }, []);
 
-  const [commandCooldown, setCommandCooldown] = useState(false);
-
-  const sendCommand = (cmd: "dispense" | "pump" | "tare", label: string) => {
-    if (commandCooldown) return;
+  const handleCommand = (cmd: "dispense" | "pump" | "tare", label: string) => {
+    if (commandCooldown || !isStationOnline) return;
     setCommandCooldown(true);
     setLastAction(label);
-    mqttRef.current?.publish(cmd);
+    sendCommand(cmd);
     setTimeout(() => {
       setCommandCooldown(false);
     }, 1200);
@@ -113,90 +142,171 @@ export default function LiveStation({ catName = "Cat", onStatusChange }: LiveSta
     }, 3500);
   };
 
-  const isOnline = stationStatus === "online";
-  const isConnecting = stationStatus === "connecting";
-
-  // Water level percentage (raw 0-4095; calibrated threshold ~1500)
-  const waterPercent = telemetry
-    ? Math.min(100, Math.max(0, Math.round((telemetry.water / 4095) * 100)))
-    : 78; // aesthetic default when waiting for first telemetry frame
-
-  const rssiLabel = (rssi: number) => {
-    if (rssi > -50) return "Excellent";
-    if (rssi > -60) return "Good";
-    if (rssi > -70) return "Fair";
-    return "Weak";
+  const getRssiInfo = (rssi: number | undefined) => {
+    if (rssi == null) return { label: "--", text: "--", bars: 0 };
+    if (rssi >= -60) return { label: "Good", text: `${rssi} dBm (Good)`, bars: 3 };
+    if (rssi >= -75) return { label: "Fair", text: `${rssi} dBm (Fair)`, bars: 2 };
+    return { label: "Weak", text: `${rssi} dBm (Weak)`, bars: 1 };
   };
 
-  const rssiBars = (rssi: number) => {
-    if (rssi > -50) return 4;
-    if (rssi > -60) return 3;
-    if (rssi > -70) return 2;
-    return 1;
+  const rssiInfo = getRssiInfo(telemetry?.rssi);
+
+  // Status badge display logic
+  const getBadgeContent = () => {
+    if (statusMessage === "Broker settings missing") {
+      return {
+        text: "Broker settings missing",
+        badgeClass: "bg-rose-500/10 text-rose-700 dark:text-rose-400 border-rose-500/25",
+        dotClass: "bg-rose-500",
+        pingClass: "bg-rose-400",
+      };
+    }
+    if (statusMessage === "not authorized (check credentials)") {
+      return {
+        text: "Not authorized (check credentials)",
+        badgeClass: "bg-rose-500/10 text-rose-700 dark:text-rose-400 border-rose-500/25",
+        dotClass: "bg-rose-500",
+        pingClass: "bg-rose-400",
+      };
+    }
+    if (statusMessage === "cannot reach broker") {
+      return {
+        text: "Cannot reach broker",
+        badgeClass: "bg-rose-500/10 text-rose-700 dark:text-rose-400 border-rose-500/25",
+        dotClass: "bg-rose-500",
+        pingClass: "bg-rose-400",
+      };
+    }
+    if (statusMessage === "connecting" || stationStatus === "connecting") {
+      return {
+        text: "Connecting...",
+        badgeClass: "bg-amber-500/10 text-amber-700 dark:text-amber-400 border-amber-500/25",
+        dotClass: "bg-amber-500",
+        pingClass: "bg-amber-400",
+      };
+    }
+    if (isStationOnline) {
+      return {
+        text: "ESP32 Online",
+        badgeClass: "bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border-emerald-500/25",
+        dotClass: "bg-emerald-500",
+        pingClass: "bg-emerald-400",
+      };
+    }
+    return {
+      text: "Station offline",
+      badgeClass: "bg-rose-500/10 text-rose-700 dark:text-rose-400 border-rose-500/25",
+      dotClass: "bg-rose-500",
+      pingClass: "bg-rose-400",
+    };
   };
+
+  const badge = getBadgeContent();
+
+  // Active error to show in banner
+  const bannerMessage =
+    statusMessage === "Broker settings missing"
+      ? "Broker settings missing"
+      : statusMessage === "not authorized (check credentials)"
+      ? "Not authorized (check credentials)"
+      : statusMessage === "cannot reach broker"
+      ? "Cannot reach broker"
+      : !isStationOnline && stationStatus !== "connecting"
+      ? "Station offline"
+      : brokerError;
 
   return (
     <section id="live-station" className="w-full">
       {/* Precision Physical-Digital Hardware Station Card */}
       <div className="w-full rounded-apple-2xl bg-white dark:bg-[#161B26] border border-black/[0.08] dark:border-white/[0.08] shadow-[0_4px_24px_rgba(0,0,0,0.04)] dark:shadow-[0_8px_32px_rgba(0,0,0,0.35)] overflow-hidden transition-all">
         {/* ── Top Console HUD Bar ── */}
-        <div className="flex flex-wrap items-center justify-between gap-3 px-5 sm:px-7 py-4 border-b border-black/[0.06] dark:border-white/[0.08] bg-[#FAF8F5] dark:bg-[#131722] transition-colors">
+        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 px-5 sm:px-7 py-4 border-b border-black/[0.06] dark:border-white/[0.08] bg-[#FAF8F5] dark:bg-[#131722] transition-colors">
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-xl bg-accent-amber/15 text-accent-amber flex items-center justify-center shadow-inner">
+            <div className="w-8 h-8 rounded-xl bg-accent-amber/15 text-accent-amber flex items-center justify-center shadow-inner shrink-0">
               <PawIcon className="w-4 h-4 fill-current" />
             </div>
-            <div>
-              <div className="flex items-center gap-2">
-                <span className="text-[13px] font-bold text-neutral-900 dark:text-white tracking-tight uppercase">
-                  PawStation Telemetry Workstation
-                </span>
-                <span className="text-[9px] font-mono px-2 py-0.5 rounded-full bg-neutral-200/70 dark:bg-white/10 text-neutral-700 dark:text-neutral-300 font-semibold">
-                  ESP32-S3
-                </span>
-              </div>
-              <p className="text-[11px] text-neutral-500 dark:text-neutral-400">
-                Continuous 24-bit biometric stream · HiveMQ Cloud WSS
-              </p>
-            </div>
+            <span className="text-[13px] font-bold text-neutral-900 dark:text-white tracking-tight uppercase">
+              Pawstation Workstation
+            </span>
           </div>
 
-          <div className="flex items-center gap-3">
+          <div className="flex flex-wrap items-center gap-2.5 sm:gap-3">
+            {/* Top Hardware Actuation Buttons */}
+            <div className="flex flex-wrap items-center gap-2">
+              {/* Dispense Food Button */}
+              <button
+                type="button"
+                onClick={() => handleCommand("dispense", "Dispensing Food")}
+                disabled={!isStationOnline || telemetry?.dispensing || commandCooldown}
+                className="apple-button bg-amber-500 hover:bg-amber-600 text-white shadow-sm disabled:opacity-40 disabled:cursor-not-allowed text-[12px] font-semibold px-3.5 py-1.5 rounded-apple transition-all active:scale-[0.98] inline-flex items-center gap-1.5"
+                title="Dispense dry food"
+              >
+                <KibbleIcon className="w-3.5 h-3.5 fill-current" />
+                <span>{telemetry?.dispensing ? "Dispensing..." : "Dispense Food"}</span>
+              </button>
+
+              {/* Run Pump Button */}
+              <button
+                type="button"
+                onClick={() => handleCommand("pump", "Running Water Pump for 3 seconds")}
+                disabled={
+                  !isStationOnline ||
+                  telemetry?.pump !== "OFF" ||
+                  telemetry?.waterLow ||
+                  commandCooldown
+                }
+                title={
+                  telemetry?.waterLow
+                    ? "Pump locked to prevent motor burnout while reservoir is low"
+                    : "Trigger water pump cycle (3 seconds)"
+                }
+                className="apple-button bg-sky-600 dark:bg-sky-500 hover:bg-sky-700 dark:hover:bg-sky-600 text-white shadow-sm disabled:opacity-40 disabled:cursor-not-allowed text-[12px] font-semibold px-3.5 py-1.5 rounded-apple transition-all active:scale-[0.98] inline-flex items-center gap-1.5"
+              >
+                <PumpIcon className="w-3.5 h-3.5" />
+                <span>Run Pump (3s)</span>
+              </button>
+
+              {/* Zero Scale (Tare) Button */}
+              <button
+                type="button"
+                onClick={() => handleCommand("tare", "Scale Zeroed (Tare)")}
+                disabled={!isStationOnline || commandCooldown}
+                className="apple-button bg-neutral-900 text-white hover:bg-neutral-800 dark:bg-white dark:text-neutral-900 dark:hover:bg-neutral-100 border border-black/10 dark:border-white/10 shadow-sm disabled:opacity-40 disabled:cursor-not-allowed text-[12px] font-semibold px-3.5 py-1.5 rounded-apple transition-all active:scale-[0.98] inline-flex items-center gap-1.5"
+                title="Zero the HX711 scale load cell"
+              >
+                <TareIcon className="w-3.5 h-3.5" />
+                <span>Zero Scale</span>
+              </button>
+            </div>
+
+            {commandCooldown && (
+              <span className="text-[11px] font-mono text-amber-500 animate-pulse">
+                Cooldown: 1.2s
+              </span>
+            )}
+
+            <div className="h-4 w-px bg-black/10 dark:bg-white/10 hidden sm:block" />
+
             {/* Real-time Status Badge */}
             <div
-              className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-medium border transition-colors ${
-                isOnline
-                  ? "bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border-emerald-500/25"
-                  : isConnecting
-                  ? "bg-amber-500/10 text-amber-700 dark:text-amber-400 border-amber-500/25"
-                  : "bg-rose-500/10 text-rose-700 dark:text-rose-400 border-rose-500/25"
-              }`}
+              className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-medium border transition-colors ${badge.badgeClass}`}
             >
               <span className="relative flex h-2 w-2">
                 <span
-                  className={`animate-ping absolute inline-flex h-full w-full rounded-full opacity-75 ${
-                    isOnline ? "bg-emerald-400" : isConnecting ? "bg-amber-400" : "bg-rose-400"
-                  }`}
+                  className={`animate-ping absolute inline-flex h-full w-full rounded-full opacity-75 ${badge.pingClass}`}
                 />
                 <span
-                  className={`relative inline-flex rounded-full h-2 w-2 ${
-                    isOnline ? "bg-emerald-500" : isConnecting ? "bg-amber-500" : "bg-rose-500"
-                  }`}
+                  className={`relative inline-flex rounded-full h-2 w-2 ${badge.dotClass}`}
                 />
               </span>
-              <span>
-                {isOnline ? "ESP32 Online" : isConnecting ? "Connecting to HiveMQ..." : "Station Offline"}
-              </span>
+              <span>{badge.text}</span>
             </div>
-
-            <span className="hidden sm:inline-flex text-[11px] font-mono text-neutral-500 dark:text-neutral-400 px-2 py-0.5 rounded bg-black/[0.04] dark:bg-white/[0.06]">
-              Port 8884 TLS
-            </span>
           </div>
         </div>
 
-        {/* ── Broker Error Notification ── */}
+        {/* ── Status / Broker Notification Banner ── */}
         <AnimatePresence>
-          {brokerError && (
+          {bannerMessage && !isStationOnline && (
             <motion.div
               initial={{ height: 0, opacity: 0 }}
               animate={{ height: "auto", opacity: 1 }}
@@ -205,9 +315,13 @@ export default function LiveStation({ catName = "Cat", onStatusChange }: LiveSta
             >
               <div className="flex items-center gap-2">
                 <span className="w-2 h-2 rounded-full bg-rose-500" />
-                <span>{brokerError}</span>
+                <span className="font-medium">{bannerMessage}</span>
               </div>
-              <span className="text-[11px] opacity-75">Auto-reconnecting every 5s</span>
+              <span className="text-[11px] opacity-75 font-mono">
+                {bannerMessage === "Broker settings missing"
+                  ? "Set NEXT_PUBLIC_MQTT_* in .env.local"
+                  : "Auto-reconnect active"}
+              </span>
             </motion.div>
           )}
         </AnimatePresence>
@@ -245,29 +359,31 @@ export default function LiveStation({ catName = "Cat", onStatusChange }: LiveSta
                         24-Bit Load Cell (HX711)
                       </span>
                       <p className="text-[10px] text-neutral-400 dark:text-neutral-500 leading-none">
-                        10 kg Aluminum Bar · Sub-gram calibration
+                        10 kg Aluminum Bar
                       </p>
                     </div>
                   </div>
 
-                  <span
-                    className={`text-[11px] font-medium px-2.5 py-0.5 rounded-full border ${
-                      telemetry?.scaleOk !== false
-                        ? "bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border-emerald-500/20"
-                        : "bg-rose-500/10 text-rose-700 dark:text-rose-400 border-rose-500/20"
-                    }`}
-                  >
-                    {telemetry?.scaleOk !== false ? "Stable ±0.1g" : "ADC Error"}
-                  </span>
+                  {telemetry && telemetry.scaleOk === false && (
+                    <span className="text-[11px] font-medium px-2.5 py-0.5 rounded-full border bg-rose-500/10 text-rose-700 dark:text-rose-400 border-rose-500/20">
+                      Scale offline
+                    </span>
+                  )}
                 </div>
 
                 {/* Big Metric Display */}
                 <div className="my-2">
                   <div className="text-[38px] sm:text-[46px] font-bold tracking-tight text-neutral-900 dark:text-white font-mono tabular-nums leading-none">
                     {telemetry ? (
-                      `${telemetry.weight.toFixed(1)} g`
+                      telemetry.scaleOk === false ? (
+                        <span className="text-[26px] sm:text-[32px] text-rose-600 dark:text-rose-400">
+                          Scale offline
+                        </span>
+                      ) : (
+                        `${telemetry.weight.toFixed(1)} g`
+                      )
                     ) : (
-                      <span className="text-neutral-400 dark:text-neutral-600">0.0 g</span>
+                      <span className="text-neutral-400 dark:text-neutral-600">--</span>
                     )}
                   </div>
                   <span className="text-[11.5px] text-neutral-500 dark:text-neutral-400 mt-1 inline-block">
@@ -299,7 +415,7 @@ export default function LiveStation({ catName = "Cat", onStatusChange }: LiveSta
 
                 <div className="flex items-center gap-1.5 text-[12px] text-neutral-600 dark:text-neutral-400 font-mono">
                   <PawIcon className="w-3.5 h-3.5 text-accent-amber fill-current" />
-                  <span>Visits Today: {telemetry?.visits ?? 0}</span>
+                  <span>Visits since station start: {telemetry ? telemetry.visits : "--"}</span>
                 </div>
               </div>
             </div>
@@ -317,44 +433,36 @@ export default function LiveStation({ catName = "Cat", onStatusChange }: LiveSta
                         Liquid Reservoir & Fluidics
                       </span>
                       <p className="text-[10px] text-neutral-400 dark:text-neutral-500 leading-none">
-                        LM393 Probe · 720 ml Alcove Tank
+                        LM393 probe
                       </p>
                     </div>
                   </div>
 
-                  <span
-                    className={`text-[11px] font-medium px-2.5 py-0.5 rounded-full border ${
-                      telemetry?.waterLow
-                        ? "bg-rose-500/10 text-rose-700 dark:text-rose-400 border-rose-500/25"
-                        : "bg-sky-500/10 text-sky-700 dark:text-sky-400 border-sky-500/25"
-                    }`}
-                  >
-                    {telemetry?.waterLow ? "Low Reservoir" : "Adequate Level"}
-                  </span>
+                  {telemetry ? (
+                    <span
+                      className={`text-[11px] font-medium px-2.5 py-0.5 rounded-full border ${
+                        telemetry.waterLow
+                          ? "bg-rose-500/10 text-rose-700 dark:text-rose-400 border-rose-500/25"
+                          : "bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border-emerald-500/25"
+                      }`}
+                    >
+                      {telemetry.waterLow ? "Low - refill" : "Level OK"}
+                    </span>
+                  ) : (
+                    <span className="text-[11px] font-medium px-2.5 py-0.5 rounded-full border bg-neutral-200/60 dark:bg-white/[0.06] text-neutral-500 dark:text-neutral-400 border-black/[0.04] dark:border-white/[0.06]">
+                      --
+                    </span>
+                  )}
                 </div>
 
                 {/* Big Metric Display */}
                 <div className="my-2">
-                  <div className="text-[38px] sm:text-[46px] font-bold tracking-tight text-neutral-900 dark:text-white font-mono tabular-nums leading-none">
-                    {waterPercent}%
+                  <div className="text-[34px] sm:text-[42px] font-bold tracking-tight text-neutral-900 dark:text-white font-mono tabular-nums leading-tight">
+                    Sensor reading: {telemetry ? telemetry.water : "--"}
                   </div>
                   <span className="text-[11.5px] text-neutral-500 dark:text-neutral-400 mt-1 inline-block">
-                    Estimated volume: {Math.round((waterPercent / 100) * 720)} ml remaining
+                    LM393 conductivity ADC sensor
                   </span>
-                </div>
-
-                {/* Animated Fluidics Gauge */}
-                <div className="mt-3 w-full h-3 rounded-full bg-neutral-200 dark:bg-white/[0.08] p-0.5 overflow-hidden">
-                  <motion.div
-                    className={`h-full rounded-full transition-all duration-500 ${
-                      telemetry?.waterLow
-                        ? "bg-rose-500"
-                        : "bg-gradient-to-r from-sky-400 to-blue-600 dark:from-cyan-400 dark:to-blue-500"
-                    }`}
-                    initial={{ width: 0 }}
-                    animate={{ width: `${waterPercent}%` }}
-                    transition={{ duration: 0.6, ease: "easeOut" }}
-                  />
                 </div>
               </div>
 
@@ -365,11 +473,7 @@ export default function LiveStation({ catName = "Cat", onStatusChange }: LiveSta
                   <span className="text-neutral-600 dark:text-neutral-300">
                     Pump:{" "}
                     <strong className="font-mono text-neutral-900 dark:text-white">
-                      {telemetry?.pump === "RUNNING"
-                        ? "ACTIVE (3s Cycle)"
-                        : telemetry?.pump === "STOPPING"
-                        ? "SOFT-STOPPING"
-                        : "IDLE"}
+                      {telemetry?.pump ?? "--"}
                     </strong>
                   </span>
                 </div>
@@ -384,80 +488,10 @@ export default function LiveStation({ catName = "Cat", onStatusChange }: LiveSta
           </div>
 
           {/* ─────────────────────────────────────────────────────────
-              TACTILE HARDWARE COMMAND BAR (Apple / Teenage Engineering)
-          ───────────────────────────────────────────────────────── */}
-          <div className="bg-[#FAF8F5] dark:bg-[#11141D] rounded-apple-xl p-5 sm:p-6 border border-black/[0.06] dark:border-white/[0.06] transition-colors">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-4">
-              <div>
-                <span className="text-[11px] font-bold uppercase tracking-wider text-neutral-500 dark:text-neutral-400">
-                  Hardware Actuation Controls
-                </span>
-                <p className="text-[11.5px] text-neutral-500 dark:text-neutral-400 mt-0.5">
-                  Micro-haptic commands dispatched over authenticated TLS HiveMQ topic{" "}
-                  <code className="text-neutral-800 dark:text-neutral-200 font-mono text-[11px]">
-                    pawstation/cmd
-                  </code>
-                </p>
-              </div>
-
-              {commandCooldown && (
-                <span className="text-[11px] font-mono text-neutral-400 animate-pulse">
-                  Radio cooldown: 1.2s
-                </span>
-              )}
-            </div>
-
-            <div className="flex flex-wrap items-center gap-3">
-              {/* Dispense Food Button */}
-              <button
-                type="button"
-                onClick={() => sendCommand("dispense", "Dispensing 35g Kibble")}
-                disabled={!isOnline || telemetry?.dispensing || commandCooldown}
-                className="apple-button bg-amber-500 hover:bg-amber-600 text-white shadow-sm disabled:opacity-40 disabled:cursor-not-allowed text-[12.5px] font-semibold px-4 py-2.5 rounded-apple transition-all active:scale-[0.98]"
-              >
-                <KibbleIcon className="w-4 h-4 fill-current" />
-                <span>{telemetry?.dispensing ? "Dispensing..." : "Dispense Food (35g)"}</span>
-              </button>
-
-              {/* Run Pump Button */}
-              <button
-                type="button"
-                onClick={() => sendCommand("pump", "Running Water Pump for 3 seconds")}
-                disabled={
-                  !isOnline ||
-                  telemetry?.pump !== "OFF" ||
-                  telemetry?.waterLow ||
-                  commandCooldown
-                }
-                title={
-                  telemetry?.waterLow
-                    ? "Pump locked to prevent motor burnout while reservoir is low"
-                    : "Trigger water pump cycle (3 seconds)"
-                }
-                className="apple-button bg-sky-600 dark:bg-sky-500 hover:bg-sky-700 dark:hover:bg-sky-600 text-white shadow-sm disabled:opacity-40 disabled:cursor-not-allowed text-[12.5px] font-semibold px-4 py-2.5 rounded-apple transition-all active:scale-[0.98]"
-              >
-                <PumpIcon className="w-4 h-4" />
-                <span>Run Pump (3s)</span>
-              </button>
-
-              {/* Zero Scale (Tare) Button */}
-              <button
-                type="button"
-                onClick={() => sendCommand("tare", "Scale Zeroed (Tare)")}
-                disabled={!isOnline || commandCooldown}
-                className="apple-button bg-neutral-900 text-white hover:bg-neutral-800 dark:bg-white dark:text-neutral-900 dark:hover:bg-neutral-100 border border-black/10 dark:border-white/10 shadow-sm disabled:opacity-40 disabled:cursor-not-allowed text-[12.5px] font-semibold px-4 py-2.5 rounded-apple transition-all active:scale-[0.98]"
-              >
-                <TareIcon className="w-4 h-4" />
-                <span>Zero Scale (Tare)</span>
-              </button>
-            </div>
-          </div>
-
-          {/* ─────────────────────────────────────────────────────────
               BOTTOM PANEL: FELINE VISIT LOG + TELEMETRY HUD
           ───────────────────────────────────────────────────────── */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
-            {/* Supabase Cat Visit Log */}
+            {/* Visit Log */}
             <div className="bg-[#FAF8F5] dark:bg-[#181D2A] border border-black/[0.06] dark:border-white/[0.08] rounded-apple-xl p-5 sm:p-6 shadow-sm flex flex-col justify-between transition-colors">
               <div>
                 <div className="flex items-center justify-between mb-4">
@@ -466,11 +500,11 @@ export default function LiveStation({ catName = "Cat", onStatusChange }: LiveSta
                       <CatIcon className="w-3.5 h-3.5 fill-current" />
                     </div>
                     <span className="text-[11px] font-bold uppercase tracking-wider text-neutral-500 dark:text-neutral-400">
-                      Feline Visit Log (Supabase Realtime)
+                      Feline Visit Log
                     </span>
                   </div>
                   <span className="text-[10px] font-mono text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/20">
-                    Live Stream
+                    {isSupabaseConfigured ? "Live Stream" : "This session"}
                   </span>
                 </div>
 
@@ -496,7 +530,7 @@ export default function LiveStation({ catName = "Cat", onStatusChange }: LiveSta
                             </span>
                           </div>
                           <span className="font-mono font-semibold text-neutral-900 dark:text-white">
-                            {v.peak_weight_g.toFixed(2)} kg
+                            {v.peak_weight_g.toFixed(1)} g
                           </span>
                           <span className="text-neutral-500 dark:text-neutral-400 font-mono text-[11px]">
                             {dur}
@@ -508,7 +542,7 @@ export default function LiveStation({ catName = "Cat", onStatusChange }: LiveSta
                 ) : (
                   <div className="py-6 text-center">
                     <p className="text-[12px] text-neutral-400 dark:text-neutral-500">
-                      No visits recorded yet today. Waiting for feline trigger.
+                      No visits recorded yet. Waiting for feline trigger.
                     </p>
                   </div>
                 )}
@@ -528,7 +562,7 @@ export default function LiveStation({ catName = "Cat", onStatusChange }: LiveSta
                     </span>
                   </div>
                   <span className="text-[10px] font-mono text-neutral-500 dark:text-neutral-400">
-                    ESP32-S3 SoC
+                    ESP32 DevKit
                   </span>
                 </div>
 
@@ -539,7 +573,7 @@ export default function LiveStation({ catName = "Cat", onStatusChange }: LiveSta
                     <div className="flex items-center gap-2">
                       <div className="flex items-end gap-0.5 h-3">
                         {[1, 2, 3, 4].map((bar) => {
-                          const active = bar <= rssiBars(telemetry?.rssi ?? -52);
+                          const active = bar <= rssiInfo.bars;
                           return (
                             <span
                               key={bar}
@@ -554,7 +588,7 @@ export default function LiveStation({ catName = "Cat", onStatusChange }: LiveSta
                         })}
                       </div>
                       <span className="font-mono font-semibold text-neutral-900 dark:text-white">
-                        {telemetry ? `${telemetry.rssi} dBm (${rssiLabel(telemetry.rssi)})` : "-52 dBm (Good)"}
+                        {rssiInfo.text}
                       </span>
                     </div>
                   </div>
@@ -562,16 +596,16 @@ export default function LiveStation({ catName = "Cat", onStatusChange }: LiveSta
                   {/* Broker Port */}
                   <div className="flex items-center justify-between p-2.5 rounded-lg bg-white dark:bg-[#131722] border border-black/[0.04] dark:border-white/[0.05]">
                     <span className="text-neutral-600 dark:text-neutral-400">Broker Socket</span>
-                    <span className="font-mono text-neutral-900 dark:text-white">8884 WSS (TLS 1.3)</span>
+                    <span className="font-mono text-neutral-900 dark:text-white">8884 WSS (TLS)</span>
                   </div>
 
                   {/* Protocol */}
                   <div className="flex items-center justify-between p-2.5 rounded-lg bg-white dark:bg-[#131722] border border-black/[0.04] dark:border-white/[0.05]">
                     <span className="text-neutral-600 dark:text-neutral-400">Broker Protocol</span>
-                    <span className="font-mono text-neutral-900 dark:text-white">HiveMQ Cloud MQTT/TLS</span>
+                    <span className="font-mono text-neutral-900 dark:text-white">HiveMQ Cloud MQTT over TLS</span>
                   </div>
 
-                  {/* Dispensing Loop */}
+                  {/* Dispenser Status */}
                   <div className="flex items-center justify-between p-2.5 rounded-lg bg-white dark:bg-[#131722] border border-black/[0.04] dark:border-white/[0.05]">
                     <span className="text-neutral-600 dark:text-neutral-400">Dispenser Status</span>
                     <span
@@ -581,7 +615,11 @@ export default function LiveStation({ catName = "Cat", onStatusChange }: LiveSta
                           : "text-neutral-900 dark:text-white"
                       }`}
                     >
-                      {telemetry?.dispensing ? "Actuating Servo (35g)" : "Idle / Ready"}
+                      {telemetry?.dispensing
+                        ? "Dispensing"
+                        : telemetry
+                        ? "Idle"
+                        : "--"}
                     </span>
                   </div>
                 </div>
@@ -593,3 +631,5 @@ export default function LiveStation({ catName = "Cat", onStatusChange }: LiveSta
     </section>
   );
 }
+
+export default memo(LiveStation);

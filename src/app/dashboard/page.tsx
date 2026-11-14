@@ -6,9 +6,9 @@ import LiveStation from "@/components/LiveStation";
 import Scheduler from "@/components/Scheduler";
 import Footer from "@/components/Footer";
 import AuthModal from "@/components/AuthModal";
-import { CatIcon, CloseIcon } from "@/components/Icons";
+import { CatIcon, CloseIcon, ChevronDownIcon } from "@/components/Icons";
 import { useAuth } from "@/lib/auth-context";
-import type { StationStatus } from "@/lib/mqtt";
+import { MqttProvider, useStationStatus } from "@/lib/mqtt";
 
 const CAT_BREEDS = [
   "Domestic Shorthair",
@@ -27,9 +27,9 @@ const CAT_BREEDS = [
   "Other / Mixed",
 ];
 
-export default function DashboardPage() {
+function DashboardContent() {
   const { user, catProfile, setCatProfile } = useAuth();
-  const [stationStatus, setStationStatus] = useState<StationStatus>("connecting");
+  const { stationStatus } = useStationStatus();
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
 
   const displayCatName = catProfile?.catName || user?.user_metadata?.cat_name || "Whiskers";
@@ -43,13 +43,13 @@ export default function DashboardPage() {
   const [isSaving, setIsSaving] = useState(false);
   const [saveSuccess, setSaveSuccess] = useState(false);
 
-  const handleOpenEdit = () => {
+  const handleOpenEdit = useCallback(() => {
     setEditName(displayCatName);
     setEditBreed(displayCatBreed);
     setEditStation(displayStationName);
     setSaveSuccess(false);
     setIsEditModalOpen(true);
-  };
+  }, [displayCatName, displayCatBreed, displayStationName]);
 
   const handleSaveProfile = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -70,10 +70,6 @@ export default function DashboardPage() {
     }
   };
 
-  const handleStatusChange = useCallback((status: StationStatus) => {
-    setStationStatus(status);
-  }, []);
-
   return (
     <div className="w-full min-h-screen bg-[var(--frame-bg)] text-white select-none p-0 flex flex-col justify-between overflow-x-hidden selection:bg-neutral-900 selection:text-white dark:selection:bg-white dark:selection:text-black transition-colors duration-200">
       <main className="relative w-full flex-1 min-h-0 bg-[var(--panel-bg)] text-[var(--panel-text)] rounded-none flex flex-col transition-colors duration-200 overflow-visible">
@@ -93,7 +89,7 @@ export default function DashboardPage() {
         ───────────────────────────────────────────────────────────── */}
         <div className="w-full flex-1 pt-6 lg:pt-20 pb-16 px-4 sm:px-6 md:px-8 lg:px-10 xl:px-12 2xl:px-14 max-w-[1760px] mx-auto flex flex-col gap-8">
           {/* Precision Hardware Console */}
-          <LiveStation catName={displayCatName} onStatusChange={handleStatusChange} />
+          <LiveStation catName={displayCatName} />
 
           {/* Routine Automation & Hardware Blueprint */}
           <Scheduler catName={displayCatName} />
@@ -149,17 +145,26 @@ export default function DashboardPage() {
                 <label className="block text-[12px] font-semibold uppercase tracking-wider text-neutral-500 dark:text-neutral-400 mb-1.5">
                   Breed / Heritage
                 </label>
-                <select
-                  value={editBreed}
-                  onChange={(e) => setEditBreed(e.target.value)}
-                  className="w-full rounded-apple border border-black/[0.1] dark:border-white/[0.12] bg-[#FAF8F5] dark:bg-[#181D2A] px-3.5 py-2.5 text-[13.5px] text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-accent-amber/40 transition-all font-medium"
-                >
-                  {CAT_BREEDS.map((b) => (
-                    <option key={b} value={b}>
-                      {b}
-                    </option>
-                  ))}
-                </select>
+                <div className="relative">
+                  <select
+                    value={editBreed}
+                    onChange={(e) => setEditBreed(e.target.value)}
+                    className="w-full appearance-none rounded-apple border border-black/[0.1] dark:border-white/[0.12] bg-[#FAF8F5] dark:bg-[#181D2A] pl-3.5 pr-10 py-2.5 text-[13.5px] text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-accent-amber/40 transition-all font-medium cursor-pointer"
+                  >
+                    {CAT_BREEDS.map((b) => (
+                      <option
+                        key={b}
+                        value={b}
+                        className="bg-white text-neutral-900 dark:bg-[#181D2A] dark:text-white"
+                      >
+                        {b}
+                      </option>
+                    ))}
+                  </select>
+                  <div className="pointer-events-none absolute right-3.5 top-1/2 -translate-y-1/2 text-neutral-500 dark:text-neutral-400">
+                    <ChevronDownIcon className="w-4 h-4" />
+                  </div>
+                </div>
               </div>
 
               <div>
@@ -194,7 +199,7 @@ export default function DashboardPage() {
                 <button
                   type="submit"
                   disabled={isSaving}
-                  className="apple-button flex-1 bg-neutral-900 hover:bg-neutral-800 text-white dark:bg-white dark:text-neutral-900 dark:hover:bg-neutral-100 py-2.5 text-[13px] rounded-apple font-semibold shadow-sm disabled:opacity-50 transition-all"
+                  className="apple-button flex-1 bg-neutral-900 hover:bg-neutral-800 dark:bg-white dark:hover:bg-neutral-100 text-white dark:text-neutral-900 py-2.5 text-[13px] rounded-apple font-semibold transition-all disabled:opacity-50"
                 >
                   {isSaving ? "Saving..." : "Save Profile"}
                 </button>
@@ -204,9 +209,19 @@ export default function DashboardPage() {
         </div>
       )}
 
-      {/* Minimalist Footer & Auth Modal */}
+      {/* Global Console Footer with Status & Build Metadata */}
       <Footer />
+
+      {/* Authentication Modal */}
       <AuthModal />
     </div>
+  );
+}
+
+export default function DashboardPage() {
+  return (
+    <MqttProvider>
+      <DashboardContent />
+    </MqttProvider>
   );
 }

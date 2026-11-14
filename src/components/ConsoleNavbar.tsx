@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, memo } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { PawIcon, CatIcon, CloseIcon, SunIcon, MoonIcon } from "./Icons";
@@ -18,7 +18,7 @@ interface ConsoleNavbarProps {
   onOpenEditProfile?: () => void;
 }
 
-export default function ConsoleNavbar({
+function ConsoleNavbar({
   stationStatus = "connecting",
   catName = "Whiskers",
   catBreed = "Domestic Longhair",
@@ -559,3 +559,5 @@ export default function ConsoleNavbar({
     </>
   );
 }
+
+export default memo(ConsoleNavbar);

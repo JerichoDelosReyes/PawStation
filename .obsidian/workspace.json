@@ -183,6 +183,7 @@
   },
   "active": "7dbc362d75ef2a51",
   "lastOpenFiles": [
+    "src/lib/mqtt.tsx",
     "src/components/ConsoleNavbar.tsx",
     "capture.mjs",
     "src/components/ScrollProgressBar.tsx",
@@ -202,7 +203,6 @@
     "tsconfig.tsbuildinfo",
     "src/components/ThemeTogglePill.tsx",
     "node_modules/next/dist/docs/01-app/03-api-reference/05-config/01-next-config-js/generateEtags.md",
-    "src/components/PrototypeSchematic.tsx",
     "node_modules/three/README.md",
     "node_modules/three/examples/jsm/libs/mikktspace.README.md",
     "node_modules/three/examples/jsm/libs/basis/README.md",

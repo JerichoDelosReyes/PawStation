@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState, useRef, memo } from "react";
 import Link from "next/link";
 import { motion, useScroll, useTransform } from "framer-motion";
 import { PawIcon, CloseIcon } from "./Icons";
@@ -87,7 +87,7 @@ function Modal({ title, children, isOpen, onClose }: ModalProps) {
   );
 }
 
-export default function Footer() {
+function Footer() {
   const [privacyOpen, setPrivacyOpen] = useState(false);
   const [termsOpen, setTermsOpen] = useState(false);
   const footerRef = useRef<HTMLElement>(null);
@@ -278,3 +278,5 @@ export default function Footer() {
     </>
   );
 }
+
+export default memo(Footer);

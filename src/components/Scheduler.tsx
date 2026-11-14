@@ -1,9 +1,7 @@
 "use client";
 
-import { useState, useEffect, type FormEvent } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { useState, useEffect, useRef, memo } from "react";
 import {
-  CheckIcon,
   ScaleIcon,
   KibbleIcon,
   PumpIcon,
@@ -11,113 +9,184 @@ import {
   ShieldIcon,
   WaterDropIcon,
   CalmIcon,
+  CloseIcon,
+  ClockIcon,
 } from "./Icons";
-import { useAuth } from "@/lib/auth-context";
+import { useStationStatus, useScheduleTelemetry } from "@/lib/mqtt";
 
 const hardwareSpecs = [
   {
     icon: SignalIcon,
-    label: "Main Controller SoC",
-    detail: "ESP32 DevKit 30-pin, 240MHz Dual-Core, 3.3V Logic",
+    label: "Main Controller",
+    detail: "ESP32 DevKit, dual-core, 3.3V logic",
+    pin: "GPIO 02",
+    pinRole: "Status Diagnostic LED · Onboard Pulse",
     accent: "text-emerald-600 dark:text-emerald-400 bg-emerald-500/10",
   },
   {
     icon: ScaleIcon,
-    label: "24-Bit Biometrics ADC",
-    detail: "HX711 differential bridge amplifier, 10 kg aluminum load cell",
+    label: "24-Bit Load Cell Amplifier",
+    detail: "HX711 with 10 kg aluminum bar load cell",
+    pin: "GPIO 18 / 19",
+    pinRole: "SCK (Serial Clock) · DT (Serial Data)",
+    accent: "text-amber-600 dark:text-amber-400 bg-amber-500/10",
+  },
+  {
+    icon: KibbleIcon,
+    label: "Feeder Servo",
+    detail: "SG90 micro servo, auto-detach after each dispense",
+    pin: "GPIO 21",
+    pinRole: "Timer PWM (50Hz) · Auto-detach Chute",
     accent: "text-amber-600 dark:text-amber-400 bg-amber-500/10",
   },
   {
     icon: PumpIcon,
     label: "Fluidics Actuator",
-    detail: "XY-MOS Dual Optocoupler MOSFET, Soft-stop PWM decay",
+    detail: "XY-MOS dual MOSFET module, soft-stop PWM ramp-down",
+    pin: "GPIO 23",
+    pinRole: "Gate Trigger · PWM Soft-Start Ramp",
     accent: "text-sky-600 dark:text-sky-400 bg-sky-500/10",
   },
   {
+    icon: WaterDropIcon,
+    label: "Water Level Sensor",
+    detail: "LM393 analog resistance probe, reservoir monitor",
+    pin: "GPIO 34",
+    pinRole: "ADC1 Channel 6 · Analog Voltage Input",
+    accent: "text-cyan-600 dark:text-cyan-400 bg-cyan-500/10",
+  },
+  {
     icon: ShieldIcon,
-    label: "Dual-Rail Power Architecture",
-    detail: "Isolated 5V 2A external rail with 1000µF decoupling capacitor",
+    label: "Separate Power Supply",
+    detail: "External 5V supply for servo & pump, common ground",
+    pin: "Common GND",
+    pinRole: "Isolated 5V Rail · 470–1000 µF Cap",
     accent: "text-indigo-600 dark:text-indigo-400 bg-indigo-500/10",
   },
   {
-    icon: KibbleIcon,
-    label: "Micro-Portion Chute Servo",
-    detail: "TowerPro SG90 with 1N4007 diode & auto-detach firmware",
-    accent: "text-amber-600 dark:text-amber-400 bg-amber-500/10",
-  },
-  {
-    icon: WaterDropIcon,
+    icon: SignalIcon,
     label: "Encrypted Broker Fabric",
     detail: "HiveMQ Cloud Serverless, WSS 8884 / TLS 1.3 mutual auth",
-    accent: "text-cyan-600 dark:text-cyan-400 bg-cyan-500/10",
+    pin: "Port 8884",
+    pinRole: "MQTTS Secure WebSocket · TLS Encrypted",
+    accent: "text-purple-600 dark:text-purple-400 bg-purple-500/10",
   },
-];
-
-const pinAssignments = [
-  { pin: "GPIO 18", role: "HX711 Serial Clock (SCK)", type: "Output (3.3V)" },
-  { pin: "GPIO 19", role: "HX711 Serial Data (DT)", type: "Input Pull-Up" },
-  { pin: "GPIO 21", role: "SG90 Servo PWM Signal", type: "Timer PWM (50Hz)" },
-  { pin: "GPIO 23", role: "XY-MOS Gate Trigger", type: "PWM Soft-Start" },
-  { pin: "GPIO 34", role: "Water LM393 Sensor Analog", type: "ADC1 Channel 6" },
-  { pin: "GPIO 02", role: "Station Status Diagnostic LED", type: "Onboard Pulse" },
 ];
 
 interface SchedulerProps {
   catName?: string;
 }
 
-export default function Scheduler({ catName }: SchedulerProps) {
-  const { catProfile } = useAuth();
-  const [submitted, setSubmitted] = useState(false);
-  const [form, setForm] = useState({
-    catName: catName || catProfile?.catName || "Whiskers",
-    portionSize: "35",
-    morningTime: "08:00",
-    eveningTime: "18:00",
-    waterInterval: "4",
-    lowWaterThreshold: "1500",
-  });
+function Scheduler({ catName = "Whiskers" }: SchedulerProps) {
+  const {
+    isStationOnline,
+    publishSchedule,
+    lastSentSchedule,
+  } = useStationStatus();
+  const scheduleData = useScheduleTelemetry();
 
+  const [enabled, setEnabled] = useState(true);
+  const [times, setTimes] = useState<string[]>(["08:00", "18:00"]);
+  const [sentPayload, setSentPayload] = useState<string | null>(null);
+  const hasUserEditedRef = useRef(false);
+
+  // Load the current schedule from scheduleData.sched ("1|08:00,18:00" format)
   useEffect(() => {
-    if (catProfile?.catName && (!form.catName || form.catName === "Whiskers")) {
-      setForm((prev) => ({ ...prev, catName: catProfile.catName }));
+    if (!scheduleData?.sched) return;
+
+    // If scheduleData.sched matches sentPayload, clear waiting flag
+    if (sentPayload && scheduleData.sched === sentPayload) {
+      setSentPayload(null);
     }
-  }, [catProfile?.catName]);
 
-  const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
-  ) => {
-    setForm({ ...form, [e.target.name]: e.target.value });
+    // Only auto-populate from station if user hasn't actively edited local form
+    if (!hasUserEditedRef.current || scheduleData.sched === lastSentSchedule) {
+      const parts = scheduleData.sched.split("|");
+      const isEnabled = parts[0] === "1";
+      const timesList = parts[1]
+        ? parts[1]
+            .split(",")
+            .map((t) => t.trim())
+            .filter(Boolean)
+        : [];
+      setEnabled(isEnabled);
+      setTimes(timesList.length > 0 ? timesList : ["08:00"]);
+    }
+  }, [scheduleData?.sched, lastSentSchedule, sentPayload]);
+
+  const handleToggle = () => {
+    if (!isStationOnline) return;
+    hasUserEditedRef.current = true;
+    setEnabled((prev) => !prev);
   };
 
-  const handleSubmit = (e: FormEvent) => {
+  const handleTimeChange = (index: number, val: string) => {
+    if (!isStationOnline) return;
+    hasUserEditedRef.current = true;
+    setTimes((prev) => {
+      const next = [...prev];
+      next[index] = val;
+      return next;
+    });
+  };
+
+  const handleAddTime = () => {
+    if (!isStationOnline || times.length >= 6) return;
+    hasUserEditedRef.current = true;
+    setTimes((prev) => [...prev, "12:00"]);
+  };
+
+  const handleRemoveTime = (index: number) => {
+    if (!isStationOnline) return;
+    hasUserEditedRef.current = true;
+    setTimes((prev) => prev.filter((_, i) => i !== index));
+  };
+
+  const handleSave = (e: React.FormEvent) => {
     e.preventDefault();
-    setSubmitted(true);
+    if (!isStationOnline) return;
+
+    // Sort and de-duplicate before sending
+    const cleanedTimes = Array.from(
+      new Set(times.map((t) => t.trim()).filter(Boolean))
+    ).sort();
+
+    const payload = `${enabled ? 1 : 0}|${cleanedTimes.join(",")}`;
+    setTimes(cleanedTimes);
+    setSentPayload(payload);
+    publishSchedule(payload);
   };
 
-  const portionGrams = Number(form.portionSize) || 35;
-  // Approximation: ~3.8 kcal per gram of standard high-protein feline kibble
-  const estimatedKcal = Math.round(portionGrams * 3.8);
+  // Sync state determination
+  const isSavedOnStation = sentPayload
+    ? scheduleData?.sched === sentPayload
+    : Boolean(scheduleData?.sched);
 
   return (
     <section id="scheduler" className="w-full">
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
         {/* ─────────────────────────────────────────────────────────
-            LEFT COLUMN: AUTOMATED ROUTINE SCHEDULER (7 COLS)
+            LEFT COLUMN: FEEDING SCHEDULE (7 COLS)
         ───────────────────────────────────────────────────────── */}
-        <div className="lg:col-span-7 rounded-apple-2xl bg-white dark:bg-[#161B26] border border-black/[0.08] dark:border-white/[0.08] shadow-[0_4px_24px_rgba(0,0,0,0.04)] dark:shadow-[0_8px_32px_rgba(0,0,0,0.35)] p-6 sm:p-8 transition-all">
+        <div className="lg:col-span-7 h-full flex flex-col rounded-apple-2xl bg-white dark:bg-[#161B26] border border-black/[0.08] dark:border-white/[0.08] shadow-[0_4px_24px_rgba(0,0,0,0.04)] dark:shadow-[0_8px_32px_rgba(0,0,0,0.35)] p-6 sm:p-8 transition-all">
           <div className="flex items-center justify-between gap-3 mb-6 pb-4 border-b border-black/[0.06] dark:border-white/[0.06]">
             <div>
               <div className="flex items-center gap-2">
                 <span className="text-[11px] font-bold uppercase tracking-wider text-accent-amber">
                   Routine Automation
                 </span>
-                <span className="text-[9px] font-mono px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 font-semibold border border-emerald-500/20">
-                  Daily Cycle Active
+                <span
+                  className={`text-[9px] font-mono px-2 py-0.5 rounded-full font-semibold border ${
+                    isSavedOnStation
+                      ? "bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border-emerald-500/20"
+                      : "bg-amber-500/10 text-amber-700 dark:text-amber-400 border-amber-500/20"
+                  }`}
+                >
+                  {isSavedOnStation ? "Saved on station" : "Waiting for station..."}
                 </span>
               </div>
               <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-neutral-900 dark:text-white mt-1">
-                Feeding & Hydration Schedule
+                Feeding Schedule
               </h2>
             </div>
             <div className="w-9 h-9 rounded-xl bg-accent-amber/10 text-accent-amber flex items-center justify-center">
@@ -125,198 +194,156 @@ export default function Scheduler({ catName }: SchedulerProps) {
             </div>
           </div>
 
-          <AnimatePresence mode="wait">
-            {submitted ? (
-              <motion.div
-                key="saved"
-                initial={{ opacity: 0, scale: 0.96 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.96 }}
-                className="py-12 px-6 text-center flex flex-col items-center justify-center bg-[#FAF8F5] dark:bg-[#181D2A] rounded-apple-xl border border-black/[0.06] dark:border-white/[0.08]"
-              >
-                <div className="w-14 h-14 rounded-full bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 flex items-center justify-center mb-4">
-                  <CheckIcon className="w-7 h-7" />
+          <form onSubmit={handleSave} className="flex-1 flex flex-col justify-between space-y-5">
+            <div className="space-y-4">
+              {/* Station Clock & Last Auto Feed Telemetry HUD */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 p-3 rounded-apple-xl bg-[#FAF8F5] dark:bg-[#181D2A] border border-black/[0.06] dark:border-white/[0.08]">
+                <div className="flex items-center gap-2.5">
+                  <div className="w-7 h-7 rounded-lg bg-black/[0.04] dark:bg-white/[0.06] flex items-center justify-center text-neutral-600 dark:text-neutral-400">
+                    <ClockIcon className="w-4 h-4" />
+                  </div>
+                  <div>
+                    <span className="text-[10.5px] uppercase font-mono tracking-wider text-neutral-500 dark:text-neutral-400 block leading-tight">
+                      Station Clock
+                    </span>
+                    <span className="text-[13px] font-mono font-semibold text-neutral-900 dark:text-white">
+                      {scheduleData?.clock || "--:--"}
+                    </span>
+                  </div>
                 </div>
-                <h3 className="text-xl font-bold text-neutral-900 dark:text-white mb-2">
-                  Station Routine Synchronized
-                </h3>
-                <p className="text-[13px] text-neutral-600 dark:text-neutral-300 max-w-sm mb-6 leading-relaxed">
-                  Configured for <strong className="text-neutral-900 dark:text-white">{form.catName}</strong>:{" "}
-                  Dispensing <strong className="font-mono text-neutral-900 dark:text-white">{form.portionSize}g</strong> (approx. {estimatedKcal} kcal) at{" "}
-                  <strong className="font-mono text-neutral-900 dark:text-white">{form.morningTime}</strong> and{" "}
-                  <strong className="font-mono text-neutral-900 dark:text-white">{form.eveningTime}</strong>. Water circulation cycle every{" "}
-                  <strong className="font-mono text-neutral-900 dark:text-white">{form.waterInterval}h</strong>.
-                </p>
+
+                <div className="flex items-center gap-2.5">
+                  <div className="w-7 h-7 rounded-lg bg-black/[0.04] dark:bg-white/[0.06] flex items-center justify-center text-neutral-600 dark:text-neutral-400">
+                    <KibbleIcon className="w-4 h-4 fill-current" />
+                  </div>
+                  <div>
+                    <span className="text-[10.5px] uppercase font-mono tracking-wider text-neutral-500 dark:text-neutral-400 block leading-tight">
+                      Last Automatic Feed
+                    </span>
+                    <span className="text-[13px] font-mono font-semibold text-neutral-900 dark:text-white">
+                      {scheduleData?.lastAuto || "None yet"}
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Warning if Station Clock is not synced */}
+              {scheduleData && scheduleData.timeOk === false && (
+                <div className="p-3 rounded-apple bg-amber-500/10 border border-amber-500/20 text-amber-700 dark:text-amber-400 text-[12px] flex items-center gap-2 font-medium">
+                  <span className="w-2 h-2 rounded-full bg-amber-500 shrink-0" />
+                  <span>Station clock not synced - scheduled feeds will not run.</span>
+                </div>
+              )}
+
+              {/* Target Companion Profile (Display-Only) */}
+              <div>
+                <label className="block text-[12px] font-semibold uppercase tracking-wider text-neutral-500 dark:text-neutral-400 mb-1.5">
+                  Target Companion Profile
+                </label>
+                <div className="w-full rounded-apple border border-black/[0.08] dark:border-white/[0.08] bg-[#FAF8F5] dark:bg-[#181D2A] px-4 py-2.5 text-[14px] font-medium text-neutral-900 dark:text-white select-none">
+                  {catName}
+                </div>
+              </div>
+
+              {/* Schedule Enable/Disable Toggle */}
+              <div className="flex items-center justify-between p-4 rounded-apple-xl bg-[#FAF8F5] dark:bg-[#181D2A] border border-black/[0.06] dark:border-white/[0.08]">
+                <div>
+                  <span className="text-[13px] font-bold text-neutral-900 dark:text-white block">
+                    Automatic Dispensing Routine
+                  </span>
+                  <span className="text-[11.5px] text-neutral-500 dark:text-neutral-400">
+                    {enabled ? "Schedule is active on station" : "Automatic feeds disabled"}
+                  </span>
+                </div>
+
                 <button
                   type="button"
-                  onClick={() => setSubmitted(false)}
-                  className="apple-button bg-neutral-900 text-white dark:bg-white dark:text-neutral-900 hover:opacity-90 px-6 py-2.5 rounded-full text-[13px] font-semibold active:scale-95 transition-all"
+                  onClick={handleToggle}
+                  disabled={!isStationOnline}
+                  className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none disabled:opacity-40 disabled:cursor-not-allowed ${
+                    enabled ? "bg-amber-500" : "bg-neutral-300 dark:bg-white/20"
+                  }`}
+                  role="switch"
+                  aria-checked={enabled}
                 >
-                  Modify Schedule
+                  <span
+                    className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${
+                      enabled ? "translate-x-5" : "translate-x-0"
+                    }`}
+                  />
                 </button>
-              </motion.div>
-            ) : (
-              <form onSubmit={handleSubmit} className="space-y-5">
-                {/* Pet Name input */}
-                <div>
-                  <label
-                    htmlFor="catName"
-                    className="block text-[12px] font-semibold uppercase tracking-wider text-neutral-500 dark:text-neutral-400 mb-1.5"
-                  >
-                    Target Companion Profile
+              </div>
+
+              {/* List of feeding times (up to 6) */}
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <label className="block text-[12px] font-semibold uppercase tracking-wider text-neutral-500 dark:text-neutral-400">
+                    Dispense Times (Up to 6)
                   </label>
-                  <input
-                    id="catName"
-                    name="catName"
-                    type="text"
-                    value={form.catName}
-                    onChange={handleChange}
-                    placeholder="Companion Name"
-                    className="w-full rounded-apple border border-black/[0.1] dark:border-white/[0.12] bg-[#FAF8F5] dark:bg-[#181D2A] px-4 py-2.5 text-[14px] font-medium text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-accent-amber/40 transition-all"
-                  />
+                  <span className="text-[11px] font-mono text-neutral-400 dark:text-neutral-500">
+                    {times.length} of 6 configured
+                  </span>
                 </div>
 
-                {/* Portion Size Slider + Input */}
-                <div className="bg-[#FAF8F5] dark:bg-[#181D2A] p-4 sm:p-5 rounded-apple-xl border border-black/[0.06] dark:border-white/[0.08]">
-                  <div className="flex items-center justify-between mb-2">
-                    <label
-                      htmlFor="portionSize"
-                      className="text-[12px] font-semibold uppercase tracking-wider text-neutral-500 dark:text-neutral-400"
-                    >
-                      Kibble Portion Size
-                    </label>
-                    <div className="flex items-center gap-2">
-                      <span className="text-[11px] font-mono px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-700 dark:text-amber-400 font-semibold border border-amber-500/20">
-                        ~{estimatedKcal} kcal / meal
-                      </span>
-                      <span className="text-[16px] font-bold font-mono text-neutral-900 dark:text-white tabular-nums">
-                        {form.portionSize} g
-                      </span>
+                <div className="space-y-2.5">
+                  {times.map((timeVal, idx) => (
+                    <div key={idx} className="flex items-center gap-2">
+                      <input
+                        type="time"
+                        value={timeVal}
+                        disabled={!isStationOnline}
+                        onChange={(e) => handleTimeChange(idx, e.target.value)}
+                        required
+                        className="flex-1 rounded-apple border border-black/[0.1] dark:border-white/[0.12] bg-white dark:bg-[#131722] px-3.5 py-2 text-[14px] font-mono font-semibold text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-accent-amber/40 transition-all disabled:opacity-40 disabled:cursor-not-allowed"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => handleRemoveTime(idx)}
+                        disabled={!isStationOnline || times.length <= 1}
+                        className="p-2 rounded-apple border border-black/[0.08] dark:border-white/[0.08] bg-white dark:bg-[#131722] hover:bg-neutral-100 dark:hover:bg-white/10 text-neutral-500 hover:text-rose-600 dark:hover:text-rose-400 transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+                        title="Remove time"
+                      >
+                        <CloseIcon className="w-4 h-4" />
+                      </button>
                     </div>
-                  </div>
-
-                  <input
-                    id="portionSize"
-                    name="portionSize"
-                    type="range"
-                    min="10"
-                    max="100"
-                    step="5"
-                    value={form.portionSize}
-                    onChange={handleChange}
-                    className="w-full h-2 bg-neutral-200 dark:bg-white/10 rounded-lg appearance-none cursor-pointer accent-amber-500"
-                  />
-
-                  <div className="flex justify-between text-[10.5px] font-mono text-neutral-400 dark:text-neutral-500 mt-2">
-                    <span>10g (Micro-snack)</span>
-                    <span>35g (Recommended)</span>
-                    <span>100g (Full bowl)</span>
-                  </div>
+                  ))}
                 </div>
 
-                {/* Time Pickers (Morning & Evening) */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div className="bg-[#FAF8F5] dark:bg-[#181D2A] p-4 rounded-apple-xl border border-black/[0.06] dark:border-white/[0.08]">
-                    <label
-                      htmlFor="morningTime"
-                      className="block text-[11px] font-semibold uppercase tracking-wider text-neutral-500 dark:text-neutral-400 mb-1.5"
-                    >
-                      Morning Dispense Time
-                    </label>
-                    <input
-                      id="morningTime"
-                      name="morningTime"
-                      type="time"
-                      value={form.morningTime}
-                      onChange={handleChange}
-                      required
-                      className="w-full rounded-apple border border-black/[0.1] dark:border-white/[0.12] bg-white dark:bg-[#131722] px-3.5 py-2 text-[14px] font-mono font-semibold text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-accent-amber/40 transition-all"
-                    />
-                  </div>
+                {times.length < 6 && (
+                  <button
+                    type="button"
+                    onClick={handleAddTime}
+                    disabled={!isStationOnline}
+                    className="apple-button w-full border border-dashed border-black/[0.15] dark:border-white/[0.15] hover:border-accent-amber hover:bg-accent-amber/5 text-neutral-700 dark:text-neutral-300 py-2.5 rounded-apple text-[12.5px] font-semibold transition-all disabled:opacity-40 disabled:cursor-not-allowed"
+                  >
+                    + Add Feeding Time
+                  </button>
+                )}
+              </div>
+            </div>
 
-                  <div className="bg-[#FAF8F5] dark:bg-[#181D2A] p-4 rounded-apple-xl border border-black/[0.06] dark:border-white/[0.08]">
-                    <label
-                      htmlFor="eveningTime"
-                      className="block text-[11px] font-semibold uppercase tracking-wider text-neutral-500 dark:text-neutral-400 mb-1.5"
-                    >
-                      Evening Dispense Time
-                    </label>
-                    <input
-                      id="eveningTime"
-                      name="eveningTime"
-                      type="time"
-                      value={form.eveningTime}
-                      onChange={handleChange}
-                      required
-                      className="w-full rounded-apple border border-black/[0.1] dark:border-white/[0.12] bg-white dark:bg-[#131722] px-3.5 py-2 text-[14px] font-mono font-semibold text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-accent-amber/40 transition-all"
-                    />
-                  </div>
-                </div>
+            {/* Save Button & Note Pinned at Bottom */}
+            <div className="mt-auto pt-4 space-y-2">
+              <button
+                type="submit"
+                disabled={!isStationOnline}
+                className="apple-button w-full bg-neutral-900 text-white dark:bg-white dark:text-neutral-900 hover:opacity-90 py-3 rounded-apple text-[14px] font-semibold shadow-sm active:scale-[0.98] transition-all disabled:opacity-40 disabled:cursor-not-allowed"
+              >
+                Save Feeding Schedule
+              </button>
 
-                {/* Water Circulation Interval */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div className="bg-[#FAF8F5] dark:bg-[#181D2A] p-4 rounded-apple-xl border border-black/[0.06] dark:border-white/[0.08]">
-                    <label
-                      htmlFor="waterInterval"
-                      className="block text-[11px] font-semibold uppercase tracking-wider text-neutral-500 dark:text-neutral-400 mb-1.5"
-                    >
-                      Water Circulation Cadence
-                    </label>
-                    <select
-                      id="waterInterval"
-                      name="waterInterval"
-                      value={form.waterInterval}
-                      onChange={handleChange}
-                      className="w-full rounded-apple border border-black/[0.1] dark:border-white/[0.12] bg-white dark:bg-[#131722] px-3.5 py-2 text-[13px] font-semibold text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-accent-azure/40 transition-all"
-                    >
-                      <option value="2">Every 2 Hours (Frequent Aeration)</option>
-                      <option value="4">Every 4 Hours (Standard)</option>
-                      <option value="6">Every 6 Hours (Whisper Quiet)</option>
-                      <option value="8">Every 8 Hours (Conservation)</option>
-                    </select>
-                  </div>
-
-                  <div className="bg-[#FAF8F5] dark:bg-[#181D2A] p-4 rounded-apple-xl border border-black/[0.06] dark:border-white/[0.08]">
-                    <label
-                      htmlFor="lowWaterThreshold"
-                      className="block text-[11px] font-semibold uppercase tracking-wider text-neutral-500 dark:text-neutral-400 mb-1.5"
-                    >
-                      Low Water Lockout Threshold
-                    </label>
-                    <select
-                      id="lowWaterThreshold"
-                      name="lowWaterThreshold"
-                      value={form.lowWaterThreshold}
-                      onChange={handleChange}
-                      className="w-full rounded-apple border border-black/[0.1] dark:border-white/[0.12] bg-white dark:bg-[#131722] px-3.5 py-2 text-[13px] font-semibold text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-accent-azure/40 transition-all"
-                    >
-                      <option value="1200">1,200 (Sensitive · ~250ml reserve)</option>
-                      <option value="1500">1,500 (Calibrated Standard · ~180ml)</option>
-                      <option value="1800">1,800 (Permissive · ~120ml)</option>
-                    </select>
-                  </div>
-                </div>
-
-                {/* Save Routine Button */}
-                <button
-                  type="submit"
-                  className="apple-button w-full bg-neutral-900 text-white dark:bg-white dark:text-neutral-900 hover:opacity-90 py-3 rounded-apple text-[14px] font-semibold shadow-sm active:scale-[0.98] transition-all"
-                >
-                  Save Station Routine
-                </button>
-                <p className="text-[11px] text-neutral-500 dark:text-neutral-400 text-center font-mono">
-                  Routine parameters cached in local station state and mirrored to HiveMQ retain topic.
-                </p>
-              </form>
-            )}
-          </AnimatePresence>
+              <p className="text-[11px] text-neutral-500 dark:text-neutral-400 text-center font-mono">
+                Each automatic feed runs one standard dispense cycle.
+              </p>
+            </div>
+          </form>
         </div>
 
         {/* ─────────────────────────────────────────────────────────
-            RIGHT COLUMN: HARDWARE SPECIFICATIONS & PINOUT HUD (5 COLS)
+            RIGHT COLUMN: HARDWARE TOPOLOGY WITH INTEGRATED PIN TRACES
         ───────────────────────────────────────────────────────── */}
-        <div className="lg:col-span-5 rounded-apple-2xl bg-white dark:bg-[#161B26] border border-black/[0.08] dark:border-white/[0.08] shadow-[0_4px_24px_rgba(0,0,0,0.04)] dark:shadow-[0_8px_32px_rgba(0,0,0,0.35)] p-6 sm:p-8 transition-all">
-          <div className="flex items-center justify-between gap-3 mb-6 pb-4 border-b border-black/[0.06] dark:border-white/[0.06]">
+        <div className="lg:col-span-5 h-full flex flex-col rounded-apple-2xl bg-white dark:bg-[#161B26] border border-black/[0.08] dark:border-white/[0.08] shadow-[0_4px_24px_rgba(0,0,0,0.04)] dark:shadow-[0_8px_32px_rgba(0,0,0,0.35)] p-6 sm:p-8 transition-all">
+          <div className="flex items-center justify-between gap-3 mb-5 pb-3.5 border-b border-black/[0.06] dark:border-white/[0.06]">
             <div>
               <span className="text-[11px] font-bold uppercase tracking-wider text-neutral-500 dark:text-neutral-400">
                 Architecture Blueprint
@@ -326,63 +353,51 @@ export default function Scheduler({ catName }: SchedulerProps) {
               </h3>
             </div>
             <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-neutral-200/60 dark:bg-white/10 text-neutral-700 dark:text-neutral-300">
-              Rev 2.4 PCB
+              Breadboard prototype
             </span>
           </div>
 
-          {/* Component Specs List (EcosystemBand style) */}
-          <div className="space-y-3 mb-6">
+          {/* Component Specs Cards with Integrated Pin Traces */}
+          <div className="flex-1 flex flex-col justify-between gap-2.5">
             {hardwareSpecs.map((spec) => (
               <div
                 key={spec.label}
-                className="flex items-start gap-3 p-3 rounded-apple bg-[#FAF8F5] dark:bg-[#181D2A] border border-black/[0.04] dark:border-white/[0.06] transition-colors"
+                className="p-3 rounded-apple bg-[#FAF8F5] dark:bg-[#181D2A] border border-black/[0.04] dark:border-white/[0.06] transition-all hover:border-black/[0.08] dark:hover:border-white/[0.12]"
               >
-                <div
-                  className={`w-7 h-7 rounded-lg flex items-center justify-center shrink-0 mt-0.5 ${spec.accent}`}
-                >
-                  <spec.icon className="w-4 h-4" />
-                </div>
-                <div className="min-w-0">
-                  <div className="text-[12.5px] font-bold text-neutral-900 dark:text-white leading-tight">
-                    {spec.label}
+                <div className="flex items-start gap-2.5">
+                  <div
+                    className={`w-7 h-7 rounded-lg flex items-center justify-center shrink-0 mt-0.5 ${spec.accent}`}
+                  >
+                    <spec.icon className="w-4 h-4" />
                   </div>
-                  <div className="text-[11px] text-neutral-500 dark:text-neutral-400 mt-0.5 leading-snug">
-                    {spec.detail}
+
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-center justify-between gap-2">
+                      <div className="text-[12.5px] font-bold text-neutral-900 dark:text-white leading-tight">
+                        {spec.label}
+                      </div>
+                      <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded-md bg-neutral-200/70 dark:bg-white/10 text-neutral-800 dark:text-neutral-200 border border-black/[0.04] dark:border-white/[0.06] shrink-0">
+                        {spec.pin}
+                      </span>
+                    </div>
+
+                    <div className="text-[11px] text-neutral-500 dark:text-neutral-400 mt-0.5 leading-snug">
+                      {spec.detail}
+                    </div>
+
+                    <div className="flex items-center gap-1.5 mt-1.5 text-[10px] font-mono text-neutral-600 dark:text-neutral-400">
+                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0" />
+                      <span className="truncate">{spec.pinRole}</span>
+                    </div>
                   </div>
                 </div>
               </div>
             ))}
-          </div>
-
-          {/* Pin Assignment Matrix Table */}
-          <div className="p-4 rounded-apple-xl bg-[#FAF8F5] dark:bg-[#11141D] border border-black/[0.06] dark:border-white/[0.06]">
-            <div className="flex items-center justify-between mb-3">
-              <span className="text-[10.5px] font-bold uppercase tracking-wider text-neutral-500 dark:text-neutral-400 font-mono">
-                Pinout Trace Table
-              </span>
-              <span className="text-[9.5px] font-mono text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 px-1.5 py-0.5 rounded">
-                Isolated 3.3V / 5V
-              </span>
-            </div>
-
-            <div className="space-y-1.5 text-[11px] font-mono">
-              {pinAssignments.map((p) => (
-                <div
-                  key={p.pin}
-                  className="flex items-center justify-between py-1 border-b border-black/[0.03] dark:border-white/[0.04] last:border-0"
-                >
-                  <span className="font-semibold text-neutral-800 dark:text-neutral-200">
-                    {p.pin}
-                  </span>
-                  <span className="text-neutral-600 dark:text-neutral-400 text-right">
-                    {p.role}
-                  </span>
-                </div>
-              ))}
-            </div>
           </div>
         </div>
       </div>
     </section>
   );
 }
+
+export default memo(Scheduler);
