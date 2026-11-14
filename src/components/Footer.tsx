@@ -1,8 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef } from "react";
 import Link from "next/link";
+import { motion, useScroll, useTransform } from "framer-motion";
 import { PawIcon, CloseIcon } from "./Icons";
+
+const IOS_EASE = [0.16, 1, 0.3, 1] as const;
 
 /* Bespoke SVG social icons matching the reference design */
 function FacebookIcon({ className = "w-5 h-5" }: { className?: string }) {
@@ -13,13 +16,6 @@ function FacebookIcon({ className = "w-5 h-5" }: { className?: string }) {
   );
 }
 
-function XTwitterIcon({ className = "w-5 h-5" }: { className?: string }) {
-  return (
-    <svg className={className} viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-      <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
-    </svg>
-  );
-}
 
 function InstagramIcon({ className = "w-5 h-5" }: { className?: string }) {
   return (
@@ -94,12 +90,23 @@ function Modal({ title, children, isOpen, onClose }: ModalProps) {
 export default function Footer() {
   const [privacyOpen, setPrivacyOpen] = useState(false);
   const [termsOpen, setTermsOpen] = useState(false);
+  const footerRef = useRef<HTMLElement>(null);
+
+  // Subtle scroll parallax on the cat footprints
+  const { scrollYProgress } = useScroll({
+    target: footerRef,
+    offset: ["start end", "end end"],
+  });
+  const footprintY = useTransform(scrollYProgress, [0, 1], [-30, 20]);
 
   return (
     <>
-      <footer className="relative w-full bg-black text-white py-16 sm:py-20 lg:py-24 px-6 border-t border-white/[0.06] overflow-hidden">
-        {/* Subtle Low-Opacity Cat Footprints Ambient Background */}
-        <div className="absolute inset-0 pointer-events-none overflow-hidden select-none opacity-[0.065]">
+      <footer ref={footerRef} className="relative w-full bg-black text-white py-16 sm:py-20 lg:py-24 px-6 border-t border-white/[0.06] overflow-hidden">
+        {/* Subtle Low-Opacity Cat Footprints Ambient Background with Scroll Drift */}
+        <motion.div
+          style={{ y: footprintY }}
+          className="absolute inset-0 pointer-events-none overflow-hidden select-none opacity-[0.065]"
+        >
           <svg className="w-full h-full" xmlns="http://www.w3.org/2000/svg">
             <defs>
               <pattern
@@ -148,10 +155,16 @@ export default function Footer() {
             </defs>
             <rect width="100%" height="100%" fill="url(#cat-footprint-pattern)" className="text-white" />
           </svg>
-        </div>
+        </motion.div>
 
-        {/* Foreground Content */}
-        <div className="relative z-10 max-w-4xl mx-auto flex flex-col items-center justify-center text-center">
+        {/* Foreground Content with Scroll Entrance */}
+        <motion.div
+          initial={{ opacity: 0, y: 24 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: "-50px" }}
+          transition={{ duration: 0.8, ease: IOS_EASE }}
+          className="relative z-10 max-w-4xl mx-auto flex flex-col items-center justify-center text-center"
+        >
           {/* Row 1: White Brand Logo Badge & Name */}
           <Link
             href="/"
@@ -217,7 +230,7 @@ export default function Footer() {
           {/* Row 3: Social Media Icons */}
           <div className="mt-8 sm:mt-10 flex items-center justify-center gap-7 sm:gap-8 text-white/80">
             <a
-              href="https://facebook.com"
+              href="https://www.facebook.com/jerZer0"
               target="_blank"
               rel="noopener noreferrer"
               className="hover:text-white transition-colors duration-200 hover:scale-110 transform"
@@ -226,16 +239,7 @@ export default function Footer() {
               <FacebookIcon className="w-5 h-5" />
             </a>
             <a
-              href="https://x.com"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="hover:text-white transition-colors duration-200 hover:scale-110 transform"
-              aria-label="X (Twitter)"
-            >
-              <XTwitterIcon className="w-5 h-5" />
-            </a>
-            <a
-              href="https://instagram.com"
+              href="https://www.instagram.com/jdrmtl_/"
               target="_blank"
               rel="noopener noreferrer"
               className="hover:text-white transition-colors duration-200 hover:scale-110 transform"
@@ -244,7 +248,7 @@ export default function Footer() {
               <InstagramIcon className="w-5 h-5" />
             </a>
             <a
-              href="https://linkedin.com"
+              href="https://www.linkedin.com/in/jerichodelosreyes/"
               target="_blank"
               rel="noopener noreferrer"
               className="hover:text-white transition-colors duration-200 hover:scale-110 transform"
@@ -253,7 +257,7 @@ export default function Footer() {
               <LinkedInIcon className="w-5 h-5" />
             </a>
           </div>
-        </div>
+        </motion.div>
       </footer>
 
       {/* Privacy Policy Modal */}

@@ -181,7 +181,8 @@ export default function FAQ() {
               item={item}
               isOpen={!!openIds[item.id]}
               onToggle={() => toggleOpen(item.id)}
-              delay={idx * 0.04}
+              delay={idx * 0.05}
+              index={idx}
             />
           ))}
         </div>
@@ -195,21 +196,24 @@ function FAQCard({
   isOpen,
   onToggle,
   delay,
+  index = 0,
 }: {
   item: FAQItem;
   isOpen: boolean;
   onToggle: () => void;
   delay: number;
+  index?: number;
 }) {
   const IconComponent = item.icon;
+  const isLeftCol = index % 2 === 0;
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      whileInView={{ opacity: 1, y: 0 }}
+      initial={{ opacity: 0, y: 24, x: isLeftCol ? -14 : 14 }}
+      whileInView={{ opacity: 1, y: 0, x: 0 }}
       viewport={{ once: true, margin: "-40px" }}
       transition={{
-        duration: 0.5,
+        duration: 0.6,
         delay,
         ease: IOS_EASE,
       }}

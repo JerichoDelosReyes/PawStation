@@ -3,7 +3,7 @@
 import { useState, useRef, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { motion, useMotionValue, useSpring, useTransform, AnimatePresence } from "framer-motion";
+import { motion, useMotionValue, useSpring, useTransform, useScroll, AnimatePresence } from "framer-motion";
 import { PawIcon, PawOutlineIcon, ScaleIcon, KibbleIcon, WaterDropIcon, SignalIcon, MenuIcon, CloseIcon } from "./Icons";
 import { useAuth } from "@/lib/auth-context";
 import InverseCorner from "./InverseCorner";
@@ -159,6 +159,18 @@ export default function Hero() {
     }
   };
 
+  // Apple-grade scroll parallax & depth as the user descends the landing page
+  const heroRef = useRef<HTMLElement>(null);
+  const { scrollYProgress: heroScroll } = useScroll({
+    target: heroRef,
+    offset: ["start start", "end start"],
+  });
+
+  const heroScale = useTransform(heroScroll, [0, 1], [1, 0.982]);
+  const heroOpacity = useTransform(heroScroll, [0, 0.85, 1], [1, 0.96, 0.8]);
+  const figureParallaxY = useTransform(heroScroll, [0, 1], [0, 48]);
+  const textParallaxY = useTransform(heroScroll, [0, 1], [0, -22]);
+
   // Subtle 3D mouse parallax with zero layout reflows (window metrics)
   const mouseX = useMotionValue(0);
   const mouseY = useMotionValue(0);
@@ -182,6 +194,7 @@ export default function Hero() {
 
   return (
     <section
+      ref={heroRef}
       className="relative w-full min-h-[100dvh] lg:h-[100dvh] bg-[var(--frame-bg)] text-white select-none p-2 sm:p-3 lg:p-4 flex flex-col justify-between overflow-x-hidden lg:overflow-hidden"
     >
       {/* ─────────────────────────────────────────────────────────────
@@ -264,10 +277,14 @@ export default function Hero() {
       ───────────────────────────────────────────────────────────── */}
       <div className="relative w-full flex-1 flex flex-col min-h-0">
         {/* ── UNIFIED CREAM CANVAS WITH DOCKED CORNER NOTCHES ─────── */}
-        <div
+        <motion.div
+          style={{
+            scale: heroScale,
+            opacity: heroOpacity,
+          }}
           onMouseMove={handleMouseMove}
           onMouseLeave={handleMouseLeave}
-          className="relative w-full flex-1 min-h-0 bg-[var(--panel-bg)] text-[var(--panel-text)] rounded-[20px] sm:rounded-[28px] lg:rounded-none lg:rounded-bl-[38px] flex flex-col justify-start lg:justify-between transition-colors duration-200 overflow-visible lg:overflow-hidden"
+          className="relative w-full flex-1 min-h-0 bg-[var(--panel-bg)] text-[var(--panel-text)] rounded-[20px] sm:rounded-[28px] lg:rounded-none lg:rounded-bl-[38px] flex flex-col justify-start lg:justify-between transition-colors duration-200 overflow-visible lg:overflow-hidden origin-bottom"
         >
           {/* ─────────────────────────────────────────────────────────
               1. DOCKED TOP-LEFT NOTCH (BRAND LOGO - DESKTOP ONLY)
@@ -383,7 +400,10 @@ export default function Hero() {
           ───────────────────────────────────────────────────────── */}
           <div className="relative z-10 flex-1 grid grid-cols-1 lg:grid-cols-12 gap-6 sm:gap-8 lg:gap-8 xl:gap-12 w-full max-w-[1720px] mx-auto px-5 sm:px-10 lg:px-14 pt-6 sm:pt-8 lg:pt-0 pb-8 sm:pb-10 lg:pb-0 min-h-0 items-center">
             {/* Left Column: Center-Aligned on Mobile, Left-Aligned on Desktop */}
-            <div className="lg:col-span-5 xl:col-span-5 flex flex-col items-center text-center lg:items-start lg:text-left z-20 self-center pb-1 sm:pb-4">
+            <motion.div
+              style={{ y: textParallaxY }}
+              className="lg:col-span-5 xl:col-span-5 flex flex-col items-center text-center lg:items-start lg:text-left z-20 self-center pb-1 sm:pb-4"
+            >
               {/* Responsive Headline with Fluid Scaling */}
               <h1 className="text-center lg:text-left text-[clamp(2.35rem,6.8vw,3.6rem)] sm:text-[clamp(3.2rem,5.2vw,4.8rem)] lg:text-[clamp(3.5rem,5.6vw,5.6rem)] xl:text-[clamp(3.9rem,6.2vw,6.4rem)] font-normal tracking-[-0.035em] leading-[1.0] text-neutral-900 dark:text-neutral-100 mb-5 sm:mb-6">
                 There is a
@@ -431,10 +451,13 @@ export default function Hero() {
               <p className="text-[13.5px] sm:text-[15px] leading-relaxed text-neutral-600 dark:text-neutral-400 max-w-md sm:max-w-lg font-normal text-center lg:text-left">
                 PawStation is an open-hardware feline workstation that automates controlled micro-portion kibble dispensing, fresh water replenishment, and gram-level health telemetry to avoid costly vet emergencies.
               </p>
-            </div>
+            </motion.div>
 
             {/* Right Column: Giant, Showy 3D Hardware Sculpture with Hotspots */}
-            <div className="lg:col-span-7 xl:col-span-7 relative flex justify-center lg:justify-end items-center select-none w-full self-center lg:translate-x-6 xl:translate-x-12 mt-4 sm:mt-6 lg:mt-0">
+            <motion.div
+              style={{ y: figureParallaxY }}
+              className="lg:col-span-7 xl:col-span-7 relative flex justify-center lg:justify-end items-center select-none w-full self-center lg:translate-x-6 xl:translate-x-12 mt-4 sm:mt-6 lg:mt-0"
+            >
               {/* Contextual Telemetry Flyout (Placed outside scaled 3D canvas so it is always horizontally centered and never clipped) */}
               <AnimatePresence>
                 {activeHotspot && (
@@ -662,7 +685,7 @@ export default function Hero() {
 
 
               </motion.div>
-            </div>
+            </motion.div>
           </div>
 
           {/* ─────────────────────────────────────────────────────────
@@ -684,7 +707,7 @@ export default function Hero() {
               <ThemeTogglePill />
             </div>
           </div>
-        </div>
+        </motion.div>
       </div>
     </section>
   );

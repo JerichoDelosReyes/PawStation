@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useRef, useEffect, useCallback } from "react";
-import { motion } from "framer-motion";
+import { motion, useScroll, useTransform, useSpring } from "framer-motion";
 import { useAuth } from "@/lib/auth-context";
 
 const IOS_EASE = [0.16, 1, 0.3, 1] as const;
@@ -495,9 +495,21 @@ function ScrollableMaterialRow({
 
 export default function EcosystemBand() {
   const { openAuthModal } = useAuth();
+  const sectionRef = useRef<HTMLElement>(null);
+
+  // Smooth scroll-driven horizontal momentum on the materials rows
+  const { scrollYProgress } = useScroll({
+    target: sectionRef,
+    offset: ["start end", "end start"],
+  });
+
+  const smoothProgress = useSpring(scrollYProgress, { stiffness: 180, damping: 28 });
+  const rowOneParallax = useTransform(smoothProgress, [0, 1], [60, -60]);
+  const rowTwoParallax = useTransform(smoothProgress, [0, 1], [-60, 60]);
 
   return (
     <section
+      ref={sectionRef}
       id="ecosystem"
       className="relative pt-16 sm:pt-20 pb-20 sm:pb-28 px-6 sm:px-12 lg:px-16 bg-[#161618] text-white overflow-hidden select-none"
     >
@@ -550,21 +562,25 @@ export default function EcosystemBand() {
         <div className="absolute top-0 bottom-0 left-0 w-16 sm:w-28 bg-gradient-to-r from-[#161618] to-transparent z-10 pointer-events-none" />
         <div className="absolute top-0 bottom-0 right-0 w-16 sm:w-28 bg-gradient-to-l from-[#161618] to-transparent z-10 pointer-events-none" />
 
-        {/* Row 1: Sensors & Core Electronics (Drifting Left, Freely Scrollable) */}
-        <ScrollableMaterialRow
-          items={ROW_ONE_MATERIALS}
-          direction="left"
-          speed={0.75}
-          ariaLabel="Sensors and Core Electronics"
-        />
+        {/* Row 1: Sensors & Core Electronics (Drifting Left, Freely Scrollable + Scroll Parallax) */}
+        <motion.div style={{ x: rowOneParallax }} className="w-full">
+          <ScrollableMaterialRow
+            items={ROW_ONE_MATERIALS}
+            direction="left"
+            speed={0.75}
+            ariaLabel="Sensors and Core Electronics"
+          />
+        </motion.div>
 
-        {/* Row 2: Actuation, Power & Structure (Drifting Right, Freely Scrollable) */}
-        <ScrollableMaterialRow
-          items={ROW_TWO_MATERIALS}
-          direction="right"
-          speed={0.75}
-          ariaLabel="Actuation, Power and Structure"
-        />
+        {/* Row 2: Actuation, Power & Structure (Drifting Right, Freely Scrollable + Scroll Parallax) */}
+        <motion.div style={{ x: rowTwoParallax }} className="w-full">
+          <ScrollableMaterialRow
+            items={ROW_TWO_MATERIALS}
+            direction="right"
+            speed={0.75}
+            ariaLabel="Actuation, Power and Structure"
+          />
+        </motion.div>
       </div>
     </section>
   );

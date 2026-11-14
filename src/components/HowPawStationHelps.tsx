@@ -137,17 +137,17 @@ export default function HowPawStationHelps() {
                     toggleCard(idx);
                   }
                 }}
-                initial={{ opacity: 0, y: 38, scale: 0.97 }}
+                initial={{ opacity: 0, y: 44, scale: 0.96 }}
                 whileInView={{ opacity: 1, y: 0, scale: 1 }}
-                viewport={{ once: true, margin: "-50px" }}
+                viewport={{ once: true, margin: "-40px" }}
                 transition={{
-                  duration: 0.7,
-                  delay: idx * 0.1,
+                  duration: 0.75,
+                  delay: idx * 0.12,
                   ease: IOS_EASE,
                   layout: { duration: 0.35, ease: IOS_EASE },
                 }}
                 whileHover={{
-                  y: -3,
+                  y: -4,
                   transition: { type: "spring", stiffness: 400, damping: 25 },
                 }}
                 whileTap={{
@@ -169,10 +169,25 @@ export default function HowPawStationHelps() {
                   {card.number}
                 </div>
 
-                {/* Center 3D Render */}
-                <div className="flex-1 my-auto py-6 sm:py-8 flex items-center justify-center pointer-events-none">
-                  {card.render3D}
-                </div>
+                {/* Center 3D Render with Gentle Float on Scroll View */}
+                <motion.div
+                  initial={{ scale: 0.9, opacity: 0 }}
+                  whileInView={{ scale: 1, opacity: 1 }}
+                  viewport={{ once: true }}
+                  transition={{ duration: 0.6, delay: 0.2 + idx * 0.1, ease: IOS_EASE }}
+                  className="flex-1 my-auto py-6 sm:py-8 flex items-center justify-center pointer-events-none"
+                >
+                  <motion.div
+                    animate={{ y: [0, -4, 0] }}
+                    transition={{
+                      duration: 3.5 + idx * 0.8,
+                      repeat: Infinity,
+                      ease: "easeInOut",
+                    }}
+                  >
+                    {card.render3D}
+                  </motion.div>
+                </motion.div>
 
                 {/* Bottom Content Area */}
                 <div className="relative z-10 pt-2">
