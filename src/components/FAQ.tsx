@@ -114,10 +114,10 @@ export default function FAQ() {
       <div className="max-w-7xl mx-auto">
         {/* Header with iOS Curve Reveal */}
         <motion.div
-          initial={{ opacity: 0, y: 32 }}
+          initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, margin: "-60px" }}
-          transition={{ duration: 0.85, ease: IOS_EASE }}
+          viewport={{ once: true, amount: 0.05 }}
+          transition={{ duration: 0.6, ease: IOS_EASE }}
           className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start mb-14"
         >
           <div className="lg:col-span-5">
@@ -209,12 +209,12 @@ function FAQCard({
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 24, x: isLeftCol ? -14 : 14 }}
-      whileInView={{ opacity: 1, y: 0, x: 0 }}
-      viewport={{ once: true, margin: "-40px" }}
+      initial={{ opacity: 0, y: 16 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true, amount: 0.05 }}
       transition={{
-        duration: 0.6,
-        delay,
+        duration: 0.45,
+        delay: Math.min(delay, 0.2),
         ease: IOS_EASE,
       }}
       className={`rounded-2xl bg-[#161619] border select-none overflow-hidden transition-colors duration-200 shadow-sm h-full flex flex-col justify-between ${
@@ -226,7 +226,7 @@ function FAQCard({
       <button
         type="button"
         onClick={onToggle}
-        className="w-full p-6 sm:p-7 flex items-start justify-between text-left gap-4 group cursor-pointer"
+        className="w-full p-6 sm:p-7 flex items-start justify-between text-left gap-4 group cursor-pointer touch-manipulation active:opacity-80"
         aria-expanded={isOpen}
       >
         <div className="flex items-start gap-3.5 flex-1 min-w-0">

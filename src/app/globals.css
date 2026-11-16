@@ -19,6 +19,8 @@
 
   html {
     scroll-behavior: smooth;
+    overflow-x: hidden;
+    background-color: var(--frame-bg);
     font-family:
       -apple-system,
       BlinkMacSystemFont,
@@ -39,7 +41,14 @@
   }
 
   body {
-    @apply bg-canvas-light dark:bg-canvas-dark text-navy dark:text-[#F0F4FA];
+    overflow-x: hidden;
+    touch-action: manipulation;
+    background-color: var(--frame-bg);
+    color: #F4F4F5;
+  }
+
+  button, a {
+    -webkit-tap-highlight-color: transparent;
   }
 
   * {

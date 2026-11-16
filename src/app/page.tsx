@@ -10,7 +10,7 @@ import AuthModal from "@/components/AuthModal";
 
 export default function HomePage() {
   return (
-    <div className="w-full min-h-screen bg-[#161618] text-white overflow-x-hidden selection:bg-white selection:text-black">
+    <div className="w-full min-h-screen bg-[#161618] text-white selection:bg-white selection:text-black">
       <main className="w-full">
         {/* Section 1: Hero with Interlocking Top Bar, White Canvas & Complex Filleted Edges */}
         <Hero />

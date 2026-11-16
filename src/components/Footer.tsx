@@ -101,7 +101,7 @@ function Footer() {
 
   return (
     <>
-      <footer ref={footerRef} className="relative w-full bg-black text-white py-16 sm:py-20 lg:py-24 px-6 border-t border-white/[0.06] overflow-hidden">
+      <footer ref={footerRef} className="relative w-full bg-black text-white pt-16 sm:pt-20 lg:pt-24 pb-[calc(4rem+env(safe-area-inset-bottom,0px))] px-6 border-t border-white/[0.06] overflow-hidden">
         {/* Subtle Low-Opacity Cat Footprints Ambient Background with Scroll Drift */}
         <motion.div
           style={{ y: footprintY }}
@@ -159,10 +159,10 @@ function Footer() {
 
         {/* Foreground Content with Scroll Entrance */}
         <motion.div
-          initial={{ opacity: 0, y: 24 }}
+          initial={{ opacity: 0, y: 16 }}
           whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, margin: "-50px" }}
-          transition={{ duration: 0.8, ease: IOS_EASE }}
+          viewport={{ once: true, amount: 0.05 }}
+          transition={{ duration: 0.6, ease: IOS_EASE }}
           className="relative z-10 max-w-4xl mx-auto flex flex-col items-center justify-center text-center"
         >
           {/* Row 1: White Brand Logo Badge & Name */}

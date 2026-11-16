@@ -30,7 +30,8 @@ export default function CtaSection() {
   const springY = useSpring(magnetY, { stiffness: 320, damping: 26, mass: 0.12 });
 
   const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
-    if (!triggerRef.current) return;
+    if (!triggerRef.current || typeof window === "undefined") return;
+    if (window.matchMedia("(pointer: coarse)").matches) return;
     const rect = triggerRef.current.getBoundingClientRect();
     const centerX = rect.left + rect.width / 2;
     const centerY = rect.top + rect.height / 2;
@@ -54,20 +55,19 @@ export default function CtaSection() {
 
   return (
     <section ref={sectionRef} className="relative py-24 sm:py-32 px-6 sm:px-10 lg:px-14 bg-[#111113] text-white border-t border-white/[0.08] overflow-hidden">
-      {/* Dynamic ambient scroll illumination */}
-      <motion.div
-        style={{ opacity: ambientGlowOpacity }}
-        className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[300px] bg-gradient-to-r from-emerald-500/20 via-sky-500/20 to-amber-500/20 blur-[100px] pointer-events-none rounded-full"
+      {/* Dynamic ambient scroll illumination (Lightweight, GPU-friendly) */}
+      <div
+        className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[260px] bg-[radial-gradient(ellipse_at_center,rgba(16,185,129,0.12)_0%,rgba(14,165,233,0.12)_40%,transparent_70%)] pointer-events-none rounded-full"
       />
 
       <div className="max-w-4xl mx-auto relative z-10">
         <motion.div
           style={{ y: ctaParallaxY }}
-          initial={{ opacity: 0, y: 32, scale: 0.98 }}
-          whileInView={{ opacity: 1, scale: 1 }}
-          viewport={{ once: true, margin: "-60px" }}
-          transition={{ duration: 0.85, ease: IOS_EASE }}
-          className="p-10 sm:p-16 lg:p-20 rounded-[32px] sm:rounded-[40px] bg-[#161619] border border-white/[0.08] ring-1 ring-white/[0.04] text-center relative overflow-hidden shadow-2xl"
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, amount: 0.05 }}
+          transition={{ duration: 0.6, ease: IOS_EASE }}
+          className="p-8 sm:p-14 lg:p-18 rounded-[28px] sm:rounded-[40px] bg-[#161619] border border-white/[0.08] ring-1 ring-white/[0.04] text-center relative overflow-hidden shadow-2xl"
         >
           {/* Top-Left PawStation Logo (Illuminates to white when "Get Started" is hovered) */}
           <div
@@ -106,24 +106,21 @@ export default function CtaSection() {
               onMouseLeave={handleMouseLeave}
               className="inline-block p-4 -m-4 select-none"
             >
-              <motion.button
+              <button
                 type="button"
-                style={{ x: springX, y: springY }}
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
                 onMouseEnter={() => setIsButtonHovered(true)}
                 onMouseLeave={() => {
                   setIsButtonHovered(false);
                   handleMouseLeave();
                 }}
                 onClick={() => user ? (window.location.href = "/dashboard") : openAuthModal("signup")}
-                className="group relative inline-flex items-center justify-center gap-3 px-8 py-3.5 sm:px-9 sm:py-4 rounded-full bg-white text-black text-[14px] sm:text-[15px] font-semibold tracking-tight shadow-[0_2px_14px_rgba(255,255,255,0.15)] hover:bg-[#F2EFE9] transition-all cursor-pointer"
+                className="group relative inline-flex items-center justify-center gap-3 px-8 py-3.5 sm:px-9 sm:py-4 rounded-full bg-white text-black text-[14px] sm:text-[15px] font-semibold tracking-tight shadow-[0_2px_14px_rgba(255,255,255,0.15)] hover:bg-[#F2EFE9] active:scale-95 transition-all cursor-pointer touch-manipulation"
               >
                 <span>{user ? "Go to Dashboard" : "Get Started"}</span>
                 <span className="w-5 h-5 rounded-full bg-black text-white flex items-center justify-center text-[10px] font-bold transition-transform duration-200 group-hover:translate-x-0.5">
                   ›
                 </span>
-              </motion.button>
+              </button>
             </div>
           </div>
         </motion.div>

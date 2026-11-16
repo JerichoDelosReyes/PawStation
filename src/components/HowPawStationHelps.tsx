@@ -90,14 +90,14 @@ export default function HowPawStationHelps() {
       <div className="max-w-7xl mx-auto">
         {/* Section Header with iOS Curve Reveal */}
         <motion.div
-          initial={{ opacity: 0, y: 32 }}
+          initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, margin: "-60px" }}
-          transition={{ duration: 0.85, ease: IOS_EASE }}
-          className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start mb-16 sm:mb-20"
+          viewport={{ once: true, amount: 0.05 }}
+          transition={{ duration: 0.6, ease: IOS_EASE }}
+          className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start mb-14 sm:mb-20"
         >
           <div className="lg:col-span-5">
-            <h2 className="text-[clamp(2.5rem,5vw,3.8rem)] font-extrabold tracking-[-0.03em] text-white leading-[1.08]">
+            <h2 className="text-[clamp(2.4rem,5vw,3.8rem)] font-extrabold tracking-[-0.03em] text-white leading-[1.08]">
               How Can
               <br />
               PawStation Help?
@@ -105,12 +105,12 @@ export default function HowPawStationHelps() {
           </div>
 
           <div className="lg:col-span-7 flex flex-col items-start lg:pl-6">
-            <p className="text-[15px] sm:text-[16px] text-[#9CA3AF] leading-relaxed mb-4 max-w-xl">
+            <p className="text-[14.5px] sm:text-[16px] text-[#9CA3AF] leading-relaxed mb-4 max-w-xl">
               With strong foundations in feline nutrition and open hardware, our automated workstation solves common challenges cat owners face—preventing obesity, reducing mealtime stress, and detecting health issues days in advance.
             </p>
             <a
               href="#faq"
-              className="group inline-flex items-center gap-2 text-[13px] font-semibold text-white hover:opacity-75 transition-opacity"
+              className="group inline-flex items-center gap-2 text-[13px] font-semibold text-white hover:opacity-75 transition-opacity touch-manipulation"
             >
               <span className="w-1.5 h-1.5 rounded-full bg-white" />
               <span>FAQ</span>
@@ -137,24 +137,16 @@ export default function HowPawStationHelps() {
                     toggleCard(idx);
                   }
                 }}
-                initial={{ opacity: 0, y: 44, scale: 0.96 }}
-                whileInView={{ opacity: 1, y: 0, scale: 1 }}
-                viewport={{ once: true, margin: "-40px" }}
+                initial={{ opacity: 0, y: 24 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, amount: 0.05 }}
                 transition={{
-                  duration: 0.75,
-                  delay: idx * 0.12,
+                  duration: 0.5,
+                  delay: idx * 0.08,
                   ease: IOS_EASE,
-                  layout: { duration: 0.35, ease: IOS_EASE },
+                  layout: { duration: 0.28, ease: IOS_EASE },
                 }}
-                whileHover={{
-                  y: -4,
-                  transition: { type: "spring", stiffness: 400, damping: 25 },
-                }}
-                whileTap={{
-                  scale: 0.985,
-                  transition: { type: "spring", stiffness: 500, damping: 30 },
-                }}
-                className={`group relative p-7 sm:p-9 rounded-2xl transition-colors duration-300 flex flex-col justify-between h-full min-h-[420px] select-none cursor-pointer overflow-hidden border will-change-transform ${
+                className={`group relative p-6 sm:p-8 rounded-2xl transition-colors duration-200 flex flex-col justify-between h-full min-h-[380px] sm:min-h-[420px] cursor-pointer overflow-hidden border touch-manipulation select-none active:scale-[0.99] ${
                   isExpanded
                     ? "bg-[#1C1C22] border-white/35 shadow-[0_12px_36px_rgba(0,0,0,0.45)] ring-1 ring-white/10"
                     : "bg-[#161619] border-white/10 hover:border-white/25 hover:bg-[#19191D] shadow-lg"
@@ -169,29 +161,16 @@ export default function HowPawStationHelps() {
                   {card.number}
                 </div>
 
-                {/* Center 3D Render with Gentle Float on Scroll View */}
-                <motion.div
-                  initial={{ scale: 0.9, opacity: 0 }}
-                  whileInView={{ scale: 1, opacity: 1 }}
-                  viewport={{ once: true }}
-                  transition={{ duration: 0.6, delay: 0.2 + idx * 0.1, ease: IOS_EASE }}
-                  className="flex-1 my-auto py-6 sm:py-8 flex items-center justify-center pointer-events-none"
-                >
-                  <motion.div
-                    animate={{ y: [0, -4, 0] }}
-                    transition={{
-                      duration: 3.5 + idx * 0.8,
-                      repeat: Infinity,
-                      ease: "easeInOut",
-                    }}
-                  >
+                {/* Center 3D Render with Gentle Float on GPU */}
+                <div className="flex-1 my-auto py-5 sm:py-8 flex items-center justify-center pointer-events-none">
+                  <div className={idx % 2 === 0 ? "animate-float" : "animate-float-delayed"}>
                     {card.render3D}
-                  </motion.div>
-                </motion.div>
+                  </div>
+                </div>
 
                 {/* Bottom Content Area */}
                 <div className="relative z-10 pt-2">
-                  <h3 className="text-[20px] sm:text-[22px] font-bold text-white tracking-tight leading-snug mb-2.5 min-h-[54px] flex items-end">
+                  <h3 className="text-[19px] sm:text-[22px] font-bold text-white tracking-tight leading-snug mb-2.5 min-h-[48px] sm:min-h-[54px] flex items-end">
                     {card.title}
                   </h3>
 

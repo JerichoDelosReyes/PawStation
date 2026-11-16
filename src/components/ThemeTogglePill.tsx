@@ -55,7 +55,7 @@ export default function ThemeTogglePill({
           onClick={() => setTheme("dark")}
           aria-label="Dark mode"
           title="Dark mode"
-          className={`rounded-full text-[11px] font-semibold transition-all duration-150 flex items-center justify-center ${
+          className={`rounded-full text-[11px] font-semibold transition-all duration-150 flex items-center justify-center cursor-pointer touch-manipulation active:scale-95 ${
             renderIcons ? "p-1.5" : "px-3 py-0.5"
           } ${
             isDark
@@ -74,7 +74,7 @@ export default function ThemeTogglePill({
           onClick={() => setTheme("light")}
           aria-label="Light mode"
           title="Light mode"
-          className={`rounded-full text-[11px] font-semibold transition-all duration-150 flex items-center justify-center ${
+          className={`rounded-full text-[11px] font-semibold transition-all duration-150 flex items-center justify-center cursor-pointer touch-manipulation active:scale-95 ${
             renderIcons ? "p-1.5" : "px-3 py-0.5"
           } ${
             !isDark

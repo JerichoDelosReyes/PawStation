@@ -1,7 +1,7 @@
 "use client";
 
-import React, { useState, useRef, useEffect, useCallback } from "react";
-import { motion, useScroll, useTransform, useSpring } from "framer-motion";
+import React, { useRef } from "react";
+import { motion } from "framer-motion";
 import { useAuth } from "@/lib/auth-context";
 
 const IOS_EASE = [0.16, 1, 0.3, 1] as const;
@@ -192,300 +192,86 @@ const ROW_TWO_MATERIALS: MaterialItem[] = [
   },
 ];
 
-interface ScrollableMaterialRowProps {
+interface MaterialRowProps {
   items: MaterialItem[];
   direction: "left" | "right";
-  speed?: number;
+  speedSeconds?: number;
   ariaLabel: string;
 }
 
-function ScrollableMaterialRow({
+function MaterialCard({ item }: { item: MaterialItem }) {
+  return (
+    <div className="relative w-[220px] sm:w-[260px] md:w-[280px] h-[120px] sm:h-[135px] md:h-[140px] rounded-[22px] sm:rounded-[24px] bg-[#18181B] border border-white/10 hover:border-white/30 hover:scale-[1.02] active:scale-[0.98] transition-all duration-200 flex flex-col justify-center items-center px-5 sm:px-6 shadow-sm shrink-0 select-none">
+      <div className="opacity-95 hover:opacity-100 transition-opacity flex items-center gap-2.5 sm:gap-3 pointer-events-none">
+        {item.icon}
+        <span className="text-[18px] sm:text-[20px] md:text-[22px] font-bold tracking-tight font-sans text-white">
+          {item.name}
+        </span>
+      </div>
+      <span className="text-[10.5px] sm:text-[11px] font-mono text-[#6B7280] mt-1.5 sm:mt-2 text-center pointer-events-none line-clamp-1">
+        {item.subtitle}
+      </span>
+    </div>
+  );
+}
+
+function MaterialMarqueeRow({
   items,
   direction,
-  speed = 0.75,
+  speedSeconds = 28,
   ariaLabel,
-}: ScrollableMaterialRowProps) {
+}: MaterialRowProps) {
   const containerRef = useRef<HTMLDivElement>(null);
-  const firstSetRef = useRef<HTMLDivElement>(null);
-  const singleSetWidthRef = useRef<number>(0);
-  const hasInitializedRef = useRef<boolean>(false);
 
-  const isPausedRef = useRef<boolean>(false);
-  const isHoveredRef = useRef<boolean>(false);
-  const isPointerDownRef = useRef<boolean>(false);
-  const isDraggingRef = useRef<boolean>(false);
-  const startXRef = useRef<number>(0);
-  const startScrollLeftRef = useRef<number>(0);
-  const resumeTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-
-  const [isReady, setIsReady] = useState(false);
-  const [isGrabbing, setIsGrabbing] = useState(false);
-
-  // Wrap check: keeps scrollLeft centered between [1 * singleWidth, 3 * singleWidth]
-  const checkBoundaryWrap = useCallback((container: HTMLDivElement) => {
-    const singleWidth = singleSetWidthRef.current;
-    if (singleWidth <= 0) return;
-
-    while (container.scrollLeft >= singleWidth * 3) {
-      container.scrollLeft -= singleWidth;
-    }
-    while (container.scrollLeft <= singleWidth * 1) {
-      container.scrollLeft += singleWidth;
-    }
-  }, []);
-
-  // Measure single set width and initialize position
-  useEffect(() => {
-    if (!firstSetRef.current || !containerRef.current) return;
-
-    const updateDimensions = () => {
-      if (!firstSetRef.current || !containerRef.current) return;
-      const w = firstSetRef.current.offsetWidth;
-      if (w > 0) {
-        singleSetWidthRef.current = w;
-        if (!hasInitializedRef.current) {
-          // Initialize at 1.5x width (Row 1) or 2.2x width (Row 2) so generous runway exists both ways
-          containerRef.current.scrollLeft = direction === "right" ? w * 2.2 : w * 1.5;
-          hasInitializedRef.current = true;
-          setIsReady(true);
-        }
-      }
-    };
-
-    updateDimensions();
-
-    const observer = new ResizeObserver(updateDimensions);
-    observer.observe(firstSetRef.current);
-
-    return () => {
-      observer.disconnect();
-    };
-  }, [direction]);
-
-  const scheduleResume = useCallback(() => {
-    if (resumeTimeoutRef.current) clearTimeout(resumeTimeoutRef.current);
-    resumeTimeoutRef.current = setTimeout(() => {
-      if (!isHoveredRef.current && !isPointerDownRef.current) {
-        isPausedRef.current = false;
-      }
-    }, 1400);
-  }, []);
-
-  // Auto-scroll loop using requestAnimationFrame
-  useEffect(() => {
-    let animId: number;
-    let lastTime: number | null = null;
-
-    const prefersReducedMotion =
-      typeof window !== "undefined" &&
-      window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-
-    if (prefersReducedMotion) return;
-
-    const step = (time: number) => {
-      if (lastTime === null) lastTime = time;
-      const delta = Math.min(time - lastTime, 64);
-      lastTime = time;
-
-      const container = containerRef.current;
-      if (!isPausedRef.current && container && singleSetWidthRef.current > 0) {
-        const px = (speed * delta) / 16.67;
-        if (direction === "left") {
-          container.scrollLeft += px;
-        } else {
-          container.scrollLeft -= px;
-        }
-        checkBoundaryWrap(container);
-      }
-
-      animId = requestAnimationFrame(step);
-    };
-
-    animId = requestAnimationFrame(step);
-
-    return () => {
-      cancelAnimationFrame(animId);
-      if (resumeTimeoutRef.current) clearTimeout(resumeTimeoutRef.current);
-    };
-  }, [direction, speed, checkBoundaryWrap]);
-
-  const handleMouseEnter = () => {
-    isHoveredRef.current = true;
-    isPausedRef.current = true;
-  };
-
-  const handleMouseLeave = () => {
-    isHoveredRef.current = false;
-    if (!isPointerDownRef.current) {
-      scheduleResume();
-    }
-  };
-
-  const handleWheel = () => {
-    isPausedRef.current = true;
-    scheduleResume();
-  };
-
-  const handleTouchStart = () => {
-    isPausedRef.current = true;
-  };
-
-  const handleTouchEnd = () => {
-    scheduleResume();
-  };
-
-  const handlePointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
-    if (e.button !== 0) return;
-    const container = containerRef.current;
-    if (!container) return;
-
-    isPointerDownRef.current = true;
-    isDraggingRef.current = false;
-    startXRef.current = e.clientX;
-    startScrollLeftRef.current = container.scrollLeft;
-    isPausedRef.current = true;
-  };
-
-  const handlePointerMove = (e: React.PointerEvent<HTMLDivElement>) => {
-    if (!isPointerDownRef.current) return;
-    const container = containerRef.current;
-    if (!container) return;
-
-    const dx = e.clientX - startXRef.current;
-    if (!isDraggingRef.current && Math.abs(dx) > 3) {
-      isDraggingRef.current = true;
-      setIsGrabbing(true);
-      try {
-        container.setPointerCapture(e.pointerId);
-      } catch {
-        // Fallback
-      }
-    }
-
-    if (isDraggingRef.current) {
-      container.scrollLeft = startScrollLeftRef.current - dx;
-      checkBoundaryWrap(container);
-    }
-  };
-
-  const handlePointerUp = (e: React.PointerEvent<HTMLDivElement>) => {
-    if (!isPointerDownRef.current) return;
-    isPointerDownRef.current = false;
-    setIsGrabbing(false);
-
-    const container = containerRef.current;
-    if (container) {
-      try {
-        if (container.hasPointerCapture(e.pointerId)) {
-          container.releasePointerCapture(e.pointerId);
-        }
-      } catch {
-        // Fallback
-      }
-    }
-
-    isDraggingRef.current = false;
-    scheduleResume();
-  };
-
-  const handleScroll = () => {
-    const container = containerRef.current;
-    if (!container) return;
-    checkBoundaryWrap(container);
-  };
-
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
-    const container = containerRef.current;
-    if (!container) return;
-    if (e.key === "ArrowLeft") {
-      e.preventDefault();
-      isPausedRef.current = true;
-      container.scrollBy({ left: -320, behavior: "smooth" });
-      scheduleResume();
-    } else if (e.key === "ArrowRight") {
-      e.preventDefault();
-      isPausedRef.current = true;
-      container.scrollBy({ left: 320, behavior: "smooth" });
-      scheduleResume();
-    }
-  };
-
-  const handleNavClick = (navDir: "left" | "right") => {
-    const container = containerRef.current;
-    if (!container) return;
-    isPausedRef.current = true;
-    const delta = navDir === "left" ? -320 : 320;
-    container.scrollBy({ left: delta, behavior: "smooth" });
-    scheduleResume();
+  const handleArrowScroll = (arrowDir: "left" | "right") => {
+    if (!containerRef.current) return;
+    const delta = arrowDir === "left" ? -280 : 280;
+    containerRef.current.scrollBy({ left: delta, behavior: "smooth" });
   };
 
   return (
-    <div className="group/row relative w-full">
-      {/* Subtle Left Arrow (Visible on Desktop Hover) */}
+    <div
+      role="region"
+      aria-label={ariaLabel}
+      className="group/row relative w-full overflow-hidden py-1 sm:py-2 touch-pan-y"
+    >
+      {/* Subtle Desktop Left Arrow */}
       <button
         type="button"
-        onClick={() => handleNavClick("left")}
+        onClick={() => handleArrowScroll("left")}
         aria-label={`Scroll ${ariaLabel} left`}
-        className="absolute left-3 sm:left-6 top-1/2 -translate-y-1/2 z-20 w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-[#1A1A1E]/85 hover:bg-[#26262C] border border-white/20 text-white flex items-center justify-center shadow-xl backdrop-blur-md opacity-0 group-hover/row:opacity-100 focus:opacity-100 transition-all duration-200 hover:scale-105 active:scale-95 select-none hidden sm:flex"
+        className="absolute left-3 sm:left-6 top-1/2 -translate-y-1/2 z-20 w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-[#1A1A1E]/85 hover:bg-[#26262C] border border-white/20 text-white flex items-center justify-center shadow-xl backdrop-blur-md opacity-0 group-hover/row:opacity-100 focus:opacity-100 transition-all duration-200 hover:scale-105 active:scale-95 select-none hidden sm:flex touch-manipulation cursor-pointer"
       >
         <span className="text-lg leading-none font-semibold">‹</span>
       </button>
 
-      {/* Main Horizontally Scrollable Container */}
+      {/* Hardware-Accelerated Marquee Track */}
       <div
         ref={containerRef}
-        role="region"
-        aria-label={ariaLabel}
-        tabIndex={0}
-        onMouseEnter={handleMouseEnter}
-        onMouseLeave={handleMouseLeave}
-        onWheel={handleWheel}
-        onTouchStart={handleTouchStart}
-        onTouchEnd={handleTouchEnd}
-        onPointerDown={handlePointerDown}
-        onPointerMove={handlePointerMove}
-        onPointerUp={handlePointerUp}
-        onPointerCancel={handlePointerUp}
-        onScroll={handleScroll}
-        onKeyDown={handleKeyDown}
-        className={`relative w-full overflow-x-auto overflow-y-hidden py-3 no-scrollbar [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] overscroll-x-contain select-none focus:outline-none focus-visible:ring-1 focus-visible:ring-white/20 transition-opacity duration-300 ${
-          isReady ? "opacity-100" : "opacity-0"
-        } ${isGrabbing ? "cursor-grabbing" : "cursor-grab"}`}
+        className="flex w-full overflow-x-hidden no-scrollbar select-none"
       >
-        <div className="flex w-max">
-          {Array.from({ length: 6 }).map((_, setIdx) => (
-            <div
-              key={setIdx}
-              ref={setIdx === 0 ? firstSetRef : undefined}
-              className="flex gap-5 sm:gap-6 pr-5 sm:pr-6 shrink-0"
-            >
-              {items.map((item) => (
-                <div
-                  key={`${setIdx}-${item.id}`}
-                  className="relative w-[240px] sm:w-[280px] h-[130px] sm:h-[140px] rounded-[24px] bg-[#18181B] border border-white/10 hover:border-white/30 hover:scale-[1.03] active:scale-[0.98] hover:shadow-lg hover:shadow-black/40 hover:z-20 transition-all duration-200 flex flex-col justify-center items-center px-6 shadow-sm shrink-0 select-none will-change-transform"
-                >
-                  <div className="opacity-95 hover:opacity-100 transition-opacity flex items-center gap-3 pointer-events-none">
-                    {item.icon}
-                    <span className="text-[20px] sm:text-[22px] font-bold tracking-tight font-sans text-white">
-                      {item.name}
-                    </span>
-                  </div>
-                  <span className="text-[11px] font-mono text-[#6B7280] mt-2 text-center pointer-events-none">
-                    {item.subtitle}
-                  </span>
-                </div>
-              ))}
-            </div>
+        <div
+          className={`flex w-max gap-4 sm:gap-6 pr-4 sm:pr-6 shrink-0 ${
+            direction === "left" ? "animate-ticker" : "animate-ticker-reverse"
+          } group-hover/row:[animation-play-state:paused] [will-change:transform] transform-gpu`}
+          style={{ animationDuration: `${speedSeconds}s` }}
+        >
+          {/* Render 2 continuous sets for a seamless infinite loop */}
+          {items.map((item, idx) => (
+            <MaterialCard key={`set1-${item.id}-${idx}`} item={item} />
+          ))}
+          {items.map((item, idx) => (
+            <MaterialCard key={`set2-${item.id}-${idx}`} item={item} />
           ))}
         </div>
       </div>
 
-      {/* Subtle Right Arrow (Visible on Desktop Hover) */}
+      {/* Subtle Desktop Right Arrow */}
       <button
         type="button"
-        onClick={() => handleNavClick("right")}
+        onClick={() => handleArrowScroll("right")}
         aria-label={`Scroll ${ariaLabel} right`}
-        className="absolute right-3 sm:right-6 top-1/2 -translate-y-1/2 z-20 w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-[#1A1A1E]/85 hover:bg-[#26262C] border border-white/20 text-white flex items-center justify-center shadow-xl backdrop-blur-md opacity-0 group-hover/row:opacity-100 focus:opacity-100 transition-all duration-200 hover:scale-105 active:scale-95 select-none hidden sm:flex"
+        className="absolute right-3 sm:right-6 top-1/2 -translate-y-1/2 z-20 w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-[#1A1A1E]/85 hover:bg-[#26262C] border border-white/20 text-white flex items-center justify-center shadow-xl backdrop-blur-md opacity-0 group-hover/row:opacity-100 focus:opacity-100 transition-all duration-200 hover:scale-105 active:scale-95 select-none hidden sm:flex touch-manipulation cursor-pointer"
       >
         <span className="text-lg leading-none font-semibold">›</span>
       </button>
@@ -495,46 +281,34 @@ function ScrollableMaterialRow({
 
 export default function EcosystemBand() {
   const { openAuthModal } = useAuth();
-  const sectionRef = useRef<HTMLElement>(null);
-
-  // Smooth scroll-driven horizontal momentum on the materials rows
-  const { scrollYProgress } = useScroll({
-    target: sectionRef,
-    offset: ["start end", "end start"],
-  });
-
-  const smoothProgress = useSpring(scrollYProgress, { stiffness: 180, damping: 28 });
-  const rowOneParallax = useTransform(smoothProgress, [0, 1], [60, -60]);
-  const rowTwoParallax = useTransform(smoothProgress, [0, 1], [-60, 60]);
 
   return (
     <section
-      ref={sectionRef}
       id="ecosystem"
-      className="relative pt-16 sm:pt-20 pb-20 sm:pb-28 px-6 sm:px-12 lg:px-16 bg-[#161618] text-white overflow-hidden select-none"
+      className="relative pt-14 sm:pt-20 pb-16 sm:pb-28 px-4 sm:px-10 lg:px-16 bg-[#161618] text-white overflow-hidden"
     >
       <div id="materials" className="absolute -top-24" />
 
       <motion.div
-        initial={{ opacity: 0, y: 32 }}
+        initial={{ opacity: 0, y: 20 }}
         whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: true, margin: "-60px" }}
-        transition={{ duration: 0.85, ease: IOS_EASE }}
-        className="max-w-7xl mx-auto"
+        viewport={{ once: true, amount: 0.05 }}
+        transition={{ duration: 0.6, ease: IOS_EASE }}
+        className="max-w-7xl mx-auto mb-8 sm:mb-10"
       >
         {/* Large "Our Materials" Title on Left */}
-        <h2 className="text-[clamp(2.8rem,5.5vw,4.5rem)] font-extrabold tracking-[-0.035em] text-white leading-none mb-6">
+        <h2 className="text-[clamp(2.4rem,5.5vw,4.5rem)] font-extrabold tracking-[-0.035em] text-white leading-none mb-6">
           Our Materials
         </h2>
 
         {/* Full-Width Hairline Divider Beneath Headline */}
-        <div className="w-full h-[1px] bg-white/15 mb-10 sm:mb-12" />
+        <div className="w-full h-[1px] bg-white/15 mb-8 sm:mb-12" />
 
-        {/* Right-Offset Column (Starts ~1/3 across) */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 mb-12 sm:mb-14">
+        {/* Right-Offset Column */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 mb-6 sm:mb-10">
           <div className="lg:col-span-4" />
           <div className="lg:col-span-8 max-w-xl">
-            <p className="text-[14px] sm:text-[15px] leading-relaxed text-[#9CA3AF] mb-5 font-normal">
+            <p className="text-[13.5px] sm:text-[15px] leading-relaxed text-[#9CA3AF] mb-5 font-normal">
               PawStation is built from low-cost, easy-to-find parts. An ESP32 reads the scale and the water sensor, turns the feeder, runs the pump, and reports everything to this website over Wi-Fi. No special equipment needed, just a handful of modules and a bit of wiring.
             </p>
 
@@ -542,7 +316,7 @@ export default function EcosystemBand() {
               <button
                 type="button"
                 onClick={() => openAuthModal("signup")}
-                className="group inline-flex items-center gap-2.5 text-[14px] font-semibold text-white hover:opacity-85 transition-opacity"
+                className="group inline-flex items-center gap-2.5 text-[13.5px] sm:text-[14px] font-semibold text-white hover:opacity-85 transition-opacity touch-manipulation cursor-pointer active:scale-95"
               >
                 <span className="w-5 h-5 rounded-full bg-white text-black flex items-center justify-center text-[10px] font-bold transition-transform duration-200 group-hover:scale-110">
                   ›
@@ -555,32 +329,28 @@ export default function EcosystemBand() {
       </motion.div>
 
       {/* ─────────────────────────────────────────────────────────────
-          TWO-ROW INFINITE HORIZONTAL SCROLLABLE MARQUEE (100VW)
+          TWO-ROW INFINITE GPU-ACCELERATED MARQUEE
       ───────────────────────────────────────────────────────────── */}
-      <div className="relative w-screen left-1/2 -translate-x-1/2 overflow-hidden flex flex-col gap-2 sm:gap-3 py-2 sm:py-4">
+      <div className="relative w-full overflow-hidden flex flex-col gap-3 sm:gap-4 py-1">
         {/* Soft edge fade masks for seamless entry/exit */}
-        <div className="absolute top-0 bottom-0 left-0 w-16 sm:w-28 bg-gradient-to-r from-[#161618] to-transparent z-10 pointer-events-none" />
-        <div className="absolute top-0 bottom-0 right-0 w-16 sm:w-28 bg-gradient-to-l from-[#161618] to-transparent z-10 pointer-events-none" />
+        <div className="absolute top-0 bottom-0 left-0 w-12 sm:w-28 bg-gradient-to-r from-[#161618] to-transparent z-10 pointer-events-none" />
+        <div className="absolute top-0 bottom-0 right-0 w-12 sm:w-28 bg-gradient-to-l from-[#161618] to-transparent z-10 pointer-events-none" />
 
-        {/* Row 1: Sensors & Core Electronics (Drifting Left, Freely Scrollable + Scroll Parallax) */}
-        <motion.div style={{ x: rowOneParallax }} className="w-full">
-          <ScrollableMaterialRow
-            items={ROW_ONE_MATERIALS}
-            direction="left"
-            speed={0.75}
-            ariaLabel="Sensors and Core Electronics"
-          />
-        </motion.div>
+        {/* Row 1: Sensors & Core Electronics (Smooth GPU Drift Left) */}
+        <MaterialMarqueeRow
+          items={ROW_ONE_MATERIALS}
+          direction="left"
+          speedSeconds={28}
+          ariaLabel="Sensors and Core Electronics"
+        />
 
-        {/* Row 2: Actuation, Power & Structure (Drifting Right, Freely Scrollable + Scroll Parallax) */}
-        <motion.div style={{ x: rowTwoParallax }} className="w-full">
-          <ScrollableMaterialRow
-            items={ROW_TWO_MATERIALS}
-            direction="right"
-            speed={0.75}
-            ariaLabel="Actuation, Power and Structure"
-          />
-        </motion.div>
+        {/* Row 2: Actuation, Power & Structure (Smooth GPU Drift Right) */}
+        <MaterialMarqueeRow
+          items={ROW_TWO_MATERIALS}
+          direction="right"
+          speedSeconds={28}
+          ariaLabel="Actuation, Power and Structure"
+        />
       </div>
     </section>
   );

@@ -39,7 +39,8 @@ function MagneticHeroButton({
   const springY = useSpring(y, { stiffness: 340, damping: 28, mass: 0.1 });
 
   const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
-    if (!ref.current) return;
+    if (!ref.current || typeof window === "undefined") return;
+    if (window.matchMedia("(pointer: coarse)").matches) return;
     const rect = ref.current.getBoundingClientRect();
     const centerX = rect.left + rect.width / 2;
     const centerY = rect.top + rect.height / 2;
@@ -69,9 +70,7 @@ function MagneticHeroButton({
           href={href}
           onClick={onClick}
           style={{ x: springX, y: springY }}
-          whileHover={{ scale: 1.02 }}
-          whileTap={{ scale: 0.97 }}
-          className={className}
+          className={`${className} touch-manipulation active:scale-95`}
         >
           {children}
         </motion.a>
@@ -90,9 +89,7 @@ function MagneticHeroButton({
         type="button"
         onClick={onClick}
         style={{ x: springX, y: springY }}
-        whileHover={{ scale: 1.02 }}
-        whileTap={{ scale: 0.97 }}
-        className={className}
+        className={`${className} touch-manipulation active:scale-95`}
       >
         {children}
       </motion.button>
@@ -181,6 +178,7 @@ export default function Hero() {
 
   const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
     if (typeof window === "undefined") return;
+    if (window.matchMedia("(pointer: coarse)").matches) return;
     const xPct = e.clientX / window.innerWidth - 0.5;
     const yPct = e.clientY / window.innerHeight - 0.5;
     mouseX.set(xPct);
@@ -195,7 +193,7 @@ export default function Hero() {
   return (
     <section
       ref={heroRef}
-      className="relative w-full min-h-[100dvh] lg:h-[100dvh] bg-[var(--frame-bg)] text-white select-none p-0 flex flex-col justify-between overflow-x-hidden lg:overflow-hidden"
+      className="relative w-full min-h-[100dvh] lg:h-[100dvh] bg-[var(--frame-bg)] text-white p-0 flex flex-col justify-between overflow-x-hidden lg:overflow-hidden"
     >
       {/* ─────────────────────────────────────────────────────────────
           ALL-BLACK MOBILE HEADER BAR (< lg)
@@ -237,7 +235,7 @@ export default function Hero() {
               type="button"
               onClick={() => setMobileMenuOpen((prev) => !prev)}
               aria-label="Toggle navigation menu"
-              className="w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 active:scale-95 flex items-center justify-center text-white border border-white/10 transition-all cursor-pointer"
+              className="w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 active:scale-95 flex items-center justify-center text-white border border-white/10 transition-all cursor-pointer touch-manipulation"
             >
               {mobileMenuOpen ? <CloseIcon className="w-4 h-4" /> : <MenuIcon className="w-4 h-4" />}
             </button>
@@ -262,11 +260,15 @@ export default function Hero() {
                     handleNavClick(e, link.href, link.label);
                     setMobileMenuOpen(false);
                   }}
-                  className="px-4 py-2.5 rounded-xl text-[14px] font-medium text-neutral-200 hover:text-white hover:bg-white/[0.08] transition-colors"
+                  className="px-4 py-2.5 rounded-xl text-[14px] font-medium text-neutral-200 hover:text-white hover:bg-white/[0.08] transition-colors touch-manipulation"
                 >
                   {link.label}
                 </a>
               ))}
+              <div className="pt-2 mt-1 border-t border-white/10 px-4 py-2 flex items-center justify-between">
+                <span className="text-[13px] font-medium text-neutral-300">Theme</span>
+                <ThemeTogglePill compact showLabel={false} />
+              </div>
             </motion.div>
           )}
         </AnimatePresence>
@@ -398,7 +400,7 @@ export default function Hero() {
           {/* ─────────────────────────────────────────────────────────
               4. HERO CONTENT: CENTER-ALIGNED CLEAN TYPOGRAPHY + ELEVATED 3D FIGURE
           ───────────────────────────────────────────────────────── */}
-          <div className="relative z-10 flex-1 grid grid-cols-1 lg:grid-cols-12 gap-6 sm:gap-8 lg:gap-8 xl:gap-12 w-full max-w-[1720px] mx-auto px-5 sm:px-10 lg:px-14 pt-6 sm:pt-8 lg:pt-0 pb-8 sm:pb-10 lg:pb-0 min-h-0 items-center">
+          <div className="relative z-10 flex-1 grid grid-cols-1 lg:grid-cols-12 gap-6 sm:gap-8 lg:gap-8 xl:gap-12 w-full max-w-[1720px] mx-auto px-5 sm:px-10 lg:px-14 pt-6 sm:pt-8 lg:pt-0 pb-16 sm:pb-20 lg:pb-0 min-h-0 items-center">
             {/* Left Column: Center-Aligned on Mobile, Left-Aligned on Desktop */}
             <motion.div
               style={{ y: textParallaxY }}
@@ -505,7 +507,8 @@ export default function Hero() {
                     alt="PawStation 3D Hardware Architecture - Dark Mode"
                     width={2872}
                     height={1656}
-                    priority
+                    loading="lazy"
+                    decoding="async"
                     sizes="(max-width: 768px) 100vw, (max-width: 1200px) 70vw, 1260px"
                     className="absolute inset-0 w-full h-full object-contain pointer-events-none select-none transition-opacity duration-500 ease-in-out dark:opacity-100 opacity-0"
                   />
@@ -519,7 +522,7 @@ export default function Hero() {
                   onClick={() => setActiveHotspot(activeHotspot === "scale" ? null : "scale")}
                   onMouseEnter={() => handleHotspotEnter("scale")}
                   onMouseLeave={handleHotspotLeave}
-                  className="absolute top-[65%] left-[28%] -translate-x-1/2 -translate-y-1/2 cursor-pointer z-20 group p-3 -m-3 rounded-full flex items-center justify-center focus:outline-none"
+                  className="absolute top-[65%] left-[28%] -translate-x-1/2 -translate-y-1/2 cursor-pointer z-20 group p-3 -m-3 rounded-full flex items-center justify-center focus:outline-none touch-manipulation"
                 >
                   <span className="absolute inset-1.5 rounded-full bg-emerald-500/30 animate-ping pointer-events-none" />
                   <span
@@ -538,7 +541,7 @@ export default function Hero() {
                   onClick={() => setActiveHotspot(activeHotspot === "kibble" ? null : "kibble")}
                   onMouseEnter={() => handleHotspotEnter("kibble")}
                   onMouseLeave={handleHotspotLeave}
-                  className="absolute top-[52%] left-[54%] -translate-x-1/2 -translate-y-1/2 cursor-pointer z-20 group p-3 -m-3 rounded-full flex items-center justify-center focus:outline-none"
+                  className="absolute top-[52%] left-[54%] -translate-x-1/2 -translate-y-1/2 cursor-pointer z-20 group p-3 -m-3 rounded-full flex items-center justify-center focus:outline-none touch-manipulation"
                 >
                   <span className="absolute inset-1.5 rounded-full bg-amber-500/30 animate-ping pointer-events-none" />
                   <span
@@ -557,7 +560,7 @@ export default function Hero() {
                   onClick={() => setActiveHotspot(activeHotspot === "water" ? null : "water")}
                   onMouseEnter={() => handleHotspotEnter("water")}
                   onMouseLeave={handleHotspotLeave}
-                  className="absolute top-[68%] left-[68%] -translate-x-1/2 -translate-y-1/2 cursor-pointer z-20 group p-3 -m-3 rounded-full flex items-center justify-center focus:outline-none"
+                  className="absolute top-[68%] left-[68%] -translate-x-1/2 -translate-y-1/2 cursor-pointer z-20 group p-3 -m-3 rounded-full flex items-center justify-center focus:outline-none touch-manipulation"
                 >
                   <span className="absolute inset-1.5 rounded-full bg-sky-500/30 animate-ping pointer-events-none" />
                   <span
@@ -576,7 +579,7 @@ export default function Hero() {
                   onClick={() => setActiveHotspot(activeHotspot === "power" ? null : "power")}
                   onMouseEnter={() => handleHotspotEnter("power")}
                   onMouseLeave={handleHotspotLeave}
-                  className="absolute top-[52%] left-[82%] -translate-x-1/2 -translate-y-1/2 cursor-pointer z-20 group p-3 -m-3 rounded-full flex items-center justify-center focus:outline-none"
+                  className="absolute top-[52%] left-[82%] -translate-x-1/2 -translate-y-1/2 cursor-pointer z-20 group p-3 -m-3 rounded-full flex items-center justify-center focus:outline-none touch-manipulation"
                 >
                   <span className="absolute inset-1.5 rounded-full bg-indigo-500/30 animate-ping pointer-events-none" />
                   <span
@@ -598,7 +601,7 @@ export default function Hero() {
                     onClick={() => setActiveHotspot(activeHotspot === "scale" ? null : "scale")}
                     onMouseEnter={() => handleHotspotEnter("scale")}
                     onMouseLeave={handleHotspotLeave}
-                    className={`px-2.5 sm:px-3.5 py-1 sm:py-1.5 rounded-full bg-white/95 dark:bg-[#1C1F2E]/95 border shadow-md flex items-center gap-1.5 sm:gap-2.5 text-[9.5px] sm:text-[11px] text-[var(--panel-text)] cursor-pointer transition-all duration-150 transform-gpu select-none focus:outline-none ${
+                    className={`px-2.5 sm:px-3.5 py-1 sm:py-1.5 rounded-full bg-white/95 dark:bg-[#1C1F2E]/95 border shadow-md flex items-center gap-1.5 sm:gap-2.5 text-[9.5px] sm:text-[11px] text-[var(--panel-text)] cursor-pointer transition-all duration-150 transform-gpu select-none focus:outline-none touch-manipulation ${
                       activeHotspot === "scale"
                         ? "border-emerald-500 ring-2 ring-emerald-500/30 scale-105 shadow-emerald-500/20"
                         : "border-black/10 dark:border-white/10 hover:border-black/20 dark:hover:border-white/20"
@@ -622,7 +625,7 @@ export default function Hero() {
                     onClick={() => setActiveHotspot(activeHotspot === "kibble" ? null : "kibble")}
                     onMouseEnter={() => handleHotspotEnter("kibble")}
                     onMouseLeave={handleHotspotLeave}
-                    className={`px-3.5 py-1.5 rounded-full bg-white/95 dark:bg-[#1C1F2E]/95 border shadow-md flex items-center gap-2.5 text-[11px] text-[var(--panel-text)] cursor-pointer transition-all duration-150 transform-gpu select-none focus:outline-none ${
+                    className={`px-3.5 py-1.5 rounded-full bg-white/95 dark:bg-[#1C1F2E]/95 border shadow-md flex items-center gap-2.5 text-[11px] text-[var(--panel-text)] cursor-pointer transition-all duration-150 transform-gpu select-none focus:outline-none touch-manipulation ${
                       activeHotspot === "kibble"
                         ? "border-amber-500 ring-2 ring-amber-500/30 scale-105 shadow-amber-500/20"
                         : "border-black/10 dark:border-white/10 hover:border-black/20 dark:hover:border-white/20"
@@ -645,7 +648,7 @@ export default function Hero() {
                     onClick={() => setActiveHotspot(activeHotspot === "water" ? null : "water")}
                     onMouseEnter={() => handleHotspotEnter("water")}
                     onMouseLeave={handleHotspotLeave}
-                    className={`px-2.5 sm:px-3.5 py-1 sm:py-1.5 rounded-full bg-white/95 dark:bg-[#1C1F2E]/95 border shadow-md flex items-center gap-1.5 sm:gap-2.5 text-[9.5px] sm:text-[11px] text-[var(--panel-text)] cursor-pointer transition-all duration-150 transform-gpu select-none focus:outline-none ${
+                    className={`px-2.5 sm:px-3.5 py-1 sm:py-1.5 rounded-full bg-white/95 dark:bg-[#1C1F2E]/95 border shadow-md flex items-center gap-1.5 sm:gap-2.5 text-[9.5px] sm:text-[11px] text-[var(--panel-text)] cursor-pointer transition-all duration-150 transform-gpu select-none focus:outline-none touch-manipulation ${
                       activeHotspot === "water"
                         ? "border-sky-500 ring-2 ring-sky-500/30 scale-105 shadow-sky-500/20"
                         : "border-black/10 dark:border-white/10 hover:border-black/20 dark:hover:border-white/20"
@@ -668,7 +671,7 @@ export default function Hero() {
                     onClick={() => setActiveHotspot(activeHotspot === "power" ? null : "power")}
                     onMouseEnter={() => handleHotspotEnter("power")}
                     onMouseLeave={handleHotspotLeave}
-                    className={`px-3.5 py-1.5 rounded-full bg-white/95 dark:bg-[#1C1F2E]/95 border shadow-md flex items-center gap-2.5 text-[11px] text-[var(--panel-text)] cursor-pointer transition-all duration-150 transform-gpu select-none focus:outline-none ${
+                    className={`px-3.5 py-1.5 rounded-full bg-white/95 dark:bg-[#1C1F2E]/95 border shadow-md flex items-center gap-2.5 text-[11px] text-[var(--panel-text)] cursor-pointer transition-all duration-150 transform-gpu select-none focus:outline-none touch-manipulation ${
                       activeHotspot === "power"
                         ? "border-indigo-500 ring-2 ring-indigo-500/30 scale-105 shadow-indigo-500/20"
                         : "border-black/10 dark:border-white/10 hover:border-black/20 dark:hover:border-white/20"
