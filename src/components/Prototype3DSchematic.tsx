@@ -76,7 +76,7 @@ const CALLOUTS: CalloutAnnotation[] = [
     id: "controller",
     code: "06",
     title: "ESP32 & 5V Rail",
-    spec: "HiveMQ TLS · Dual-Rail",
+    spec: "Direct Wi-Fi · Dual-Rail",
     subtext: "Side-mounted convective louvered box with isolated 5V power bank avoiding microcontroller brownout resets.",
     icon: SignalIcon,
     targetX: 742,

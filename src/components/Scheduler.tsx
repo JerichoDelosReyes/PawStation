@@ -12,7 +12,7 @@ import {
   CloseIcon,
   ClockIcon,
 } from "./Icons";
-import { useStationStatus, useScheduleTelemetry } from "@/lib/mqtt";
+import { useStationStatus, useScheduleTelemetry } from "@/lib/station";
 
 const hardwareSpecs = [
   {
@@ -65,10 +65,10 @@ const hardwareSpecs = [
   },
   {
     icon: SignalIcon,
-    label: "Encrypted Broker Fabric",
-    detail: "HiveMQ Cloud Serverless, WSS 8884 / TLS 1.3 mutual auth",
-    pin: "Port 8884",
-    pinRole: "MQTTS Secure WebSocket · TLS Encrypted",
+    label: "Direct Wi-Fi Controller",
+    detail: "ESP32 Local Network (WebSocket / HTTP REST)",
+    pin: "Port 80 /ws",
+    pinRole: "Direct Wi-Fi · Zero Cloud Dependency",
     accent: "text-purple-600 dark:text-purple-400 bg-purple-500/10",
   },
 ];

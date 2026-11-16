@@ -44,10 +44,10 @@ const FAQ_ITEMS: FAQItem[] = [
     id: "network",
     category: "Reliability",
     icon: SignalIcon,
-    tag: "MQTT Last-Will",
+    tag: "Direct Wi-Fi Heartbeat",
     highlight: "6s telemetry loss detection",
     q: "What happens if the station loses Wi-Fi or power?",
-    a: "The MQTT broker holds a last-will message that immediately flags the station as offline. The web dashboard detects missing telemetry after approximately 6 seconds and displays a clear offline indicator. The ESP32 automatically retries Wi-Fi and broker connections using non-blocking timers, so the watchdog timer never triggers a reset. Food and water already dispensed remain available to the cat.",
+    a: "The ESP32 maintains a direct WebSocket connection with periodic heartbeats. The web dashboard detects missing telemetry after approximately 6 seconds and displays a clear offline indicator. The ESP32 automatically retries local Wi-Fi association using non-blocking timers, while the internal hardware watchdog ensures fail-safe execution. Food and water already dispensed remain safely accessible to the cat.",
   },
   {
     id: "scale",

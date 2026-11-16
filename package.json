@@ -18,13 +18,13 @@
     "@supabase/ssr": "^0.12.7",
     "@supabase/supabase-js": "^2.109.0",
     "framer-motion": "^14.12.0",
-    "mqtt": "^5.16.1",
     "next": "^16.4.6",
     "react": "^19.3.1",
     "react-dom": "^19.3.1",
     "three": "^0.187.0"
   },
   "devDependencies": {
+    "@types/node": "26.6.6",
     "@types/react": "19.3.0",
     "autoprefixer": "^10.6.2",
     "postcss": "^8.5.32",

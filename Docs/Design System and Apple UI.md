@@ -39,7 +39,7 @@ Most modern AI-generated web interfaces follow a lazy, recognizable template ("v
 | **11** | **Colored left accent stripes on cards** | Full-width contextual state indicators or subtle status chips. |
 | **12** | **Fake testimonials & social proof** | Real device logs, actual timestamped telemetry records, and true cat visit events. |
 | **13** | **Forced bento grids** | Structured, logical control panels based on physical hardware components. |
-| **14** | **Decorative terminal window mockups** | Legitimate telemetry data tables and live MQTT connection inspector. |
+| **14** | **Decorative terminal window mockups** | Legitimate telemetry data tables and live WebSocket connection inspector. |
 | **15** | **"It's not X, it's Y" AI marketing copy** | Direct, factual descriptions: "Dispenses 1 portion of dry kibble (35g)." |
 | **16** | **Checkmark bullet lists (plain text symbols)** | Real operational checklists, sensor health tables, and state summaries. |
 | **17** | **3 pricing tiers** | None. PawStation is a self-hosted, private IoT station. |
@@ -116,7 +116,7 @@ font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display",
 |  08:14 - 3.84 kg (5m 01s duration)             08:00 - Scheduled Dispense         |
 |                                                                                   |
 +-----------------------------------------------------------------------------------+
-|  [[Privacy Policy]]  |  [[Terms of Service]]  |  ESP32 Firmware v1.2  | HiveMQ TLS|
+|  [[Privacy Policy]]  |  [[Terms of Service]]  |  ESP32 Firmware v1.2  | Direct Wi-Fi|
 +-----------------------------------------------------------------------------------+
 ```
 
@@ -127,7 +127,7 @@ font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display",
 To prevent layout shifts and eliminate empty screen flickers:
 1. Every numerical readout displays a dedicated tabular skeleton pill during initial connection.
 2. Historical tables render 5 rows of pulsing gray bars matching the exact row heights.
-3. Hardware status chips default to a neutral gray `"Connecting..."` badge before live MQTT handshake confirms state.
+3. Hardware status chips default to a neutral gray `"Connecting..."` badge before live Wi-Fi / WebSocket handshake confirms state.
 
 ---
 [[Index]] | [[Security Architecture and Hardening]] | [[Supabase and Backend Architecture]] | [[Privacy Policy]] | [[Terms of Service]]

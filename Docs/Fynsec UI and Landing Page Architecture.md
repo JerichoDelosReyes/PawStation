@@ -41,7 +41,7 @@ The PawStation landing interface is modeled directly after the high-contrast, ed
 +---------------------------------------------------------------------------------------+
 |  Our Partners                                                                         |  <- Hairline Divider
 |  -----------------------------------------------------------------------------------  |
-|                   [Espressif]   [Supabase]   [HiveMQ]   [HX711]   [FreeRTOS]          |  <- Infinite Marquee
+|                   [Espressif]   [Supabase]   [Direct Wi-Fi]   [HX711]   [FreeRTOS]    |  <- Infinite Marquee
 +---------------------------------------------------------------------------------------+
 |  How Can PawStation Help?                                                             |
 |  [/ 01: Micro-Portions]      [/ 02: Whisper Flow]      [/ 03: Biometric Tracking]     |  <- Hover Expand
@@ -94,7 +94,7 @@ The centerpiece of the hero section is the interlocking jigsaw boundary between 
 - **Layout:** Large left-aligned "Our Partners" title with a full-width 1px hairline divider beneath it.
 - **Right-Offset Copy:** Editorial paragraph and `› Get Started` button start 1/3 across the viewport (`lg:col-span-8`).
 - **Marquee Mechanics:** Seamless CSS ticker (`animate-ticker`) translating duplicated card arrays (`translateX(0)` to `translateX(-50%)`).
-- **Cards:** Outlined `rounded-[24px]` cards in dark fill (`#18181B`) with inline vector logos for **Espressif**, **Supabase**, **HiveMQ**, **HX711**, and **FreeRTOS**. Pauses on hover; respects `prefers-reduced-motion`.
+- **Cards:** Outlined `rounded-[24px]` cards in dark fill (`#18181B`) with inline vector logos for **Espressif**, **Supabase**, **Direct Wi-Fi**, **HX711**, and **FreeRTOS**. Pauses on hover; respects `prefers-reduced-motion`.
 
 ### 2.6 Interactive Feature Numbered Cards (`src/components/HowPawStationHelps.tsx`)
 - Three structured columns with prominent index markers (`/ 01`, `/ 02`, `/ 03`).
@@ -106,7 +106,7 @@ The centerpiece of the hero section is the interlocking jigsaw boundary between 
   1. **Suspended Birch Sled:** 24-bit HX711 ADC, ±0.1g precision, 10 SPS rate.
   2. **Anti-Regurgitation Chute:** SG90 micro-servo, 35g portions, 0.0mA quiescent auto-detach.
   3. **Whisper Hydration Flow:** 600ms cosine decay voltage ramp, < 16 dB acoustic rating.
-  4. **Dual-Rail Telemetry Hub:** Isolated 3.3V / 5.0V power rails, MQTTS TLS 1.3 on Port 8883.
+  4. **Dual-Rail Telemetry Hub:** Isolated 3.3V / 5.0V power rails, Direct Wi-Fi & WebSockets on Port 80/81.
 
 ---
 

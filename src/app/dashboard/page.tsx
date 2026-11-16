@@ -8,7 +8,7 @@ import Footer from "@/components/Footer";
 import AuthModal from "@/components/AuthModal";
 import { CatIcon, CloseIcon, ChevronDownIcon } from "@/components/Icons";
 import { useAuth } from "@/lib/auth-context";
-import { MqttProvider, useStationStatus } from "@/lib/mqtt";
+import { StationProvider, useStationStatus } from "@/lib/station";
 
 const CAT_BREEDS = [
   "Domestic Shorthair",
@@ -220,8 +220,8 @@ function DashboardContent() {
 
 export default function DashboardPage() {
   return (
-    <MqttProvider>
+    <StationProvider>
       <DashboardContent />
-    </MqttProvider>
+    </StationProvider>
   );
 }

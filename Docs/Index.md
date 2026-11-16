@@ -46,7 +46,7 @@ Welcome to the **PawStation Obsidian Knowledge Base**. This vault is organized u
 ### Core Architecture & Specifications
 - **Hardware & Firmware:** [[Pawstation Documentation and Parts]]
   - Complete ESP32 pinouts, load cell calibration (HX711), pump switching (XY-MOS), servo wiring, capacitor & flyback diode protection.
-  - HiveMQ Cloud broker setup, MQTT topic definitions (`pawstation/telemetry`, `pawstation/status`, `pawstation/cmd`).
+  - Direct Wi-Fi embedded REST and WebSocket endpoints (`/api/status`, `/api/telemetry`, `/api/command`, `/ws`).
 - **Security Engineering:** [[Security Architecture and Hardening]]
   - STRIDE threat modeling for IoT & Cloud.
   - Supabase Row Level Security (RLS) policies and least-privilege role separation.
@@ -58,7 +58,7 @@ Welcome to the **PawStation Obsidian Knowledge Base**. This vault is organized u
   - Micro-interactions, haptic feedback cues, and responsive layouts.
 - **Data & Cloud Backend:** [[Supabase and Backend Architecture]]
   - PostgreSQL schema for `stations`, `telemetry_logs`, `feeding_events`, `cat_visits`, `station_alerts`.
-  - Dual communication pipeline: sub-100ms MQTT WebSockets for live controls + Supabase PostgreSQL for persistent history.
+  - Dual communication pipeline: sub-10ms direct Wi-Fi WebSockets/REST for live controls + Supabase PostgreSQL for persistent history.
   - Realtime subscription patterns and time-series data retention strategies.
 - **Execution Plan:** [[Implementation Plan and Roadmap]]
   - 5-phase structured rollout from planning to hardware commissioning.
@@ -73,7 +73,7 @@ Welcome to the **PawStation Obsidian Knowledge Base**. This vault is organized u
 ## 2. Configuration & Secrets
 
 - **`.env.example`:** Blueprint for environment keys.
-- **`.env`:** Active local environment variables (`VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`, `VITE_HIVEMQ_HOST`, etc.).
+- **`.env`:** Active local environment variables (`NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `NEXT_PUBLIC_ESP32_HOST`, etc.).
 - **`.gitignore`:** Strict exclusion rules protecting secrets from git leaks.
 
 ---

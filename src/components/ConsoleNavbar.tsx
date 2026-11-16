@@ -8,7 +8,7 @@ import InverseCorner from "./InverseCorner";
 import ThemeTogglePill from "./ThemeTogglePill";
 import { useAuth } from "@/lib/auth-context";
 import { useTheme } from "./ThemeProvider";
-import type { StationStatus } from "@/lib/mqtt";
+import type { StationStatus } from "@/lib/station";
 
 interface ConsoleNavbarProps {
   stationStatus?: StationStatus;

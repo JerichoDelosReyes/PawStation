@@ -6,12 +6,14 @@ tags:
   - backend
   - iot
   - supabase
-  - mqtt
+  - wifi
+  - websockets
+  - rest
 aliases:
   - Security Architecture
   - Hardening Guide
 date_created: 2026-11-12
-status: Planned
+status: Approved
 ---
 
 # PawStation Security Architecture & Hardening Guide
@@ -20,25 +22,24 @@ Part of [[Index]] | Related: [[Fynsec UI and Landing Page Architecture]] | [[Sup
 
 ## 1. Threat Modeling & Scope
 
-PawStation is an Internet-of-Things (IoT) ecosystem connecting an ESP32 hardware device (actuators, load cell, water sensor), a HiveMQ Cloud MQTT Broker, a [[Supabase and Backend Architecture|Supabase Backend]] (PostgreSQL, Auth, RLS, Edge Functions), and a client-facing React web application.
+PawStation is an Internet-of-Things (IoT) ecosystem connecting an ESP32 hardware device (actuators, load cell, water sensor), a client-facing web application with direct local Wi-Fi control (HTTP REST & WebSockets), and a [[Supabase and Backend Architecture|Supabase Backend]] (PostgreSQL, Auth, RLS, Edge Functions) for persistent history.
 
 ```mermaid
 flowchart LR
-    A["ESP32 Microcontroller"] -- "MQTTS (TLS 8883)" --> B["HiveMQ Cloud Broker"]
-    C["React Web App (Browser)"] -- "WSS (TLS 8884)" --> B
-    C -- "HTTPS / WSS (Anon Key + JWT)" --> D["Supabase Backend"]
-    E["Supabase Edge Functions"] -- "MQTTS / Webhooks" --> B
+    A["ESP32 Microcontroller"] <-- "Direct Wi-Fi (HTTP 80 / WS 81)" --> C["Web Console (Browser)"]
+    C <-- "HTTPS / WSS (Anon Key + JWT)" --> D["Supabase Backend"]
+    D <-- "Database Webhooks / Edge Functions" --> E["Persistent Storage"]
 ```
 
 ### STRIDE Threat Matrix
 
 | Threat Category | Target | Vector / Vulnerability | Mitigation Strategy |
 | :--- | :--- | :--- | :--- |
-| **Spoofing** | MQTT Broker / Supabase | Attacker claims to be station or authorized user | Distinct client credentials; HiveMQ topic authorization; Supabase JWT authentication |
-| **Tampering** | Command & Telemetry stream | Injection of rogue commands (`dispense`, `pump`, `tare`) or falsified scale readings | Payload validation, strict enum allowlists, rate limiting, TLS in transit |
+| **Spoofing** | Local Station / Supabase | Rogue device or unauthorized user claiming station identity | WPA2/WPA3 Wi-Fi authentication; optional local station API key/token; Supabase JWT authentication |
+| **Tampering** | Command & Telemetry stream | Injection of rogue commands (`dispense`, `pump`, `tare`) or falsified scale readings | ESP32 CORS origin validation, strict enum allowlists, rate limiting, local LAN boundary |
 | **Repudiation** | Actuator operations | Dispensing food or water without audit trail | Structured append-only audit logs in Supabase `command_audit_log` with user UUID and timestamp |
-| **Information Disclosure** | Credentials & Telemetry | Leaking broker passwords, API keys, or cat behavioral patterns | Strict separation of public anon keys vs service keys; `.env` git exclusion; least-privilege topic rules |
-| **Denial of Service** | Physical Actuators | Rapid command flooding causing servo burn, motor stall, or water flood | Firmware-level state locks & timeouts; Supabase rate limiting; Web UI button debouncing |
+| **Information Disclosure** | Credentials & Telemetry | Leaking Wi-Fi passwords, Supabase keys, or cat behavioral patterns | WPA2/WPA3 local encryption; strict separation of public anon keys vs service keys; `.env` git exclusion |
+| **Denial of Service** | Physical Actuators | Rapid command flooding causing servo burn, motor stall, or water flood | Firmware-level state locks & timeouts; UI button debouncing; hardware lockout guards |
 | **Elevation of Privilege** | Database | Malicious client altering feeding schedules or accessing other stations | PostgreSQL Row Level Security (RLS) policies enforcing user isolation |
 
 ---
@@ -117,27 +118,21 @@ USING (
 
 ---
 
-## 3. MQTT Broker & IoT Security Architecture
+## 3. Direct Wi-Fi & Embedded Server Security Architecture
 
-### 3.1 Credential & Topic Segregation (HiveMQ Cloud)
+### 3.1 Local Network Perimeter & mDNS Discovery
 
-In a web client environment, frontend assets are public. Embedding administrative credentials into a JavaScript bundle is an critical security vulnerability. 
+Direct Wi-Fi architecture operates within the trusted home LAN perimeter:
+1. **Network Authentication:** The ESP32 joins home Wi-Fi using WPA2-Personal or WPA3. When launching SoftAP provisioning mode, a WPA2 pre-shared key is mandatory.
+2. **mDNS Resolution:** Zero-configuration resolution (`pawstation.local`) allows the web console to discover the station locally without broadcasting or exposing IPs across the public internet.
+3. **No Insecure Port Forwarding:** The ESP32 is not exposed directly to the public internet via NAT port forwarding. Remote access outside home Wi-Fi is routed securely via a private VPN (such as Tailscale or WireGuard).
 
-We implement strict role-based topic authorization:
+### 3.2 CORS & Request Origin Hardening
 
-| Entity | Role / Username | Publish Allowed | Subscribe Allowed | Permitted QoS |
-| :--- | :--- | :--- | :--- | :--- |
-| **ESP32 Station** | `esp32_device_01` | `pawstation/telemetry`<br>`pawstation/status` | `pawstation/cmd` | QoS 0, 1 |
-| **Web Client** | `pawstation_web` | `pawstation/cmd` | `pawstation/telemetry`<br>`pawstation/status` | QoS 0, 1 |
-| **Supabase Worker** | `supabase_edge_worker` | `pawstation/cmd` | `pawstation/#` | QoS 1 |
-
-> [!CAUTION]
-> The Web Client credential `pawstation_web` is explicitly **denied** permissions to publish to `pawstation/telemetry` or `pawstation/status`. This prevents malicious actors from spoofing false sensor readings or forging station connectivity statuses.
-
-### 3.2 Transport Layer Security (TLS)
-
-- **ESP32 Communication:** All MQTT traffic operates over port **8883** using TLS 1.2/1.3. For production deployments, embed HiveMQ's Root CA (ISRG Root X1 / Let's Encrypt) to verify the broker's identity and defeat Man-in-the-Middle (MitM) attacks.
-- **Browser Communication:** The web dashboard connects using secure WebSockets (`wss://<cluster-id>.s1.eu.hivemq.cloud:8884/mqtt`). Plain WebSocket (`ws://`) connections are rejected.
+Because the web console runs in a browser environment, cross-origin web requests between the console domain and the local ESP32 IP/hostname are protected:
+- **CORS Headers:** Embedded HTTP handlers return strict `Access-Control-Allow-Origin` and `Access-Control-Allow-Methods: GET, POST, OPTIONS` headers.
+- **WebSocket Handshake Validation:** Embedded WebSocket server validates connection headers on upgrade requests to prevent cross-site WebSocket hijacking (CSWSH) from malicious background browser tabs.
+- **Optional Local Bearer Token:** Embedded endpoints accept an optional header token (`X-PawStation-Key`) to verify authorized console clients.
 
 ---
 
@@ -147,7 +142,7 @@ Firmware-level protections prevent hardware destruction or safety hazards to pet
 
 1. **Pump Runaway Prevention:**
    - Maximum continuous pump run is strictly capped in firmware at 3,000 ms (3 seconds), followed by a 600 ms soft-stop.
-   - Even if duplicate `pump` commands arrive over MQTT, firmware ignores invocations while a cycle is active.
+   - Even if duplicate `pump` commands arrive over HTTP or WebSocket, firmware ignores invocations while a cycle is active.
    - Water level threshold check: if `waterLow == true`, the pump triggers a safety lockout to prevent motor burnout from running dry.
 2. **Servo Overheat Mitigation:**
    - Feeder disc actuation uses constrained angles (`20°` fill, `160°` drop) rather than full `0°-180°` stops to prevent mechanical binding.
@@ -157,19 +152,19 @@ Firmware-level protections prevent hardware destruction or safety hazards to pet
 
 ---
 
-## 5. Web Client Security (Vite / React)
+## 5. Web Client Security (Next.js / React)
 
 ### 5.1 Environment Variable Hygiene
-- All client-accessible secrets must start with `VITE_` and contain **only** public anon keys and restricted topic credentials.
-- Service role keys (`SUPABASE_SERVICE_ROLE_KEY`) must **never** be prefixed with `VITE_` or included in frontend client bundles.
+- All client-accessible secrets in Next.js must start with `NEXT_PUBLIC_` and contain **only** public anon keys and device hostnames.
+- Service role keys (`SUPABASE_SERVICE_ROLE_KEY`) must **never** be prefixed with `NEXT_PUBLIC_` or included in frontend client bundles.
 - A `.gitignore` file enforces that `.env`, `.env.local`, and related secrets files are never committed to version control.
 
 ### 5.2 Content Security Policy (CSP) & HTTP Headers
 
-When deploying to Netlify or Vercel, configure strict security headers in `_headers` or `vercel.json`:
+When deploying to Vercel, configure strict security headers:
 
 ```http
-Content-Security-Policy: default-src 'self'; connect-src 'self' https://*.supabase.co wss://*.supabase.co wss://*.hivemq.cloud:8884; img-src 'self' data: https:; script-src 'self'; style-src 'self' 'unsafe-inline'; font-src 'self'; object-src 'none'; frame-ancestors 'none';
+Content-Security-Policy: default-src 'self'; connect-src 'self' https://*.supabase.co wss://*.supabase.co ws://*.local:* http://*.local:* ws://192.168.*:* http://192.168.*:*; img-src 'self' data: https:; script-src 'self'; style-src 'self' 'unsafe-inline'; font-src 'self'; object-src 'none'; frame-ancestors 'none';
 X-Frame-Options: DENY
 X-Content-Type-Options: nosniff
 Referrer-Policy: strict-origin-when-cross-origin
@@ -182,11 +177,10 @@ Permissions-Policy: camera=(), microphone=(), geolocation=()
 
 - [ ] `.gitignore` contains `.env`, `.env.local`, and build artifacts.
 - [ ] Supabase tables have RLS enabled with granular owner policies.
-- [ ] HiveMQ Cloud user permissions are verified and topic-restricted.
+- [ ] ESP32 direct Wi-Fi endpoints, CORS headers, and local tokens are verified.
 - [ ] Client commands are validated with strict allowlists before dispatch.
 - [ ] Firmware contains watchdog timers and hardware lockout guards.
 - [ ] CSP and HTTPS headers are defined for the production web app.
 
 ---
 [[Index]] | [[Supabase and Backend Architecture]] | [[Design System and Apple UI]] | [[Implementation Plan and Roadmap]]
-

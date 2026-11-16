@@ -36,7 +36,7 @@ const ARCHITECTURE_MODULES = [
   {
     code: "/ 04",
     title: "Dual-Rail Telemetry Hub",
-    badge: "ESP32 & MQTTS",
+    badge: "ESP32 Direct Wi-Fi",
     metric: "TLS 1.3 Port 8883",
     description:
       "Isolated 3.3V logic and 5.0V actuator rails prevent brownout restarts during pump and servo engagement. Non-blocking FreeRTOS tasks stream real-time events directly to Supabase.",

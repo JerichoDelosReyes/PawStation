@@ -5,7 +5,9 @@ tags:
   - hardware
   - esp32
   - firmware
-  - mqtt
+  - wifi
+  - websockets
+  - rest
 aliases:
   - Hardware and Parts
   - Firmware Documentation
@@ -17,25 +19,25 @@ status: Approved
 
 Part of [[Index]] | Related: [[Fynsec UI and Landing Page Architecture]] | [[Security Architecture and Hardening]] | [[Supabase and Backend Architecture]] | [[Design System and Apple UI]] | [[Implementation Plan and Roadmap]]
 
-Project documentation for an ESP32-based feeder, water dispenser and weighing scale that is monitored and controlled from a website on any phone or laptop.
+Project documentation for an ESP32-based feeder, water dispenser and weighing scale that is monitored and controlled directly from a web console over local Wi-Fi.
 
 ## 1. Project overview
 
-PawStation is a DIY smart feeding station for a cat. An ESP32 microcontroller reads a load cell (the scale) and a water-level sensor, turns a servo that releases a portion of kibble, and switches a small water pump. The ESP32 joins a Wi-Fi network and exchanges messages with a cloud MQTT broker. A website hosted online connects to the same broker, so the owner can watch the station and send commands from a phone or laptop anywhere there is internet.
+PawStation is a DIY smart feeding station for a cat. An ESP32 microcontroller reads a load cell (the scale) and a water-level sensor, turns a servo that releases a portion of kibble, and switches a small water pump. The ESP32 joins the local Wi-Fi network (or hosts a fallback SoftAP) and runs an embedded HTTP REST and WebSocket server. A web console running in the browser connects directly to the ESP32 over Wi-Fi, allowing the owner to monitor telemetry and dispatch commands in real time with sub-10ms local latency.
 
-The ESP32 uses Option B. It connects to an existing Wi-Fi network (home Wi-Fi or a phone hotspot) and talks to a cloud broker, instead of creating its own access point. The website is built separately by the project owner using React, so this document describes it only as far as it must match the firmware.
+The ESP32 uses Direct Wi-Fi architecture. It connects to an existing local Wi-Fi network (home Wi-Fi or phone hotspot) or creates its own SoftAP setup network, serving REST API endpoints and a persistent WebSocket stream directly without relying on external cloud intermediaries or third-party message brokers. The web console is built using Next.js / React with an Apple glassmorphism aesthetic, pairing direct local device control with Supabase for persistent telemetry history and user authentication.
 
 ### 1.1 Objectives
 
 - Weigh whatever is on the scale, detect cat visits and count them.
 - Dispense a portion of food on command.
 - Run a water pump on command and warn when the reservoir is low.
-- Show live readings and accept commands from a website on a phone or laptop.
+- Show live readings and accept commands from a web console on a phone or laptop directly over Wi-Fi.
 - Keep the hardware safe: no motor or pump wired directly to an ESP32 pin, protected switching, and a separate power supply for heavy loads.
 
 ### 1.2 Scope
 
-In scope: the ESP32 hardware and firmware, the cloud broker setup, the message format between the station and the website, and the requirements the website must meet. Out of scope for this version: automatic feeding schedules, identifying individual cats, notifications and a mobile app.
+In scope: the ESP32 hardware and firmware, local Wi-Fi connectivity, direct REST and WebSocket endpoints, message formatting between the station and the web console, and the browser client integration. Out of scope for this version: identifying individual cats with cameras, external mechanical housing fabrication, and native app store bundles.
 
 ## 2. System architecture
 
@@ -44,28 +46,30 @@ In scope: the ESP32 hardware and firmware, the cloud broker setup, the message f
 |   |   |
 |---|---|
 |Part|What it does|
-|Station (ESP32 and parts)|Reads sensors, runs the servo and pump, publishes readings, receives commands|
-|MQTT broker (HiveMQ Cloud, free tier)|Passes messages between the station and the website|
-|Website (React, hosted on Vercel or Netlify)|Shows live data and sends commands from any browser|
+|Station (ESP32 and parts)|Reads sensors, runs the servo and pump, hosts embedded HTTP REST and WebSocket server|
+|Direct Wi-Fi Network|Carries direct HTTP REST calls and WebSocket streams between the station and browser|
+|Web Console (Next.js / React)|Shows live telemetry, issues immediate commands via WebSocket/REST, and syncs history to Supabase|
 
 ### 2.2 Data flow
 
 ```
-Sensors and actuators <-> ESP32 --Wi-Fi, TLS, MQTT port 8883--> HiveMQ Cloud broker <--WebSocket TLS port 8884-- Website in the browser
+Sensors and actuators <-> ESP32 (HTTP port 80, WebSocket port 81/80) <--Direct Wi-Fi (ws://pawstation.local/ws)--> Web Console in the browser
 ```
 
 1. The ESP32 reads the scale and the water sensor every 500 ms.
-2. Once per second it publishes a JSON reading to the broker over an encrypted connection.
-3. The website is subscribed to the broker and updates the page as readings arrive.
-4. When the user taps a button, the website publishes a command. The ESP32 receives it and runs the servo, the pump or the tare.
+2. Once per second (or immediately on state change), the ESP32 broadcasts a JSON telemetry frame over the active WebSocket connections.
+3. The web console receives the WebSocket stream and updates the user interface in memory with sub-10ms latency.
+4. When the user taps a button, the web console dispatches an action directly via the WebSocket connection or an HTTP POST to `/api/command`. The ESP32 validates the request and actuates the servo, pump, or scale tare.
+5. Persistent logs (feeding history, daily weights) are periodically synced to Supabase PostgreSQL for historical analytics.
 
-### 2.3 Why Option B
+### 2.3 Why Direct Wi-Fi Architecture
 
-- The website can be reached from any phone or laptop with internet, at home or away.
-- A hosted website cannot talk to an ESP32 access point. The access point has no internet to load the site, and browsers block an https page from calling an http address such as 192.168.4.1.
-- A phone joined to the ESP32's own network loses its mobile data, which is inconvenient.
+- **Sub-10ms Latency:** Eliminates cloud broker hops, round trips, and external internet dependency for critical feeding and watering actions.
+- **Privacy & Local Resilience:** The device operates seamlessly within the local home network even if external internet service is interrupted.
+- **Zero Third-Party Broker Costs:** Eliminates reliance on external cloud messaging tiers, broker quotas, and credential limits.
+- **mDNS Zero-Config Discovery:** The web console automatically resolves the station at `pawstation.local` or through configurable local IP discovery.
 
-Requirement: the ESP32 needs a 2.4 GHz Wi-Fi network with internet access. The ESP32 does not support 5 GHz. A phone hotspot works for demonstrations.
+Requirement: the ESP32 needs a 2.4 GHz Wi-Fi network (or SoftAP). The ESP32 radio does not support 5 GHz. A phone hotspot or home 2.4 GHz router works seamlessly.
 
 ## 3. Hardware
 
@@ -74,7 +78,7 @@ Requirement: the ESP32 needs a 2.4 GHz Wi-Fi network with internet access. The E
 |   |   |   |   |
 |---|---|---|---|
 |Component|Qty|Specification|Role|
-|ESP32 development board|1|30-pin or 38-pin, 3.3 V logic|Controller and Wi-Fi|
+|ESP32 development board|1|30-pin or 38-pin, 3.3 V logic|Controller, Wi-Fi radio, and web server|
 |Solderless breadboard|1|830-point or 400-point|Wiring without soldering|
 |Bar load cell|1|10 kg aluminum strain gauge|Weighing sensor|
 |HX711 module|1|24-bit amplifier board|Amplifies and digitizes the load cell signal|
@@ -116,7 +120,7 @@ Summary by ESP32 pin:
 |GPIO 21|Servo signal|
 |GPIO 23|XY-MOS TRIG/PWM|
 |GPIO 34|Moisture sensor AO (analog out)|
-|GPIO 2|Onboard LED, used as a status light|
+|GPIO 2|Onboard LED, used as a Wi-Fi and server status indicator|
 |USB|Power and programming for the ESP32 only|
 
 Load cell to HX711:
@@ -169,17 +173,19 @@ Commissioning order: connect the grounds first, then the sensors, then the servo
 ### 4.1 Environment
 
 - Arduino IDE with the Arduino-ESP32 board package, version 3.x.
-- Libraries: PubSubClient (Nick O'Leary), HX711 (Bogdan Necula) and ESP32Servo.
-- Sketch file: PawStationMQTT.ino.
+- Core Libraries: `WiFi.h`, `WebServer.h` (or `ESPAsyncWebServer.h`), `WebSocketsServer.h`, `ESPmDNS.h`.
+- Peripheral Libraries: `HX711` (Bogdan Necula) and `ESP32Servo`.
+- Sketch file: `PawStationDirect.ino`.
 
 ### 4.2 Configuration
 
 |   |   |   |
 |---|---|---|
 |Setting|Default|Meaning|
-|WIFI_SSID, WIFI_PASS|Placeholder|The 2.4 GHz network the ESP32 joins|
-|MQTT_HOST, MQTT_PORT|Cluster host, 8883|HiveMQ Cloud broker address (TLS)|
-|MQTT_USER, MQTT_PASS|esp32 and its password|Broker login for the station|
+|WIFI_SSID, WIFI_PASS|Placeholder|The 2.4 GHz network the ESP32 joins (or SoftAP credentials)|
+|STATION_HOSTNAME|pawstation|mDNS hostname (`pawstation.local`)|
+|HTTP_PORT|80|Embedded REST API port|
+|WS_PORT|81|Embedded WebSocket server port (or port 80 path `/ws`)|
 |CALIBRATION_FACTOR|420.0|Scale calibration, see section 4.4|
 |CAT_WEIGHT_G|500|Weight in grams that counts as a visit|
 |LOW_WATER_RAW|1500|Sensor reading below this means the reservoir is low|
@@ -189,12 +195,12 @@ Commissioning order: connect the grounds first, then the sensors, then the servo
 
 ### 4.3 Behavior
 
-- **Non-blocking loop.** Pump timing, the servo and Wi-Fi retries all use timers, so the ESP32 never freezes and the watchdog does not reset it.
+- **Non-blocking loop.** Pump timing, the servo, and WebSocket polling all use timers, so the ESP32 never freezes and the watchdog does not reset it.
+- **Direct WebSocket Broadcast.** The firmware broadcasts telemetry JSON every 1000 ms to all connected WebSocket clients.
 - **Pump soft-stop.** The pump runs at full duty for 3 seconds, then ramps to zero over 600 ms using PWM on the XY-MOS input.
 - **Servo detach.** The servo is powered only while it moves, then released, so it does not overheat holding position.
 - **Scale safety.** If the HX711 is missing, the firmware reports the scale as offline instead of hanging.
-- **Reconnection.** Wi-Fi and broker connections retry automatically.
-- **Last will.** The station posts online when it connects. If it loses power or Wi-Fi, the broker automatically posts offline.
+- **Reconnection & mDNS.** Wi-Fi retries automatically in the background. mDNS advertises `pawstation.local` so browsers can connect without hardcoded IP addresses.
 - **Visit counting.** A visit is counted when the weight rises above CAT_WEIGHT_G and the scale was previously clear.
 
 ### 4.4 Calibrating the scale
@@ -213,30 +219,28 @@ Calibrate the water sensor too: read the value with the probe dry and in water, 
 - If the port does not appear, use a cable that carries data, plug it straight into the Mac and check System Information under USB.
 - If uploading fails with a packet or checksum error, lower the upload speed to 115200, hold the BOOT button when Connecting appears, and disconnect the 5 V parts during the upload.
 
-## 5. Cloud broker and MQTT interface
+## 5. Direct Wi-Fi, REST, and WebSocket Interface
 
-### 5.1 Broker setup
+### 5.1 Local Network Discovery & Addressing
 
-1. Create a free Serverless cluster on HiveMQ Cloud and note its host name.
-2. In Access Management, create two credentials: one for the ESP32 and one for the website.
-3. Restrict each credential to only the topics it needs (table below).
+The ESP32 connects to local Wi-Fi and registers an mDNS service name. The web console connects directly using either:
+1. **mDNS Hostname:** `ws://pawstation.local:81` or `http://pawstation.local/api`
+2. **Local Static/DHCP IP:** `ws://192.168.1.150:81` or `http://192.168.1.150/api`
+3. **SoftAP Fallback:** When no home Wi-Fi is reachable, the ESP32 launches `PawStation-AP` at `192.168.4.1`.
 
-|   |   |   |
-|---|---|---|
-|Credential|May publish|May subscribe|
-|esp32|pawstation/telemetry, pawstation/status|pawstation/cmd|
-|pawstation-web|pawstation/cmd|pawstation/telemetry, pawstation/status|
-
-### 5.2 Topics
+### 5.2 Direct Endpoints
 
 |   |   |   |
 |---|---|---|
-|Topic|Direction|Content|
-|pawstation/telemetry|Station to website|JSON readings, once per second, not retained|
-|pawstation/status|Station to website|online or offline, retained, offline is the last-will message|
-|pawstation/cmd|Website to station|A plain text command|
+|Endpoint|Protocol|Description|
+|`/ws` (Port 81 or 80)|WebSocket|Full-duplex stream for 1 Hz telemetry and bi-directional commands|
+|`GET /api/status`|HTTP REST|Device health status, uptime, Wi-Fi RSSI, and IP info|
+|`GET /api/telemetry`|HTTP REST|Instantaneous single-shot JSON telemetry payload|
+|`POST /api/command`|HTTP REST|Dispatches an action payload: `{"action": "dispense" \| "pump" \| "tare"}`|
 
 ### 5.3 Telemetry fields
+
+Telemetry JSON emitted over WebSocket or returned by `GET /api/telemetry`:
 
 |   |   |   |
 |---|---|---|
@@ -253,56 +257,58 @@ Calibrate the water sensor too: read the value with the probe dry and in water, 
 
 ### 5.4 Commands
 
+Commands can be sent as text payloads over WebSocket (e.g. `dispense`, `pump`, `tare`) or as JSON to `POST /api/command`:
+
 |   |   |
 |---|---|
-|Payload on pawstation/cmd|Action|
+|Command Payload|Action|
 |dispense|Turn the feeder disc to drop a portion|
 |pump|Run the pump for 3 seconds with a soft stop|
 |tare|Zero the scale|
 
 The firmware ignores a dispense or pump command while that action is already running.
 
-## 6. Website (built by the project owner)
+## 6. Web Console Architecture
 
-The website is a separate React project. It must meet the following so it works with the station.
+The web console is built with Next.js and React. It interfaces directly with the ESP32 hardware over the local network.
 
 ### 6.1 Pages
 
 - A landing page that explains the project and links into the dashboard.
-- A dashboard that shows live data and the controls. The planned stack is React with Vite, routing with a hash router, and the mqtt package for the browser.
+- A dashboard that shows live data and controls using direct WebSocket and REST hooks (`usePawStation`).
 
 ### 6.2 Connection details
 
 |   |   |
 |---|---|
 |Item|Value|
-|URL|wss://YOUR-CLUSTER-HOST:8884/mqtt|
-|Login|The pawstation-web username and password|
-|Subscribe to|pawstation/telemetry and pawstation/status|
-|Publish to|pawstation/cmd|
+|Target Host|`NEXT_PUBLIC_ESP32_HOST` (e.g. `pawstation.local` or `192.168.1.150`)|
+|WebSocket Stream|`ws://<ESP32_HOST>:81` or `ws://<ESP32_HOST>/ws`|
+|REST Command Endpoint|`http://<ESP32_HOST>/api/command`|
+|Discovery|Local mDNS discovery with manual IP override in console settings|
 
-Store the host, username and password in environment variables (Vite uses names starting with VITE_) rather than in the code.
+Store the target host in environment variables or configure it directly in the web console's hardware settings modal.
 
 ### 6.3 What the dashboard should do
 
-- Show weight, cat present or not, visit count, water state, pump state and feeder state.
-- Treat the station as offline if the status is offline or no telemetry has arrived for about 6 seconds, and show a clear message.
-- Disable the buttons while the station is offline or while that action is already running.
-- Show separate messages for the website being unable to reach the broker and the station being offline.
-- Work on narrow phone screens as well as laptops.
+- Show weight, cat presence, visit count, water reservoir state, pump state, and feeder movement.
+- Treat the station as offline if no WebSocket ping or telemetry has arrived for 5 seconds, displaying an intuitive offline state.
+- Provide a built-in realistic mock/simulation mode when the hardware is offline or unconfigured so all UI features remain inspectable.
+- Disable actuator buttons while an action is already in flight.
+- Work responsively on narrow mobile devices, tablets, and desktop viewports.
 
 ### 6.4 Hosting
 
-Deploy from a GitHub repository to Vercel or Netlify, with the three environment variables set in the project settings. Build command: npm run build. Output folder: dist.
+Deploy from a GitHub repository to Vercel, with `NEXT_PUBLIC_ESP32_HOST` set in environment variables (or configured locally via browser storage).
 
 ### 6.5 Security note
 
-A browser-based site cannot hide its broker password, because the build embeds it in the page. For that reason the website credential must be limited to the topics in section 5.1, and its password should be changed if it leaks. Do not commit the .env file to GitHub. A PIN screen written in the page does not add real security.
+Local Wi-Fi communication operates inside the trusted home perimeter. The ESP32 supports optional local API tokens and CORS headers to prevent unauthorized cross-origin requests from foreign browser tabs. Do not expose the ESP32 unauthenticated to the public internet via port forwarding; use a home VPN (e.g. WireGuard / Tailscale) for secure remote access.
 
 ## 7. Operation
 
-1. Power the ESP32 and the external 5 V supply. The ESP32 joins Wi-Fi and then the broker, and the onboard LED stays solid when the broker connection is up.
-2. Open the website. The status should change from connecting to station online.
+1. Power the ESP32 and the external 5 V supply. The ESP32 joins local Wi-Fi, initializes mDNS (`pawstation.local`), and lights the onboard status LED.
+2. Open the web console. The connection badge changes from "Connecting..." to "ESP32 Wi-Fi Direct (Online)".
 3. Watch the weight and visit count. When a cat steps on the scale, the cat indicator turns on and the visit count rises.
 4. Tap Dispense food to release a portion.
 5. Tap Run pump to top up the water bowl for 3 seconds. If the water indicator shows low, refill the reservoir.
@@ -314,15 +320,15 @@ A browser-based site cannot hide its broker password, because the build embeds i
 |---|---|---|
 |Step|Test|Pass condition|
 |1|Upload with only USB connected|No upload errors|
-|2|Wi-Fi and broker|Serial Monitor shows MQTT connected|
+|2|Wi-Fi and Server|Serial Monitor shows Wi-Fi connected and WebServer/WebSocket started|
 |3|Scale|Empty reads near zero, known weight reads correctly after calibration|
 |4|Water sensor|Dry and wet readings differ clearly, threshold set between them|
 |5|Servo|Moves between the two positions without buzzing or getting hot|
 |6|Pump|Runs 3 seconds and stops smoothly|
 |7|Power|Wi-Fi stays up when the servo and pump are connected and used|
-|8|MQTT messages|Telemetry appears in the HiveMQ web client, commands trigger the actions|
-|9|Website|Status, live data and all three buttons work on a phone and a laptop|
-|10|Failure behavior|Unplugging the ESP32 turns the website to station offline within seconds|
+|8|Direct Communication|`GET /api/status` returns HTTP 200 JSON; WebSocket stream transmits 1 Hz telemetry|
+|9|Web Console|Status, live data and all three buttons work cleanly directly over Wi-Fi|
+|10|Failure behavior|Unplugging the ESP32 transitions the web console to offline within seconds|
 
 ## 9. Troubleshooting
 
@@ -332,12 +338,12 @@ A browser-based site cannot hide its broker password, because the build embeds i
 |Upload fails with packet transfer or checksum error|Weak cable, high upload speed, loads pulling power|Lower upload speed to 115200, hold BOOT, unplug 5 V parts while uploading|
 |termios error or port busy|Serial Monitor open or port stuck|Close the Serial Monitor, unplug and replug the board|
 |No serial port appears|Charge-only cable, missing driver, no USB detection|Use a data cable, install the CP210x or CH340 driver, check System Information|
-|ESP32 resets or the network disappears when 5 V is connected|Power dip or wiring fault|Use the separate 5 V supply, add the capacitor, add parts one at a time, check for shorts|
+|ESP32 resets or network disappears when 5 V connected|Power dip or wiring fault|Use the separate 5 V supply, add the capacitor, add parts one at a time, check for shorts|
 |Servo gets hot|Stalled at end stops, jammed disc, wrong wiring or voltage|Use narrower angles, let the firmware detach it, check the wiring and the 5 V supply|
 |Scale shows offline|HX711 wiring or power|Check DT on GPIO 19, SCK on GPIO 18, 3.3 V and ground, and the four load cell wires|
 |Weight wrong or negative|Not calibrated or not tared|Recalibrate, then tare with the scale empty|
-|Website says station offline|ESP32 unpowered, wrong Wi-Fi, 5 GHz network, wrong broker login|Check power, use a 2.4 GHz network, read the Serial Monitor for the MQTT error code|
-|MQTT error rc=5|Not authorized|Check the esp32 username, password and topic permissions|
+|Web console says station offline|ESP32 unpowered, wrong Wi-Fi, 5 GHz network, incorrect IP/hostname|Check power, use 2.4 GHz network, verify IP or `pawstation.local` in Serial Monitor|
+|WebSocket connection failed|mDNS not supported by browser/client or firewall blocking port 81|Use explicit local IP (e.g. `192.168.1.x`), ensure client device is on same local Wi-Fi|
 |Water reading drifts|Probe corrodes in water over time|Recalibrate, and consider powering the probe only while reading|
 
 ## 10. Safety and security
@@ -346,16 +352,15 @@ A browser-based site cannot hide its broker password, because the build embeds i
 - Keep the electronics and breadboard away from water and from the cat. Route the tubing so a leak cannot reach the wiring.
 - Use food-safe containers and tubing for anything that touches the cat's food or water.
 - The pump is limited to 3 seconds per command, which protects it from running dry for long.
-- Keep the Wi-Fi and broker passwords out of public repositories.
-- The firmware currently skips certificate checking on the broker connection to keep setup simple. For real use, load the broker's root certificate.
+- Keep the Wi-Fi credentials out of public repositories.
+- Use local network security (WPA2/WPA3) and restrict remote access via VPN rather than port forwarding.
 
 ## 11. Limitations and future improvements
 
-- Automatic feeding on a schedule and daily portion limits.
+- Automatic feeding on a schedule stored directly in ESP32 NVRAM / Preferences.
 - Notifications when water is low or the cat has not visited for a long time.
-- Calibration and threshold settings editable from the website.
-- Over-the-air firmware updates.
-- Proper certificate checking and a login system with a small backend.
+- Calibration and threshold settings editable directly from the web console.
+- Over-the-air (OTA) firmware updates via direct web interface.
 - A second load cell to weigh the food bowl separately from the cat.
 
 ## 12. Quick reference
@@ -364,14 +369,13 @@ A browser-based site cannot hide its broker password, because the build embeds i
 |---|---|
 |Item|Value|
 |Controller|ESP32 dev board, 3.3 V logic|
-|Network mode|Station mode on a 2.4 GHz Wi-Fi network|
-|Broker|HiveMQ Cloud, MQTT over TLS on 8883 (station), WebSocket TLS on 8884 (website)|
-|Topics|pawstation/telemetry, pawstation/status, pawstation/cmd|
+|Network mode|Station mode on a 2.4 GHz Wi-Fi network (with SoftAP fallback)|
+|Communication|Direct HTTP REST (port 80) and WebSockets (port 81/80)|
+|Endpoints|`/ws`, `/api/status`, `/api/telemetry`, `/api/command`|
 |Commands|dispense, pump, tare|
 |Pins|HX711 DT 19 and SCK 18, pump switch 23, servo 21, moisture sensor 34|
 |Power|Separate 5 V for servo and pump, shared ground, capacitor and diode fitted|
-|Website|React and Vite, hosted on Vercel or Netlify, built by the project owner|
+|Web Console|Next.js and React, direct Wi-Fi hooks, Supabase persistent storage|
 
 ---
 [[Index]] | [[Security Architecture and Hardening]] | [[Supabase and Backend Architecture]] | [[Design System and Apple UI]] | [[Implementation Plan and Roadmap]]
-

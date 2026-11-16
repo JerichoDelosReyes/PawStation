@@ -13,7 +13,7 @@ import {
   PawIcon,
   CheckIcon,
 } from "./Icons";
-import { usePawStationMqtt, type StationStatus } from "@/lib/mqtt";
+import { usePawStation, type StationStatus } from "@/lib/station";
 import { supabase } from "@/lib/supabase";
 
 interface CatVisit {
@@ -41,9 +41,11 @@ function LiveStation({ catName = "Cat", onStatusChange }: LiveStationProps) {
     stationStatus,
     isStationOnline,
     statusMessage,
-    brokerError,
+    stationError,
     sendCommand,
-  } = usePawStationMqtt();
+    esp32Host,
+    isDemoMode,
+  } = usePawStation();
 
   const [catVisits, setCatVisits] = useState<CatVisit[]>([]);
   const [lastAction, setLastAction] = useState<string | null>(null);
@@ -153,25 +155,17 @@ function LiveStation({ catName = "Cat", onStatusChange }: LiveStationProps) {
 
   // Status badge display logic
   const getBadgeContent = () => {
-    if (statusMessage === "Broker settings missing") {
+    if (statusMessage === "ESP32 host unconfigured") {
       return {
-        text: "Broker settings missing",
-        badgeClass: "bg-rose-500/10 text-rose-700 dark:text-rose-400 border-rose-500/25",
-        dotClass: "bg-rose-500",
-        pingClass: "bg-rose-400",
+        text: "ESP32 host unconfigured",
+        badgeClass: "bg-amber-500/10 text-amber-700 dark:text-amber-400 border-amber-500/25",
+        dotClass: "bg-amber-500",
+        pingClass: "bg-amber-400",
       };
     }
-    if (statusMessage === "not authorized (check credentials)") {
+    if (statusMessage === "cannot reach ESP32") {
       return {
-        text: "Not authorized (check credentials)",
-        badgeClass: "bg-rose-500/10 text-rose-700 dark:text-rose-400 border-rose-500/25",
-        dotClass: "bg-rose-500",
-        pingClass: "bg-rose-400",
-      };
-    }
-    if (statusMessage === "cannot reach broker") {
-      return {
-        text: "Cannot reach broker",
+        text: "Cannot reach ESP32",
         badgeClass: "bg-rose-500/10 text-rose-700 dark:text-rose-400 border-rose-500/25",
         dotClass: "bg-rose-500",
         pingClass: "bg-rose-400",
@@ -187,7 +181,7 @@ function LiveStation({ catName = "Cat", onStatusChange }: LiveStationProps) {
     }
     if (isStationOnline) {
       return {
-        text: "ESP32 Online",
+        text: isDemoMode ? "ESP32 Wi-Fi (Demo)" : "ESP32 Wi-Fi Direct",
         badgeClass: "bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border-emerald-500/25",
         dotClass: "bg-emerald-500",
         pingClass: "bg-emerald-400",
@@ -205,15 +199,13 @@ function LiveStation({ catName = "Cat", onStatusChange }: LiveStationProps) {
 
   // Active error to show in banner
   const bannerMessage =
-    statusMessage === "Broker settings missing"
-      ? "Broker settings missing"
-      : statusMessage === "not authorized (check credentials)"
-      ? "Not authorized (check credentials)"
-      : statusMessage === "cannot reach broker"
-      ? "Cannot reach broker"
+    statusMessage === "ESP32 host unconfigured"
+      ? "ESP32 host unconfigured"
+      : statusMessage === "cannot reach ESP32"
+      ? "Cannot reach ESP32"
       : !isStationOnline && stationStatus !== "connecting"
       ? "Station offline"
-      : brokerError;
+      : stationError;
 
   return (
     <section id="live-station" className="w-full">
@@ -304,7 +296,7 @@ function LiveStation({ catName = "Cat", onStatusChange }: LiveStationProps) {
           </div>
         </div>
 
-        {/* ── Status / Broker Notification Banner ── */}
+        {/* ── Status / Wi-Fi Notification Banner ── */}
         <AnimatePresence>
           {bannerMessage && !isStationOnline && (
             <motion.div
@@ -318,8 +310,8 @@ function LiveStation({ catName = "Cat", onStatusChange }: LiveStationProps) {
                 <span className="font-medium">{bannerMessage}</span>
               </div>
               <span className="text-[11px] opacity-75 font-mono">
-                {bannerMessage === "Broker settings missing"
-                  ? "Set NEXT_PUBLIC_MQTT_* in .env.local"
+                {bannerMessage === "ESP32 host unconfigured"
+                  ? "Set NEXT_PUBLIC_ESP32_HOST in .env.local"
                   : "Auto-reconnect active"}
               </span>
             </motion.div>
@@ -593,16 +585,18 @@ function LiveStation({ catName = "Cat", onStatusChange }: LiveStationProps) {
                     </div>
                   </div>
 
-                  {/* Broker Port */}
+                  {/* Wi-Fi Direct Socket / Endpoint */}
                   <div className="flex items-center justify-between p-2.5 rounded-lg bg-white dark:bg-[#131722] border border-black/[0.04] dark:border-white/[0.05]">
-                    <span className="text-neutral-600 dark:text-neutral-400">Broker Socket</span>
-                    <span className="font-mono text-neutral-900 dark:text-white">8884 WSS (TLS)</span>
+                    <span className="text-neutral-600 dark:text-neutral-400">Direct Socket</span>
+                    <span className="font-mono text-neutral-900 dark:text-white">
+                      ws://{esp32Host || "pawstation.local"}/ws
+                    </span>
                   </div>
 
                   {/* Protocol */}
                   <div className="flex items-center justify-between p-2.5 rounded-lg bg-white dark:bg-[#131722] border border-black/[0.04] dark:border-white/[0.05]">
-                    <span className="text-neutral-600 dark:text-neutral-400">Broker Protocol</span>
-                    <span className="font-mono text-neutral-900 dark:text-white">HiveMQ Cloud MQTT over TLS</span>
+                    <span className="text-neutral-600 dark:text-neutral-400">Wi-Fi Protocol</span>
+                    <span className="font-mono text-neutral-900 dark:text-white">Wi-Fi (HTTP/WS)</span>
                   </div>
 
                   {/* Dispenser Status */}

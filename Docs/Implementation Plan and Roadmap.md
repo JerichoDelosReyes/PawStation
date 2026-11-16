@@ -10,7 +10,7 @@ aliases:
   - Implementation Plan
   - Project Roadmap
 date_created: 2026-11-12
-status: Under Review
+status: Approved
 ---
 
 # PawStation Implementation Plan & Roadmap
@@ -19,11 +19,11 @@ Part of [[Index]] | Related: [[Fynsec UI and Landing Page Architecture]] | [[Sec
 
 ## 1. Project Analysis & Current State
 
-PawStation is an integrated IoT pet feeder, water dispenser, and digital weighing scale built around an ESP32 microcontroller, a HiveMQ Cloud MQTT broker, a [[Supabase and Backend Architecture|Supabase Backend]], and a client-facing web application based on the [[Fynsec UI and Landing Page Architecture|Fynsec UI Architecture]].
+PawStation is an integrated IoT pet feeder, water dispenser, and digital weighing scale built around an ESP32 microcontroller, direct local Wi-Fi connectivity (REST & WebSockets), a [[Supabase and Backend Architecture|Supabase Backend]], and a client-facing web application based on the [[Fynsec UI and Landing Page Architecture|Fynsec UI Architecture]].
 
 ### Current Inventory
 - **Hardware & Firmware Specs:** Complete bill of materials, circuit diagram, pinouts, and calibration instructions documented in [[Pawstation Documentation and Parts]].
-- **Security Posture:** Formalized in [[Security Architecture and Hardening]] utilizing backend security best practices, STRIDE threat modeling, and Supabase RLS.
+- **Security Posture:** Formalized in [[Security Architecture and Hardening]] utilizing backend security best practices, STRIDE threat modeling, local Wi-Fi isolation, and Supabase RLS.
 - **Design Language:** Documented in [[Design System and Apple UI]], combining Apple macOS/iOS HIG precision (spring physics, frosted glass, SF Pro typography) with the warm visual cues of the provided reference mockups.
 - **Backend Schema:** PostgreSQL schemas, tables, and subscription patterns defined in [[Supabase and Backend Architecture]].
 - **Configuration:** Initialized `.env.example`, `.env`, and `.gitignore` to prevent credential exposure.
@@ -34,13 +34,13 @@ PawStation is an integrated IoT pet feeder, water dispenser, and digital weighin
 
 ```mermaid
 flowchart TD
-    P1["Phase 1: Architecture, Planning & Vault Linking (Current)"] --> P2["Phase 2: Supabase Schema & Security Setup"]
-    P2 --> P3["Phase 3: Frontend Foundation (React + Vite + Tailwind)"]
-    P3 --> P4["Phase 4: Apple Glassmorphism Dashboard & MQTT Integration"]
+    P1["Phase 1: Architecture, Planning & Vault Linking"] --> P2["Phase 2: Supabase Schema & Security Setup"]
+    P2 --> P3["Phase 3: Frontend Foundation (Next.js + Tailwind)"]
+    P3 --> P4["Phase 4: Apple Glassmorphism Dashboard & Direct Wi-Fi Control"]
     P4 --> P5["Phase 5: End-to-End Hardware Integration & Validation"]
 ```
 
-### Phase 1: Planning, Schema & Obsidian Graph Linking (Current Step)
+### Phase 1: Planning, Schema & Obsidian Graph Linking
 - [x] Complete system analysis and documentation.
 - [x] Create comprehensive security guide with STRIDE matrix & RLS policies.
 - [x] Create Apple-grade UI/UX design specifications utilizing reference layout inspirations.
@@ -51,18 +51,18 @@ flowchart TD
 - [x] Supabase CLI initialized and linked to project `ztwmlfdyllevyxbgzokd`.
 - [x] Supabase agent skills (`supabase`, `supabase-postgres-best-practices`) installed.
 
-### Phase 2: Supabase Schema & Broker Provisioning
+### Phase 2: Supabase Schema & Local Network Configuration
 - [x] Provision project `ztwmlfdyllevyxbgzokd` and configure `.env`.
 - [ ] Run migration script in Supabase to create `stations`, `telemetry_logs`, `feeding_events`, `cat_visits`, and `station_alerts`.
 - [ ] Enable Row Level Security (RLS) policies and test role access.
-- [ ] Provision HiveMQ Cloud access credentials (`esp32` and `pawstation-web`) with topic isolation.
+- [ ] Configure local Wi-Fi / ESP32 network parameters (`NEXT_PUBLIC_ESP32_HOST`) and mDNS discovery.
 
 ### Phase 3: Frontend Project Foundation & Fynsec Architecture
 - [x] Full-screen edge-to-edge layout (`w-full min-h-screen bg-[#161618]`) without outer margins or letterboxing.
 - [x] Interlocking cream canvas with mathematically exact SVG concave fillets (`InverseCorner.tsx`, `FilletCorner.tsx`).
 - [x] High-end 3D Baltic birch industrial hardware sculpture (`pawstation-hero-3d.jpg`) with floating glass telemetry chips.
 - [x] Single global Dark Mode toggle docked in hero's bottom-right notch, scrolling with the hero.
-- [x] Infinite horizontal marquee of partner cards (`espressif`, `supabase`, `HiveMQ`, `HX711`, `FreeRTOS`).
+- [x] Infinite horizontal marquee of partner cards (`espressif`, `supabase`, `Direct Wi-Fi`, `HX711`, `FreeRTOS`).
 - [x] Three numbered interactive feature cards (`/ 01`, `/ 02`, `/ 03`) with hover-expand details.
 - [x] Hardware architecture blueprint section with decoupled subsystem emulation.
 - [x] Apple iOS spring physics and scroll parallax transitions (`useScroll`, `useSpring`, `[0.16, 1, 0.3, 1]`).
@@ -82,11 +82,12 @@ flowchart TD
   - **Dispense Food:** Amber spring button with duration timer.
   - **Run Pump:** Teal button with 3-second countdown ring.
   - **Zero Scale:** Tare button with haptic-like animation.
+- Direct hardware integration via WebSocket and REST API (`usePawStation`).
 - Implement Foundation Footer inspired by Reference Image 2: dark obsidian glass canvas with radiant pastel paw motif and system telemetry status.
 
 ### Phase 5: Hardware-in-the-Loop Testing & Commissioning
-- Verify MQTT connection between ESP32 and HiveMQ over TLS port 8883.
-- Verify WebSocket connection from web client over TLS port 8884.
+- Verify direct Wi-Fi and mDNS connection between ESP32 (`pawstation.local`) and local network.
+- Verify direct WebSocket telemetry stream (`ws://<host>:81`) and HTTP REST command endpoints (`/api/command`).
 - Test command execution latency and fail-safe lockouts (motor overload prevention, pump dry-run cutoff).
 - Perform end-to-end user acceptance testing on desktop and mobile Safari.
 
@@ -95,10 +96,9 @@ flowchart TD
 ## 3. Decisions & Checkpoints for User Approval
 
 Before writing application code, please review and confirm:
-1. **Frontend Framework:** Confirm **React 18 + Vite + Tailwind CSS + Framer Motion** matches your preferred development environment.
+1. **Frontend Framework:** Confirm **Next.js + Tailwind CSS + Framer Motion** matches your preferred development environment.
 2. **Supabase Setup:** Confirm whether your Supabase project is already created or if you'd like us to provide the ready-to-run SQL migration script.
-3. **HiveMQ Cloud Cluster:** Confirm if you already have the cluster hostname ready to populate in `.env`.
+3. **ESP32 Target Host:** Confirm if you want to use `pawstation.local` mDNS or static IP in `.env` (`NEXT_PUBLIC_ESP32_HOST`).
 
 ---
 [[Index]] | [[Security Architecture and Hardening]] | [[Design System and Apple UI]] | [[Supabase and Backend Architecture]] | [[Pawstation Documentation and Parts]]
-

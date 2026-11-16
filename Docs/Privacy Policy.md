@@ -44,7 +44,7 @@ PawStation is designed with data minimization in mind. We collect only data stri
 ## 2. How We Use Your Data
 
 We use collected information solely for:
-1. **Live Station Operation:** Streaming real-time weight, reservoir levels, and cat presence to your private dashboard via encrypted MQTT WebSockets.
+1. **Live Station Operation:** Streaming real-time weight, reservoir levels, and cat presence to your private dashboard via direct local Wi-Fi WebSockets.
 2. **Health & Intake Tracking:** Recording feeding frequency, portion counts, and cat visit durations in your Supabase PostgreSQL database.
 3. **Safety & Anomaly Alerts:** Notifying you when the water reservoir is depleted or the station loses network connectivity.
 4. **Hardware Protection:** Logging commands to enforce rate limits and prevent physical actuator burnout or accidental overfeeding.
@@ -54,7 +54,7 @@ We use collected information solely for:
 ## 3. Data Storage, Retention & Security
 
 ### 3.1 Data Transit Security
-All communications between the ESP32 microcontroller, HiveMQ Cloud broker, Supabase backend, and your web browser are encrypted in transit using **TLS 1.2 / TLS 1.3** and Secure WebSockets (`wss://`).
+Communications between the ESP32 microcontroller and your browser operate directly over your secured local Wi-Fi network (using WebSockets and HTTP REST), while backend communications with the Supabase database are encrypted in transit using **TLS 1.2 / TLS 1.3** and HTTPS.
 
 ### 3.2 Database Access & Row Level Security (RLS)
 Telemetry logs and feeding events stored in Supabase are protected by PostgreSQL [[Security Architecture and Hardening|Row Level Security (RLS)]]. Only authenticated users whose `auth.uid()` matches the registered station owner can view or query station records.
@@ -71,9 +71,8 @@ Telemetry logs and feeding events stored in Supabase are protected by PostgreSQL
 
 PawStation utilizes the following infrastructure providers:
 - **Supabase Inc.:** Database hosting, authentication, and Row Level Security enforcement. (Data hosted in secure cloud regions compliant with SOC 2 Type II and ISO 27001).
-- **HiveMQ GmbH / HiveMQ Cloud:** MQTT message brokering over TLS for low-latency device control.
 
-We do not sell, rent, monetize, or share your telemetry or personal information with third-party advertisers or data brokers.
+Direct hardware control operates locally over your home Wi-Fi network and requires no external third-party IoT message broker. We do not sell, rent, monetize, or share your telemetry or personal information with third-party advertisers or data brokers.
 
 ---
 

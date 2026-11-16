@@ -7,11 +7,13 @@ tags:
   - postgresql
   - database
   - iot
+  - wifi
+  - websockets
 aliases:
   - Supabase Architecture
   - Database Schema
 date_created: 2026-11-12
-status: Planned
+status: Approved
 ---
 
 # PawStation Supabase & Backend Architecture
@@ -24,16 +26,15 @@ Part of [[Index]] | Related: [[Fynsec UI and Landing Page Architecture]] | [[Sec
 **Endpoint:** `https://ztwmlfdyllevyxbgzokd.supabase.co`
 
 PawStation uses a hybrid architecture:
-1. **Low-Latency Live Control:** Direct MQTT over Secure WebSockets (`wss://`) between the browser and HiveMQ Cloud for immediate (sub-100ms) commands (`dispense`, `pump`, `tare`) and 1 Hz live telemetry.
+1. **Low-Latency Live Control:** Direct local Wi-Fi communication via WebSockets (`ws://pawstation.local/ws` or local IP) and HTTP REST endpoints for immediate (<10ms) commands (`dispense`, `pump`, `tare`) and 1 Hz live telemetry streaming directly to the browser.
 2. **State Persistence & History (Supabase):** PostgreSQL database for storing feeding histories, cat visit timelines, water refilling events, device metadata, user authentication, and threshold configurations.
 3. **Next.js SSR & Client Integration:** Utilizing `@supabase/ssr` with cookie-based session handling and client-side real-time channels.
 
 ```mermaid
 flowchart TD
-    ESP["ESP32 Feeder"] -- "Live Telemetry & Commands (MQTT)" --> Broker["HiveMQ Cloud"]
-    Web["React Web Dashboard"] <--> Broker
-    Web -- "Auth & CRUD (Supabase Client)" --> Supabase["Supabase Backend (PostgreSQL)"]
-    Broker -. "Telemetry Webhook / Ingest" .-> Edge["Supabase Edge Functions"]
+    ESP["ESP32 Feeder"] <-- "Direct Wi-Fi (HTTP & WebSockets)" --> Web["Web Console (Browser)"]
+    Web -- "Auth & Historical Sync" --> Supabase["Supabase Backend (PostgreSQL)"]
+    Web -. "Synced Feeding Events & Visits" .-> Edge["Supabase Realtime / Edge Functions"]
     Edge --> Supabase
 ```
 
@@ -53,7 +54,8 @@ CREATE TABLE public.stations (
     created_at TIMESTAMPTZ NOT NULL DEFAULT timezone('utc'::text, now()),
     owner_id UUID REFERENCES auth.users(id) ON DELETE CASCADE,
     device_name TEXT NOT NULL DEFAULT 'PawStation Unit 1',
-    broker_client_id TEXT NOT NULL UNIQUE,
+    device_identifier TEXT NOT NULL UNIQUE,
+    local_ip TEXT,
     low_water_threshold INT NOT NULL DEFAULT 1500,
     cat_weight_threshold_g NUMERIC(6, 2) NOT NULL DEFAULT 500.0,
     dispense_portion_duration_ms INT NOT NULL DEFAULT 1200,
@@ -136,8 +138,8 @@ Supabase Realtime is enabled on:
 import { createClient } from '@supabase/supabase-js';
 
 const supabase = createClient(
-  import.meta.env.VITE_SUPABASE_URL,
-  import.meta.env.VITE_SUPABASE_ANON_KEY
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
 );
 
 // Subscribe to feeding events in the dashboard
@@ -165,10 +167,9 @@ export const subscribeToFeedings = (stationId: string, onEvent: (event: any) => 
 Because telemetry is published once per second (`1 Hz`), logging every raw tick to Supabase would generate 86,400 rows per day.
 
 ### Optimization Strategy:
-1. **Live Stream:** Direct browser MQTT subscription (`pawstation/telemetry`) updates the UI at 1 Hz in memory without database writes.
+1. **Live Stream:** Direct browser WebSocket connection (`ws://pawstation.local/ws`) updates the UI at 1 Hz in memory without unnecessary database writes.
 2. **Periodic Snapshot:** Supabase saves a telemetry snapshot once every **5 minutes** (or when a state transition occurs: cat steps on scale, water low detected, food dispensed).
 3. **Automatic Purge:** A simple pg_cron task purges raw telemetry snapshots older than 30 days while retaining `cat_visits` and `feeding_events` indefinitely.
 
 ---
 [[Index]] | [[Security Architecture and Hardening]] | [[Design System and Apple UI]] | [[Implementation Plan and Roadmap]]
-

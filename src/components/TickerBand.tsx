@@ -8,7 +8,7 @@ const items = [
   "Silent Water Pump",
   "Isolated 5V Rail",
   "ESP32 Microcontroller",
-  "HiveMQ Cloud TLS",
+  "ESP32 Direct Wi-Fi",
 ];
 
 export default function TickerBand() {

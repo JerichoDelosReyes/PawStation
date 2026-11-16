@@ -29,14 +29,14 @@ PawStation is an open hardware and software project designed for personal, non-c
 PawStation provides:
 1. Firmware and circuit schematics for the ESP32 microcontroller and attached sensors/actuators.
 2. Web application code (Next.js) and database schemas ([[Supabase and Backend Architecture|Supabase]]).
-3. MQTT messaging protocol definitions ([[Pawstation Documentation and Parts]]).
+3. Direct Wi-Fi, HTTP REST, and WebSocket protocol definitions ([[Pawstation Documentation and Parts]]).
 
 ---
 
 ## 2. Animal Welfare & Hardware Safety Disclaimers
 
 > [!WARNING]
-> **Do not rely solely on automated or DIY hardware for pet sustenance.** Electronic components, network connections, Wi-Fi routers, cloud brokers, and physical mechanical dispensers can fail.
+> **Do not rely solely on automated or DIY hardware for pet sustenance.** Electronic components, network connections, Wi-Fi routers, microcontrollers, and physical mechanical dispensers can fail.
 
 By operating PawStation, you acknowledge and agree that:
 1. **Human Supervision Required:** PawStation is an assistive device and does not replace regular human supervision, daily fresh water checks, and routine animal care.
@@ -49,8 +49,8 @@ By operating PawStation, you acknowledge and agree that:
 ## 3. Acceptable Use & Account Responsibilities
 
 When operating the PawStation dashboard and cloud APIs:
-- You agree to safeguard your MQTT broker credentials, database passwords, and private API keys.
-- You agree not to reverse engineer or flood the cloud MQTT broker or database with malicious traffic that disrupts service.
+- You agree to safeguard your Wi-Fi credentials, database passwords, and private API keys.
+- You agree not to reverse engineer or flood station endpoints or backend databases with malicious traffic that disrupts service.
 - You agree to operate the software in accordance with applicable local animal welfare and electronic device regulations.
 
 ---
