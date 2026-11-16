@@ -183,6 +183,7 @@
   },
   "active": "7dbc362d75ef2a51",
   "lastOpenFiles": [
+    "PawStationCode.ino",
     "src/lib/mqtt.ts",
     "firmware/PawStationDirect/PawStationDirect.ino",
     "firmware/PawStationDirect",
@@ -193,7 +194,6 @@
     "node_modules/@types/node/web-globals/url.d.ts",
     "node_modules/@types/node/web-globals/timers.d.ts",
     "node_modules/@types/node/web-globals/streams.d.ts",
-    "node_modules/@types/node/web-globals/storage.d.ts",
     "node_modules/@types/node/README.md",
     "node_modules/undici-types/README.md",
     "public/hero-figure-dark.png",
