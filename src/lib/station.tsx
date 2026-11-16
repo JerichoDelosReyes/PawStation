@@ -79,26 +79,20 @@ function formatCurrentTime(): string {
 
 function buildWsUrl(host: string): string {
   let cleanHost = host.trim();
-  if (cleanHost.startsWith("ws://") || cleanHost.startsWith("wss://")) {
-    return cleanHost.endsWith("/ws") ? cleanHost : `${cleanHost.replace(/\/+$/, "")}/ws`;
+  cleanHost = cleanHost.replace(/^(ws:\/\/|wss:\/\/|http:\/\/|https:\/\/)/, "");
+  // If no explicit port is specified, default to embedded WebSocket port 81
+  if (!cleanHost.includes(":") && !cleanHost.includes("/")) {
+    cleanHost = `${cleanHost}:81`;
   }
-  if (cleanHost.startsWith("http://")) {
-    cleanHost = cleanHost.replace(/^http:\/\//, "ws://");
-    return cleanHost.endsWith("/ws") ? cleanHost : `${cleanHost.replace(/\/+$/, "")}/ws`;
-  }
-  if (cleanHost.startsWith("https://")) {
-    cleanHost = cleanHost.replace(/^https:\/\//, "wss://");
-    return cleanHost.endsWith("/ws") ? cleanHost : `${cleanHost.replace(/\/+$/, "")}/ws`;
-  }
-  return `ws://${cleanHost.replace(/\/+$/, "")}/ws`;
+  return `ws://${cleanHost.replace(/\/+$/, "")}`;
 }
 
 function buildHttpUrl(host: string, path: string): string {
   let cleanHost = host.trim();
-  if (!cleanHost.startsWith("http://") && !cleanHost.startsWith("https://")) {
-    cleanHost = `http://${cleanHost}`;
-  }
-  return `${cleanHost.replace(/\/+$/, "")}${path}`;
+  cleanHost = cleanHost.replace(/^(ws:\/\/|wss:\/\/|http:\/\/|https:\/\/)/, "");
+  // Strip WebSocket port :81 so HTTP requests go to standard port 80
+  cleanHost = cleanHost.replace(/:81$/, "").replace(/\/+$/, "");
+  return `http://${cleanHost}${path}`;
 }
 
 export function StationProvider({ children }: { children: ReactNode }) {

@@ -44,12 +44,15 @@ function LiveStation({ catName = "Cat", onStatusChange }: LiveStationProps) {
     stationError,
     sendCommand,
     esp32Host,
+    setEsp32Host,
     isDemoMode,
   } = usePawStation();
 
   const [catVisits, setCatVisits] = useState<CatVisit[]>([]);
   const [lastAction, setLastAction] = useState<string | null>(null);
   const [commandCooldown, setCommandCooldown] = useState(false);
+  const [isEditingHost, setIsEditingHost] = useState(false);
+  const [hostInput, setHostInput] = useState(esp32Host || "pawstation.local");
   const prevCatRef = useRef<boolean>(false);
 
   useEffect(() => {
@@ -586,11 +589,50 @@ function LiveStation({ catName = "Cat", onStatusChange }: LiveStationProps) {
                   </div>
 
                   {/* Wi-Fi Direct Socket / Endpoint */}
-                  <div className="flex items-center justify-between p-2.5 rounded-lg bg-white dark:bg-[#131722] border border-black/[0.04] dark:border-white/[0.05]">
-                    <span className="text-neutral-600 dark:text-neutral-400">Direct Socket</span>
-                    <span className="font-mono text-neutral-900 dark:text-white">
-                      ws://{esp32Host || "pawstation.local"}/ws
-                    </span>
+                  <div className="flex flex-col gap-1.5 p-2.5 rounded-lg bg-white dark:bg-[#131722] border border-black/[0.04] dark:border-white/[0.05]">
+                    <div className="flex items-center justify-between">
+                      <span className="text-neutral-600 dark:text-neutral-400">Direct Socket</span>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setHostInput(esp32Host || "pawstation.local");
+                          setIsEditingHost((prev) => !prev);
+                        }}
+                        className="text-[11px] font-semibold text-accent-amber hover:underline transition-colors"
+                      >
+                        {isEditingHost ? "Cancel" : "Change Host"}
+                      </button>
+                    </div>
+                    {isEditingHost ? (
+                      <form
+                        onSubmit={(e) => {
+                          e.preventDefault();
+                          if (hostInput.trim()) {
+                            setEsp32Host(hostInput.trim());
+                            setIsEditingHost(false);
+                          }
+                        }}
+                        className="flex items-center gap-1.5 mt-1"
+                      >
+                        <input
+                          type="text"
+                          value={hostInput}
+                          onChange={(e) => setHostInput(e.target.value)}
+                          placeholder="e.g. pawstation.local or 192.168.1.150"
+                          className="flex-1 text-[11.5px] font-mono px-2 py-1 rounded border border-black/10 dark:border-white/10 bg-neutral-50 dark:bg-[#181d2a] text-neutral-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-accent-amber"
+                        />
+                        <button
+                          type="submit"
+                          className="px-2.5 py-1 text-[11px] font-semibold bg-neutral-900 dark:bg-white text-white dark:text-neutral-900 rounded hover:opacity-90"
+                        >
+                          Save
+                        </button>
+                      </form>
+                    ) : (
+                      <span className="font-mono text-[12px] text-neutral-900 dark:text-white truncate">
+                        ws://{esp32Host || "pawstation.local"}:81
+                      </span>
+                    )}
                   </div>
 
                   {/* Protocol */}
