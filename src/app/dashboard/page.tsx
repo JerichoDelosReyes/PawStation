@@ -3,10 +3,10 @@
 import { useState, useCallback } from "react";
 import ConsoleNavbar from "@/components/ConsoleNavbar";
 import LiveStation from "@/components/LiveStation";
-import Scheduler from "@/components/Scheduler";
+import HardwareDiagnosticsDrawer from "@/components/HardwareDiagnosticsDrawer";
 import Footer from "@/components/Footer";
 import AuthModal from "@/components/AuthModal";
-import { CatIcon, CloseIcon, ChevronDownIcon } from "@/components/Icons";
+import { CatIcon, CloseIcon, ChevronDownIcon, ChipIcon } from "@/components/Icons";
 import { useAuth } from "@/lib/auth-context";
 import { StationProvider, useStationStatus } from "@/lib/station";
 
@@ -31,6 +31,7 @@ function DashboardContent() {
   const { user, catProfile, setCatProfile } = useAuth();
   const { stationStatus } = useStationStatus();
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [isDiagnosticsOpen, setIsDiagnosticsOpen] = useState(false);
 
   const displayCatName = catProfile?.catName || user?.user_metadata?.cat_name || "Whiskers";
   const displayCatBreed = catProfile?.catBreed || user?.user_metadata?.cat_breed || "Domestic Longhair";
@@ -82,19 +83,30 @@ function DashboardContent() {
           catBreed={displayCatBreed}
           stationName={displayStationName}
           onOpenEditProfile={handleOpenEdit}
+          onOpenDiagnostics={() => setIsDiagnosticsOpen(true)}
         />
 
         {/* ─────────────────────────────────────────────────────────────
-            CONSOLE MAIN WORKSTATION CONTAINER (EXPANSIVE WIDE LAYOUT)
+            CONSOLE MAIN WORKSTATION CONTAINER (AIRY RESPONSIVE CARD DECK)
         ───────────────────────────────────────────────────────────── */}
         <div className="w-full flex-1 pt-6 lg:pt-20 pb-16 px-4 sm:px-6 md:px-8 lg:px-10 xl:px-12 2xl:px-14 max-w-[1760px] mx-auto flex flex-col gap-8">
-          {/* Precision Hardware Console */}
-          <LiveStation catName={displayCatName} />
-
-          {/* Routine Automation & Hardware Blueprint */}
-          <Scheduler catName={displayCatName} />
+          {/* 3-Card Physical-Digital Deck Inspired by User Vibe */}
+          <LiveStation
+            catName={displayCatName}
+            catBreed={displayCatBreed}
+            onOpenDiagnostics={() => setIsDiagnosticsOpen(true)}
+            onOpenEditProfile={handleOpenEdit}
+          />
         </div>
       </main>
+
+      {/* ─────────────────────────────────────────────────────────────
+          HARDWARE & PINOUT DIAGNOSTICS SLIDE-OVER DRAWER
+      ───────────────────────────────────────────────────────────── */}
+      <HardwareDiagnosticsDrawer
+        isOpen={isDiagnosticsOpen}
+        onClose={() => setIsDiagnosticsOpen(false)}
+      />
 
       {/* ─────────────────────────────────────────────────────────────
           EDIT PROFILE MODAL
@@ -105,20 +117,20 @@ function DashboardContent() {
             className="absolute inset-0 bg-black/60 backdrop-blur-sm"
             onClick={() => !isSaving && setIsEditModalOpen(false)}
           />
-          <div className="relative bg-white dark:bg-[#161B26] rounded-apple-2xl border border-black/[0.08] dark:border-white/[0.1] max-w-md w-full p-6 sm:p-7 shadow-2xl z-10 transition-colors">
+          <div className="relative bg-[#FAF7F0] dark:bg-[#161B26] rounded-[32px] border border-black/[0.08] dark:border-white/[0.1] max-w-md w-full p-6 sm:p-7 shadow-2xl z-10 transition-colors">
             <div className="flex items-center justify-between pb-4 border-b border-black/[0.06] dark:border-white/[0.08] mb-5">
               <div className="flex items-center gap-2">
-                <div className="w-7 h-7 rounded-lg bg-accent-amber/15 text-accent-amber flex items-center justify-center">
+                <div className="w-8 h-8 rounded-full bg-neutral-900 text-white dark:bg-white dark:text-neutral-900 flex items-center justify-center">
                   <CatIcon className="w-4 h-4 fill-current" />
                 </div>
-                <h3 className="text-[16px] font-bold text-neutral-900 dark:text-white">
-                  Update Companion Profile
+                <h3 className="text-[17px] font-bold text-neutral-900 dark:text-white">
+                  Companion Profile
                 </h3>
               </div>
               <button
                 type="button"
                 onClick={() => setIsEditModalOpen(false)}
-                className="p-1.5 rounded-lg hover:bg-neutral-100 dark:hover:bg-white/10 text-neutral-500 hover:text-neutral-900 dark:hover:text-white transition-colors"
+                className="w-8 h-8 rounded-full bg-black/[0.05] dark:bg-white/10 hover:bg-black/10 dark:hover:bg-white/15 text-neutral-600 dark:text-neutral-300 flex items-center justify-center transition-colors"
                 aria-label="Close modal"
               >
                 <CloseIcon className="w-4 h-4" />
@@ -127,7 +139,7 @@ function DashboardContent() {
 
             <form onSubmit={handleSaveProfile} className="space-y-4">
               <div>
-                <label className="block text-[12px] font-semibold uppercase tracking-wider text-neutral-500 dark:text-neutral-400 mb-1.5">
+                <label className="block text-[11px] font-bold uppercase tracking-wider text-neutral-500 dark:text-neutral-400 mb-1.5">
                   Companion Name
                 </label>
                 <input
@@ -136,20 +148,20 @@ function DashboardContent() {
                   onChange={(e) => setEditName(e.target.value)}
                   maxLength={50}
                   required
-                  placeholder="e.g. Burnok"
-                  className="w-full rounded-apple border border-black/[0.1] dark:border-white/[0.12] bg-[#FAF8F5] dark:bg-[#181D2A] px-3.5 py-2.5 text-[14px] text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-accent-amber/40 transition-all font-medium"
+                  placeholder="e.g. Whiskers"
+                  className="w-full rounded-full border border-black/[0.1] dark:border-white/[0.12] bg-white dark:bg-[#181D2A] px-4 py-2.5 text-[14px] text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-neutral-900 dark:focus:ring-white transition-all font-medium"
                 />
               </div>
 
               <div>
-                <label className="block text-[12px] font-semibold uppercase tracking-wider text-neutral-500 dark:text-neutral-400 mb-1.5">
+                <label className="block text-[11px] font-bold uppercase tracking-wider text-neutral-500 dark:text-neutral-400 mb-1.5">
                   Breed / Heritage
                 </label>
                 <div className="relative">
                   <select
                     value={editBreed}
                     onChange={(e) => setEditBreed(e.target.value)}
-                    className="w-full appearance-none rounded-apple border border-black/[0.1] dark:border-white/[0.12] bg-[#FAF8F5] dark:bg-[#181D2A] pl-3.5 pr-10 py-2.5 text-[13.5px] text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-accent-amber/40 transition-all font-medium cursor-pointer"
+                    className="w-full appearance-none rounded-full border border-black/[0.1] dark:border-white/[0.12] bg-white dark:bg-[#181D2A] pl-4 pr-10 py-2.5 text-[13.5px] text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-neutral-900 dark:focus:ring-white transition-all font-medium cursor-pointer"
                   >
                     {CAT_BREEDS.map((b) => (
                       <option
@@ -161,14 +173,14 @@ function DashboardContent() {
                       </option>
                     ))}
                   </select>
-                  <div className="pointer-events-none absolute right-3.5 top-1/2 -translate-y-1/2 text-neutral-500 dark:text-neutral-400">
+                  <div className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-neutral-500 dark:text-neutral-400">
                     <ChevronDownIcon className="w-4 h-4" />
                   </div>
                 </div>
               </div>
 
               <div>
-                <label className="block text-[12px] font-semibold uppercase tracking-wider text-neutral-500 dark:text-neutral-400 mb-1.5">
+                <label className="block text-[11px] font-bold uppercase tracking-wider text-neutral-500 dark:text-neutral-400 mb-1.5">
                   Station Hardware Identifier
                 </label>
                 <input
@@ -178,12 +190,12 @@ function DashboardContent() {
                   maxLength={60}
                   required
                   placeholder="e.g. PawStation Unit 1"
-                  className="w-full rounded-apple border border-black/[0.1] dark:border-white/[0.12] bg-[#FAF8F5] dark:bg-[#181D2A] px-3.5 py-2.5 text-[14px] text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-accent-amber/40 transition-all font-medium"
+                  className="w-full rounded-full border border-black/[0.1] dark:border-white/[0.12] bg-white dark:bg-[#181D2A] px-4 py-2.5 text-[14px] text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-neutral-900 dark:focus:ring-white transition-all font-medium"
                 />
               </div>
 
               {saveSuccess && (
-                <div className="p-2.5 rounded-apple bg-emerald-500/10 border border-emerald-500/20 text-emerald-700 dark:text-emerald-400 text-[12px] font-medium text-center">
+                <div className="p-2.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-700 dark:text-emerald-400 text-[12px] font-semibold text-center">
                   Profile updated and synchronized.
                 </div>
               )}
@@ -192,14 +204,14 @@ function DashboardContent() {
                 <button
                   type="button"
                   onClick={() => setIsEditModalOpen(false)}
-                  className="apple-button flex-1 bg-neutral-100 hover:bg-neutral-200 dark:bg-white/10 dark:hover:bg-white/15 text-neutral-800 dark:text-neutral-200 py-2.5 text-[13px] rounded-apple font-semibold transition-all"
+                  className="flex-1 rounded-full bg-black/[0.05] hover:bg-black/10 dark:bg-white/10 dark:hover:bg-white/15 text-neutral-800 dark:text-neutral-200 py-3 text-[13px] font-bold transition-all"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={isSaving}
-                  className="apple-button flex-1 bg-neutral-900 hover:bg-neutral-800 dark:bg-white dark:hover:bg-neutral-100 text-white dark:text-neutral-900 py-2.5 text-[13px] rounded-apple font-semibold transition-all disabled:opacity-50"
+                  className="flex-1 rounded-full bg-neutral-900 hover:opacity-90 dark:bg-white dark:text-neutral-900 text-white py-3 text-[13px] font-bold transition-all disabled:opacity-50"
                 >
                   {isSaving ? "Saving..." : "Save Profile"}
                 </button>

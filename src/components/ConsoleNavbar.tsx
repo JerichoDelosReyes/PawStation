@@ -3,7 +3,7 @@
 import { useState, useRef, useEffect, memo } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { PawIcon, CatIcon, CloseIcon, SunIcon, MoonIcon } from "./Icons";
+import { PawIcon, CatIcon, CloseIcon, SunIcon, MoonIcon, ChipIcon } from "./Icons";
 import InverseCorner from "./InverseCorner";
 import ThemeTogglePill from "./ThemeTogglePill";
 import { useAuth } from "@/lib/auth-context";
@@ -16,6 +16,7 @@ interface ConsoleNavbarProps {
   catBreed?: string;
   stationName?: string;
   onOpenEditProfile?: () => void;
+  onOpenDiagnostics?: () => void;
 }
 
 function ConsoleNavbar({
@@ -24,6 +25,7 @@ function ConsoleNavbar({
   catBreed = "Domestic Longhair",
   stationName = "PawStation Unit 1",
   onOpenEditProfile,
+  onOpenDiagnostics,
 }: ConsoleNavbarProps) {
   const { user, signOut } = useAuth();
   const { theme, setTheme } = useTheme();
@@ -97,7 +99,18 @@ function ConsoleNavbar({
         </Link>
 
         {/* Cat Profile Trigger Pill on Mobile */}
-        <div className="relative">
+        <div className="flex items-center gap-1.5 relative">
+          {onOpenDiagnostics && (
+            <button
+              type="button"
+              onClick={onOpenDiagnostics}
+              className="p-1.5 rounded-full bg-white/10 hover:bg-white/15 text-white border border-white/10 transition-all active:scale-95"
+              title="Hardware Diagnostics"
+              aria-label="Hardware Diagnostics"
+            >
+              <ChipIcon className="w-3.5 h-3.5" />
+            </button>
+          )}
           <button
             type="button"
             onClick={() => setProfileOpen((prev) => !prev)}
@@ -160,14 +173,30 @@ function ConsoleNavbar({
                 </div>
               </div>
 
-              {/* Edit Profile Button */}
-              <button
-                type="button"
-                onClick={handleEditClick}
-                className="w-full py-1.5 px-3 rounded-lg bg-neutral-100 hover:bg-neutral-200 dark:bg-white/10 dark:hover:bg-white/15 text-neutral-800 dark:text-neutral-200 text-[11.5px] font-semibold text-center transition-colors mb-3"
-              >
-                Edit Profile
-              </button>
+              {/* Edit Profile & Diagnostics Buttons */}
+              <div className="flex gap-2 mb-3">
+                <button
+                  type="button"
+                  onClick={handleEditClick}
+                  className="flex-1 py-1.5 px-3 rounded-lg bg-neutral-100 hover:bg-neutral-200 dark:bg-white/10 dark:hover:bg-white/15 text-neutral-800 dark:text-neutral-200 text-[11.5px] font-semibold text-center transition-colors"
+                >
+                  Edit Profile
+                </button>
+                {onOpenDiagnostics && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setProfileOpen(false);
+                      onOpenDiagnostics();
+                    }}
+                    className="flex items-center justify-center gap-1.5 py-1.5 px-3 rounded-lg bg-neutral-100 hover:bg-neutral-200 dark:bg-white/10 dark:hover:bg-white/15 text-neutral-800 dark:text-neutral-200 text-[11.5px] font-semibold transition-colors"
+                    title="Hardware Diagnostics"
+                  >
+                    <ChipIcon className="w-3.5 h-3.5" />
+                    <span>Diagnostics</span>
+                  </button>
+                )}
+              </div>
 
               {/* Device and Account details (Mobile) */}
               <div className="bg-[#FAF8F5] dark:bg-[#121620] rounded-xl p-2.5 border border-black/[0.04] dark:border-white/[0.06] mb-3 space-y-1.5 text-[11px]">
@@ -318,7 +347,21 @@ function ConsoleNavbar({
         <div className="text-[var(--frame-bg)]">
           <InverseCorner type="top-right-left" size={20} className="w-5 h-5 sm:w-6 sm:h-6" />
         </div>
-        <div className="bg-[var(--frame-bg)] h-[56px] pl-4 pr-5 rounded-bl-[24px] sm:rounded-bl-[28px] flex items-center relative">
+        <div className="bg-[var(--frame-bg)] h-[56px] pl-4 pr-5 rounded-bl-[24px] sm:rounded-bl-[28px] flex items-center gap-2 relative">
+          {onOpenDiagnostics && (
+            <button
+              type="button"
+              onClick={onOpenDiagnostics}
+              className="group flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/10 hover:bg-white/15 text-white border border-white/10 transition-all active:scale-[0.98] cursor-pointer"
+              title="Open Hardware Diagnostics & Pinout"
+            >
+              <ChipIcon className="w-3.5 h-3.5 text-neutral-300 group-hover:text-white transition-colors" />
+              <span className="hidden xl:inline text-[12px] font-semibold text-neutral-200 group-hover:text-white transition-colors">
+                Diagnostics
+              </span>
+            </button>
+          )}
+
           {/* Profile Window Trigger Button */}
           <button
             ref={triggerRef}

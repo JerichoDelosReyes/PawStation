@@ -28,8 +28,8 @@
 // 2. WI-FI & TIME CONFIGURATION
 // ==============================================================================
 // >>> REPLACE WITH YOUR HOME 2.4 GHz WI-FI CREDENTIALS <<<
-const char* WIFI_SSID     = "YOUR_WIFI_SSID";
-const char* WIFI_PASSWORD = "YOUR_WIFI_PASSWORD";
+const char* WIFI_SSID     = "DCS";
+const char* WIFI_PASSWORD = "k0mpyut3rStudi3s";
 
 // Fallback SoftAP if Home Wi-Fi is unreachable
 const char* AP_SSID       = "PawStation-AP";
@@ -245,21 +245,22 @@ void webSocketEvent(uint8_t num, WStype_t type, uint8_t * payload, size_t length
     case WStype_CONNECTED: {
       IPAddress ip = webSocket.remoteIP(num);
       Serial.printf("[WS #%u] Connected from %s\n", num, ip.toString().c_str());
-      webSocket.sendTXT(num, buildTelemetryJson());
+      String telemetry = buildTelemetryJson();   // <-- store first
+      webSocket.sendTXT(num, telemetry);
       break;
     }
     case WStype_TEXT: {
       String msg = String((char*)payload);
       Serial.printf("[WS #%u] Message: %s\n", num, msg.c_str());
       parseAndExecuteCommand(msg);
-      webSocket.sendTXT(num, buildTelemetryJson());
+      String telemetry = buildTelemetryJson();   // <-- store first
+      webSocket.sendTXT(num, telemetry);
       break;
     }
     default:
       break;
   }
 }
-
 // ==============================================================================
 // 9. HTTP REST HANDLERS & CORS SUPPORT
 // ==============================================================================
