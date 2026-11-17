@@ -87,10 +87,10 @@ function DashboardContent() {
         />
 
         {/* ─────────────────────────────────────────────────────────────
-            CONSOLE MAIN WORKSTATION CONTAINER (STRICT 1-PAGE ZERO SCROLL)
+            CONSOLE MAIN WORKSTATION CONTAINER (BREATHING MARGINS ZERO SCROLL)
         ───────────────────────────────────────────────────────────── */}
-        <div className="w-full flex-1 min-h-0 pt-14 lg:pt-[58px] pb-3 px-3 sm:px-5 lg:px-6 xl:px-8 max-w-[1720px] mx-auto flex flex-col justify-center overflow-hidden">
-          {/* 3-Card Physical-Digital Deck Fitted to Viewport */}
+        <div className="w-full flex-1 min-h-0 pt-[72px] sm:pt-[78px] lg:pt-[84px] pb-6 sm:pb-8 lg:pb-10 px-5 sm:px-8 md:px-12 lg:px-14 xl:px-16 2xl:px-20 max-w-[1560px] mx-auto flex flex-col justify-center overflow-hidden">
+          {/* 3-Card Physical-Digital Deck Fitted to Viewport with Generous Padding */}
           <LiveStation
             catName={displayCatName}
             catBreed={displayCatBreed}

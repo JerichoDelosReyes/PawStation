@@ -318,7 +318,7 @@ function LiveStation({
       {/* ─────────────────────────────────────────────────────────────
           RESPONSIVE CARD DECK: EXACT 1-PAGE ZERO-SCROLL WORKSTATION
       ───────────────────────────────────────────────────────────── */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-3 sm:gap-4 lg:gap-4 xl:gap-5 items-stretch max-w-[1640px] mx-auto w-full h-full flex-1 min-h-0 overflow-hidden">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 lg:gap-5 xl:gap-6 items-stretch max-w-[1540px] mx-auto w-full h-full flex-1 min-h-0 overflow-hidden">
         {/* ═══════════════════════════════════════════════════════════
             CARD 1: FEEDER STATUS (Hardware Sculpture & Pods)
         ═══════════════════════════════════════════════════════════ */}
