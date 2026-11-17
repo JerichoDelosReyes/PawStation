@@ -72,8 +72,8 @@ function DashboardContent() {
   };
 
   return (
-    <div className="w-full min-h-screen bg-[var(--frame-bg)] text-white select-none p-0 flex flex-col justify-between overflow-x-hidden selection:bg-neutral-900 selection:text-white dark:selection:bg-white dark:selection:text-black transition-colors duration-200">
-      <main className="relative w-full flex-1 min-h-0 bg-[var(--panel-bg)] text-[var(--panel-text)] rounded-none flex flex-col transition-colors duration-200 overflow-visible">
+    <div className="w-full h-[100dvh] max-h-[100dvh] bg-[var(--frame-bg)] text-white select-none p-0 flex flex-col overflow-hidden selection:bg-neutral-900 selection:text-white dark:selection:bg-white dark:selection:text-black transition-colors duration-200">
+      <main className="relative w-full h-full flex-1 min-h-0 bg-[var(--panel-bg)] text-[var(--panel-text)] rounded-none flex flex-col transition-colors duration-200 overflow-hidden">
         {/* ─────────────────────────────────────────────────────────────
             BESPOKE CONSOLE NAVIGATION BAR WITH DOCKED CORNER NOTCHES
         ───────────────────────────────────────────────────────────── */}
@@ -87,10 +87,10 @@ function DashboardContent() {
         />
 
         {/* ─────────────────────────────────────────────────────────────
-            CONSOLE MAIN WORKSTATION CONTAINER (AIRY RESPONSIVE CARD DECK)
+            CONSOLE MAIN WORKSTATION CONTAINER (STRICT 1-PAGE ZERO SCROLL)
         ───────────────────────────────────────────────────────────── */}
-        <div className="w-full flex-1 pt-6 lg:pt-20 pb-16 px-4 sm:px-6 md:px-8 lg:px-10 xl:px-12 2xl:px-14 max-w-[1760px] mx-auto flex flex-col gap-8">
-          {/* 3-Card Physical-Digital Deck Inspired by User Vibe */}
+        <div className="w-full flex-1 min-h-0 pt-14 lg:pt-[58px] pb-3 px-3 sm:px-5 lg:px-6 xl:px-8 max-w-[1720px] mx-auto flex flex-col justify-center overflow-hidden">
+          {/* 3-Card Physical-Digital Deck Fitted to Viewport */}
           <LiveStation
             catName={displayCatName}
             catBreed={displayCatBreed}
@@ -220,9 +220,6 @@ function DashboardContent() {
           </div>
         </div>
       )}
-
-      {/* Global Console Footer with Status & Build Metadata */}
-      <Footer />
 
       {/* Authentication Modal */}
       <AuthModal />

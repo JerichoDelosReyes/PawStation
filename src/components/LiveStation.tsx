@@ -262,7 +262,7 @@ function LiveStation({
   const isWaterLow = telemetry?.waterLow ?? false;
 
   return (
-    <div className="w-full flex flex-col gap-6 select-none">
+    <div className="w-full h-full flex-1 min-h-0 flex flex-col justify-center select-none overflow-hidden">
       {/* ── Action Feedback Toast ── */}
       <AnimatePresence>
         {lastAction && (
@@ -270,20 +270,20 @@ function LiveStation({
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -10 }}
-            className="w-full max-w-md mx-auto px-5 py-2.5 rounded-full bg-neutral-900 text-white dark:bg-white dark:text-neutral-900 text-[12.5px] font-semibold flex items-center justify-center gap-2 shadow-xl"
+            className="w-full max-w-md mx-auto px-5 py-2 rounded-full bg-neutral-900 text-white dark:bg-white dark:text-neutral-900 text-[12px] font-semibold flex items-center justify-center gap-2 shadow-xl shrink-0 z-30 mb-2"
           >
-            <CheckIcon className="w-4 h-4 text-emerald-400 dark:text-emerald-600" />
+            <CheckIcon className="w-3.5 h-3.5 text-emerald-400 dark:text-emerald-600" />
             <span>{lastAction}</span>
           </motion.div>
         )}
       </AnimatePresence>
 
       {/* ── Mobile Card Selector Tabs (< lg) ── */}
-      <div className="lg:hidden flex items-center justify-center gap-2 p-1.5 rounded-full bg-[#E8E4DA] dark:bg-[#1C2230] max-w-sm mx-auto w-full">
+      <div className="lg:hidden flex items-center justify-center gap-2 p-1 rounded-full bg-[#E8E4DA] dark:bg-[#1C2230] max-w-sm mx-auto w-full shrink-0 mb-2">
         <button
           type="button"
           onClick={() => setMobileActiveCard(0)}
-          className={`flex-1 py-2 px-3 rounded-full text-[12px] font-bold transition-all ${
+          className={`flex-1 py-1.5 px-3 rounded-full text-[11.5px] font-bold transition-all ${
             mobileActiveCard === 0
               ? "bg-neutral-900 text-white dark:bg-white dark:text-neutral-900 shadow-sm"
               : "text-neutral-600 dark:text-neutral-400"
@@ -294,7 +294,7 @@ function LiveStation({
         <button
           type="button"
           onClick={() => setMobileActiveCard(1)}
-          className={`flex-1 py-2 px-3 rounded-full text-[12px] font-bold transition-all ${
+          className={`flex-1 py-1.5 px-3 rounded-full text-[11.5px] font-bold transition-all ${
             mobileActiveCard === 1
               ? "bg-neutral-900 text-white dark:bg-white dark:text-neutral-900 shadow-sm"
               : "text-neutral-600 dark:text-neutral-400"
@@ -305,7 +305,7 @@ function LiveStation({
         <button
           type="button"
           onClick={() => setMobileActiveCard(2)}
-          className={`flex-1 py-2 px-3 rounded-full text-[12px] font-bold transition-all ${
+          className={`flex-1 py-1.5 px-3 rounded-full text-[11.5px] font-bold transition-all ${
             mobileActiveCard === 2
               ? "bg-neutral-900 text-white dark:bg-white dark:text-neutral-900 shadow-sm"
               : "text-neutral-600 dark:text-neutral-400"
@@ -316,24 +316,24 @@ function LiveStation({
       </div>
 
       {/* ─────────────────────────────────────────────────────────────
-          RESPONSIVE CARD DECK: 3 BESPOKE APP-STYLE CARDS SIDE-BY-SIDE
+          RESPONSIVE CARD DECK: EXACT 1-PAGE ZERO-SCROLL WORKSTATION
       ───────────────────────────────────────────────────────────── */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-stretch max-w-[1580px] mx-auto w-full">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-3 sm:gap-4 lg:gap-4 xl:gap-5 items-stretch max-w-[1640px] mx-auto w-full h-full flex-1 min-h-0 overflow-hidden">
         {/* ═══════════════════════════════════════════════════════════
-            CARD 1: FEEDER STATUS (Actual PawStation Hardware Sculpture)
+            CARD 1: FEEDER STATUS (Hardware Sculpture & Pods)
         ═══════════════════════════════════════════════════════════ */}
         <div
           className={`${
             mobileActiveCard === 0 ? "flex" : "hidden lg:flex"
-          } flex-col justify-between rounded-[36px] bg-[#EFECE3] dark:bg-[#1A202C] border border-black/[0.06] dark:border-white/[0.08] shadow-[0_8px_30px_rgb(0,0,0,0.04)] p-6 sm:p-7 min-h-[660px] transition-all`}
+          } flex-col justify-between rounded-[28px] lg:rounded-[32px] bg-[#FAF7F0] dark:bg-[#161B26] border border-black/[0.06] dark:border-white/[0.08] shadow-[0_4px_24px_rgb(0,0,0,0.03)] p-4 sm:p-5 xl:p-6 h-full min-h-0 overflow-hidden transition-all`}
         >
           {/* Top Pill Header */}
-          <div className="flex items-center justify-between gap-3">
-            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-neutral-900 text-white dark:bg-white dark:text-neutral-900 shadow-sm">
-              <div className="w-5 h-5 rounded-full bg-amber-400/20 text-amber-300 flex items-center justify-center">
-                <PawIcon className="w-3 h-3 fill-current" />
+          <div className="flex items-center justify-between gap-2 shrink-0">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-neutral-900 text-white dark:bg-white dark:text-neutral-900 shadow-sm">
+              <div className="w-4 h-4 rounded-full bg-amber-400/20 text-amber-300 flex items-center justify-center">
+                <PawIcon className="w-2.5 h-2.5 fill-current" />
               </div>
-              <span className="text-[11.5px] font-bold tracking-tight">
+              <span className="text-[11px] font-bold tracking-tight">
                 {isStationOnline
                   ? isDemoMode
                     ? "PawStation (Demo)"
@@ -346,18 +346,18 @@ function LiveStation({
               <button
                 type="button"
                 onClick={onOpenDiagnostics}
-                className="w-10 h-10 rounded-full bg-white dark:bg-white/10 hover:bg-neutral-100 dark:hover:bg-white/15 text-neutral-800 dark:text-white flex items-center justify-center shadow-sm border border-black/[0.05] dark:border-white/10 transition-all active:scale-95 cursor-pointer"
+                className="w-8 h-8 rounded-full bg-white dark:bg-white/10 hover:bg-neutral-100 dark:hover:bg-white/15 text-neutral-800 dark:text-white flex items-center justify-center shadow-sm border border-black/[0.05] dark:border-white/10 transition-all active:scale-95 cursor-pointer"
                 title="Hardware Diagnostics & Pinout"
                 aria-label="Hardware Diagnostics & Pinout"
               >
-                <ChipIcon className="w-4 h-4" />
+                <ChipIcon className="w-3.5 h-3.5" />
               </button>
             )}
           </div>
 
           {/* Big Display Title */}
-          <div className="mt-4 mb-2">
-            <h2 className="text-[38px] sm:text-[44px] font-extrabold tracking-tight text-neutral-900 dark:text-white leading-[1.05]">
+          <div className="mt-2 mb-1 shrink-0">
+            <h2 className="text-[26px] sm:text-[30px] xl:text-[36px] font-extrabold tracking-tight text-neutral-900 dark:text-white leading-[1.05]">
               Feeder
               <br />
               Status
@@ -365,26 +365,26 @@ function LiveStation({
           </div>
 
           {/* ── Central PawStation 3D Hardware Sculpture ── */}
-          <div className="relative my-auto py-2 flex flex-col items-center justify-center">
+          <div className="relative my-auto py-1 flex flex-col items-center justify-center min-h-0">
             {/* Real PawStation Hardware 3D Sculpture with Transparent Alpha & Ground Contact Shadow */}
-            <div className="relative z-10 w-full max-w-[420px] sm:max-w-[460px] h-[240px] sm:h-[265px] flex items-center justify-center my-1 transform-gpu scale-105 sm:scale-110">
+            <div className="relative z-10 w-full max-w-[280px] sm:max-w-[330px] h-[135px] sm:h-[155px] xl:h-[180px] flex items-center justify-center my-auto transform-gpu scale-100 sm:scale-105">
               {/* Natural Ground Contact Shadow */}
-              <div className="absolute bottom-2 left-1/2 -translate-x-1/2 w-[80%] h-5 bg-black/[0.09] dark:bg-black/50 rounded-full blur-[10px] pointer-events-none" />
+              <div className="absolute bottom-1 left-1/2 -translate-x-1/2 w-[76%] h-3.5 bg-black/[0.08] dark:bg-black/50 rounded-full blur-[8px] pointer-events-none" />
 
               <div className="relative w-full h-full flex items-center justify-center">
                 <Image
                   src="/hero-figure-light-transparent.webp"
                   alt="PawStation Physical Hardware Sculpture"
-                  width={800}
-                  height={460}
+                  width={600}
+                  height={350}
                   priority
                   className="w-full h-full object-contain pointer-events-none select-none dark:hidden"
                 />
                 <Image
                   src="/hero-figure-dark-transparent.webp"
                   alt="PawStation Physical Hardware Sculpture"
-                  width={800}
-                  height={460}
+                  width={600}
+                  height={350}
                   priority
                   className="w-full h-full object-contain pointer-events-none select-none hidden dark:block"
                 />
@@ -392,57 +392,57 @@ function LiveStation({
             </div>
 
             {/* Hardware Pods: Left = Water Moisture Probe, Right = Food Chute Servo */}
-            <div className="w-full grid grid-cols-2 gap-3 sm:gap-4 mt-3">
+            <div className="w-full grid grid-cols-2 gap-2.5 sm:gap-3 mt-2 shrink-0">
               {/* Left Pod: Moisture Sensor Reservoir Status */}
-              <div className="rounded-[28px] bg-[#B9CEC8] dark:bg-[#1E302C] p-4 text-[#163831] dark:text-[#A7D4CB] flex flex-col justify-between transition-colors shadow-sm">
+              <div className="rounded-[20px] sm:rounded-[24px] bg-[#B9CEC8] dark:bg-[#1E302C] p-3 text-[#163831] dark:text-[#A7D4CB] flex flex-col justify-between transition-colors shadow-sm">
                 <div className="flex items-center justify-between">
-                  <div className="w-7 h-7 rounded-full bg-white/40 dark:bg-white/10 flex items-center justify-center">
-                    <WaterDropIcon className="w-4 h-4 fill-current" />
+                  <div className="w-6 h-6 rounded-full bg-white/40 dark:bg-white/10 flex items-center justify-center">
+                    <WaterDropIcon className="w-3.5 h-3.5 fill-current" />
                   </div>
-                  <span className="text-[10px] font-bold uppercase tracking-wider opacity-75">
+                  <span className="text-[9.5px] font-bold uppercase tracking-wider opacity-75">
                     Reservoir
                   </span>
                 </div>
-                <div className="mt-3">
+                <div className="mt-2">
                   <div className="flex items-center gap-1.5">
                     <span
-                      className={`w-2 h-2 rounded-full ${
+                      className={`w-1.5 h-1.5 rounded-full ${
                         isWaterLow ? "bg-rose-500 animate-pulse" : "bg-emerald-600"
                       }`}
                     />
-                    <span className="text-[16px] sm:text-[18px] font-black leading-tight tracking-tight">
+                    <span className="text-[14px] sm:text-[16px] font-black leading-tight tracking-tight">
                       {isWaterLow ? "Water Low" : "Water OK"}
                     </span>
                   </div>
-                  <span className="text-[10.5px] font-semibold opacity-85 block mt-1 leading-snug">
-                    LM393 Moisture Probe
+                  <span className="text-[10px] font-semibold opacity-85 block mt-0.5 leading-snug">
+                    LM393 Probe
                   </span>
                 </div>
               </div>
 
               {/* Right Pod: Dry Food Dispenser Chute */}
-              <div className="rounded-[28px] bg-[#F8E39D] dark:bg-[#382F16] p-4 text-[#473409] dark:text-[#F8E09D] flex flex-col justify-between transition-colors shadow-sm">
+              <div className="rounded-[20px] sm:rounded-[24px] bg-[#F8E39D] dark:bg-[#382F16] p-3 text-[#473409] dark:text-[#F8E09D] flex flex-col justify-between transition-colors shadow-sm">
                 <div className="flex items-center justify-between">
-                  <div className="w-7 h-7 rounded-full bg-white/40 dark:bg-white/10 flex items-center justify-center">
-                    <KibbleIcon className="w-4 h-4 fill-current" />
+                  <div className="w-6 h-6 rounded-full bg-white/40 dark:bg-white/10 flex items-center justify-center">
+                    <KibbleIcon className="w-3.5 h-3.5 fill-current" />
                   </div>
-                  <span className="text-[10px] font-bold uppercase tracking-wider opacity-75">
+                  <span className="text-[9.5px] font-bold uppercase tracking-wider opacity-75">
                     Dispenser
                   </span>
                 </div>
-                <div className="mt-3">
+                <div className="mt-2">
                   <div className="flex items-center gap-1.5">
                     <span
-                      className={`w-2 h-2 rounded-full ${
+                      className={`w-1.5 h-1.5 rounded-full ${
                         telemetry?.dispensing ? "bg-amber-600 animate-pulse" : "bg-emerald-600"
                       }`}
                     />
-                    <span className="text-[16px] sm:text-[18px] font-black leading-tight tracking-tight">
+                    <span className="text-[14px] sm:text-[16px] font-black leading-tight tracking-tight">
                       {telemetry?.dispensing ? "Dispensing" : "Chute Ready"}
                     </span>
                   </div>
-                  <span className="text-[10.5px] font-semibold opacity-85 block mt-1 leading-snug">
-                    SG90 Servo Actuator
+                  <span className="text-[10px] font-semibold opacity-85 block mt-0.5 leading-snug">
+                    SG90 Servo
                   </span>
                 </div>
               </div>
@@ -450,13 +450,13 @@ function LiveStation({
           </div>
 
           {/* ── Manual Actuation Black Pill Controls ── */}
-          <div className="space-y-2 mt-4">
-            <div className="grid grid-cols-2 gap-2.5">
+          <div className="space-y-1.5 mt-2 shrink-0">
+            <div className="grid grid-cols-2 gap-2">
               <button
                 type="button"
                 onClick={() => handleCommand("dispense", "Dispensing Food (Chute Cycle)")}
                 disabled={!isStationOnline || telemetry?.dispensing || commandCooldown}
-                className="py-3.5 px-4 rounded-full bg-neutral-900 text-white dark:bg-white dark:text-neutral-900 hover:opacity-95 text-[12.5px] font-bold tracking-tight shadow-md flex items-center justify-center gap-2 active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed transition-all"
+                className="py-2.5 sm:py-3 px-3 rounded-full bg-neutral-900 text-white dark:bg-white dark:text-neutral-900 hover:opacity-95 text-[11.5px] sm:text-[12px] font-bold tracking-tight shadow-md flex items-center justify-center gap-1.5 active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed transition-all"
               >
                 <KibbleIcon className="w-3.5 h-3.5 fill-current" />
                 <span>{telemetry?.dispensing ? "Dispensing..." : "Dispense Food"}</span>
@@ -466,7 +466,7 @@ function LiveStation({
                 type="button"
                 onClick={() => handleCommand("pump", "Running Fountain (3s)")}
                 disabled={!isStationOnline || telemetry?.pump !== "OFF" || isWaterLow || commandCooldown}
-                className="py-3.5 px-4 rounded-full bg-[#A8C4BD] text-[#163831] dark:bg-[#2A3E39] dark:text-[#B2E0D6] hover:opacity-95 text-[12.5px] font-bold tracking-tight shadow-md flex items-center justify-center gap-2 active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed transition-all"
+                className="py-2.5 sm:py-3 px-3 rounded-full bg-[#A8C4BD] text-[#163831] dark:bg-[#2A3E39] dark:text-[#B2E0D6] hover:opacity-95 text-[11.5px] sm:text-[12px] font-bold tracking-tight shadow-md flex items-center justify-center gap-1.5 active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed transition-all"
               >
                 <PumpIcon className="w-3.5 h-3.5" />
                 <span>{telemetry?.pump !== "OFF" ? "Pump Running" : "Run Fountain"}</span>
@@ -474,8 +474,8 @@ function LiveStation({
             </div>
 
             {/* Bottom Shelf: Station Timing & Pump Status */}
-            <div className="pt-3 border-t border-black/[0.06] dark:border-white/[0.06] flex items-center justify-between text-[11px] text-neutral-600 dark:text-neutral-400">
-              <span className="font-semibold uppercase tracking-wider text-[10px]">
+            <div className="pt-2 border-t border-black/[0.06] dark:border-white/[0.06] flex items-center justify-between text-[10.5px] text-neutral-600 dark:text-neutral-400">
+              <span className="font-semibold uppercase tracking-wider text-[9.5px]">
                 Routine Status
               </span>
               <span className="font-mono">
@@ -491,11 +491,11 @@ function LiveStation({
         <div
           className={`${
             mobileActiveCard === 1 ? "flex" : "hidden lg:flex"
-          } flex-col justify-between rounded-[36px] bg-[#EAE7DC] dark:bg-[#181E2B] border border-black/[0.06] dark:border-white/[0.08] shadow-[0_8px_30px_rgb(0,0,0,0.04)] p-6 sm:p-7 min-h-[660px] relative overflow-hidden transition-all`}
+          } flex-col justify-between rounded-[28px] lg:rounded-[32px] bg-[#FAF7F0] dark:bg-[#161B26] border border-black/[0.06] dark:border-white/[0.08] shadow-[0_4px_24px_rgb(0,0,0,0.03)] p-4 sm:p-5 xl:p-6 h-full min-h-0 overflow-hidden relative transition-all`}
         >
           {/* Top Pill Header & Edit Shortcut */}
-          <div className="flex items-center justify-between gap-3 relative z-10">
-            <span className="text-[11px] font-bold uppercase tracking-widest text-neutral-500 dark:text-neutral-400">
+          <div className="flex items-center justify-between gap-2 relative z-10 shrink-0">
+            <span className="text-[10px] font-bold uppercase tracking-widest text-neutral-500 dark:text-neutral-400">
               Platform Scale (HX711)
             </span>
 
@@ -503,18 +503,18 @@ function LiveStation({
               <button
                 type="button"
                 onClick={onOpenEditProfile}
-                className="w-10 h-10 rounded-full bg-white dark:bg-white/10 hover:bg-neutral-100 dark:hover:bg-white/15 text-neutral-800 dark:text-white flex items-center justify-center shadow-sm border border-black/[0.05] dark:border-white/10 transition-all active:scale-95 cursor-pointer"
+                className="w-8 h-8 rounded-full bg-white dark:bg-white/10 hover:bg-neutral-100 dark:hover:bg-white/15 text-neutral-800 dark:text-white flex items-center justify-center shadow-sm border border-black/[0.05] dark:border-white/10 transition-all active:scale-95 cursor-pointer"
                 title="Edit Companion Profile"
                 aria-label="Edit Companion Profile"
               >
-                <CloseIcon className="w-4 h-4 rotate-45" />
+                <CloseIcon className="w-3.5 h-3.5 rotate-45" />
               </button>
             )}
           </div>
 
           {/* Big Headline */}
-          <div className="mt-3 mb-2 relative z-10">
-            <h2 className="text-[38px] sm:text-[44px] font-extrabold tracking-tight text-neutral-900 dark:text-white leading-[1.05]">
+          <div className="mt-2 mb-1 relative z-10 shrink-0">
+            <h2 className="text-[26px] sm:text-[30px] xl:text-[36px] font-extrabold tracking-tight text-neutral-900 dark:text-white leading-[1.05]">
               Companion
               <br />
               Status
@@ -522,10 +522,10 @@ function LiveStation({
           </div>
 
           {/* ── Feline Avatar & Real-Time Scale Biometrics ── */}
-          <div className="relative my-auto py-2 flex flex-col items-center justify-center">
+          <div className="relative my-auto py-1 flex flex-col items-center justify-center min-h-0">
             {/* Ambient Presence Ring */}
             <div
-              className={`absolute w-56 h-56 rounded-full blur-2xl transition-colors duration-500 ${
+              className={`absolute w-44 h-44 rounded-full blur-2xl transition-colors duration-500 pointer-events-none ${
                 telemetry?.cat
                   ? "bg-emerald-400/25 dark:bg-emerald-500/20"
                   : "bg-amber-400/15 dark:bg-amber-500/10"
@@ -533,29 +533,29 @@ function LiveStation({
             />
 
             {/* Cat Avatar Container */}
-            <div className="relative z-10 w-44 h-44 rounded-full bg-gradient-to-tr from-[#D1C7BD] to-[#F5EFE6] dark:from-[#242C3C] dark:to-[#171D27] p-2.5 shadow-2xl flex flex-col items-center justify-center border-4 border-white/60 dark:border-white/10">
+            <div className="relative z-10 w-24 h-24 sm:w-28 sm:h-28 xl:w-32 xl:h-32 rounded-full bg-gradient-to-tr from-[#D1C7BD] to-[#F5EFE6] dark:from-[#242C3C] dark:to-[#171D27] p-2 shadow-xl flex flex-col items-center justify-center border-4 border-white/60 dark:border-white/10">
               <div className="w-full h-full rounded-full bg-[#DFD7CE] dark:bg-[#1E2533] flex flex-col items-center justify-center relative overflow-hidden">
-                <CatIcon className="w-20 h-20 text-neutral-800 dark:text-neutral-200 fill-current" />
+                <CatIcon className="w-12 h-12 sm:w-14 sm:h-14 text-neutral-800 dark:text-neutral-200 fill-current" />
               </div>
             </div>
 
             {/* Cat Identity Pill Badge */}
-            <div className="mt-4 px-4 py-1.5 rounded-full bg-white/80 dark:bg-white/10 backdrop-blur-md border border-black/[0.05] dark:border-white/10 flex items-center gap-2 shadow-sm">
-              <span className="text-[13px] font-bold text-neutral-900 dark:text-white">
+            <div className="mt-2 px-3 py-1 rounded-full bg-white/80 dark:bg-white/10 backdrop-blur-md border border-black/[0.05] dark:border-white/10 flex items-center gap-1.5 shadow-sm shrink-0">
+              <span className="text-[12px] font-bold text-neutral-900 dark:text-white">
                 {catName}
               </span>
-              <span className="text-[11px] text-neutral-500 dark:text-neutral-400">
+              <span className="text-[10.5px] text-neutral-500 dark:text-neutral-400">
                 · {catBreed}
               </span>
             </div>
 
             {/* Real-Time Acoustic / Presence Visualizer Bars */}
-            <div className="mt-4 flex items-center gap-1.5 h-6">
-              {[4, 8, 14, 22, 16, 26, 12, 18, 9, 5].map((h, i) => (
+            <div className="mt-2 flex items-center gap-1 h-4 shrink-0">
+              {[4, 7, 12, 18, 14, 20, 10, 15, 8, 4].map((h, i) => (
                 <span
                   key={i}
-                  style={{ height: telemetry?.cat ? `${h}px` : "4px" }}
-                  className={`w-1 rounded-full transition-all duration-300 ${
+                  style={{ height: telemetry?.cat ? `${h}px` : "3px" }}
+                  className={`w-0.5 sm:w-1 rounded-full transition-all duration-300 ${
                     telemetry?.cat ? "bg-neutral-900 dark:bg-white" : "bg-neutral-300 dark:bg-white/20"
                   }`}
                 />
@@ -563,48 +563,48 @@ function LiveStation({
             </div>
 
             {/* Live Presence Pill */}
-            <div className="mt-2">
+            <div className="mt-1.5 shrink-0">
               {telemetry?.cat ? (
-                <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/15 text-emerald-800 dark:text-emerald-300 border border-emerald-500/30 text-[11.5px] font-bold">
-                  <span className="relative flex h-2 w-2">
+                <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-emerald-500/15 text-emerald-800 dark:text-emerald-300 border border-emerald-500/30 text-[10.5px] font-bold">
+                  <span className="relative flex h-1.5 w-1.5">
                     <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
-                    <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500" />
+                    <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-emerald-500" />
                   </span>
-                  <span>Detected on Scale Platform</span>
+                  <span>On Scale Platform</span>
                 </span>
               ) : (
-                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-black/[0.05] dark:bg-white/[0.06] text-neutral-600 dark:text-neutral-400 text-[11px] font-medium">
-                  <span>Platform Clear · Ready</span>
+                <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-black/[0.05] dark:bg-white/[0.06] text-neutral-600 dark:text-neutral-400 text-[10.5px] font-medium">
+                  <span>Platform Clear</span>
                 </span>
               )}
             </div>
 
             {/* Big 24-Bit Scale Weight (Cat on Platform) */}
-            <div className="mt-3 text-center">
-              <span className="text-[40px] sm:text-[46px] font-black tracking-tight leading-none text-neutral-900 dark:text-white font-mono tabular-nums">
+            <div className="mt-2 text-center shrink-0">
+              <span className="text-[32px] sm:text-[38px] xl:text-[42px] font-black tracking-tight leading-none text-neutral-900 dark:text-white font-mono tabular-nums">
                 {telemetry ? `${telemetry.weight.toFixed(1)}` : "4200.0"}
-                <span className="text-[20px] ml-1 font-bold">g</span>
+                <span className="text-[18px] ml-1 font-bold">g</span>
               </span>
-              <p className="text-[11px] text-neutral-500 dark:text-neutral-400 mt-0.5">
-                24-Bit Load Cell Platform Weight
+              <p className="text-[10px] text-neutral-500 dark:text-neutral-400 mt-0.5">
+                24-Bit Load Cell Platform
               </p>
             </div>
           </div>
 
-          {/* ── Circular Action Controls (Zero Tare & Record Visit) ── */}
-          <div className="flex items-center justify-center gap-4 mt-4 pt-3 border-t border-black/[0.06] dark:border-white/[0.06]">
-            {/* Record Visit Entry (Paw Icon, NOT a camera) */}
+          {/* ── Action Controls (Tare & Record Visit) ── */}
+          <div className="flex items-center justify-center gap-3 mt-2 pt-2 border-t border-black/[0.06] dark:border-white/[0.06] shrink-0">
+            {/* Record Visit Entry (Paw Icon) */}
             <button
               type="button"
               onClick={handleLogVisit}
-              className={`h-14 px-5 rounded-full bg-neutral-900 text-white dark:bg-white dark:text-neutral-900 flex items-center justify-center gap-2 shadow-lg active:scale-95 transition-all cursor-pointer ${
+              className={`h-11 sm:h-12 px-4 rounded-full bg-neutral-900 text-white dark:bg-white dark:text-neutral-900 flex items-center justify-center gap-1.5 shadow-md active:scale-95 transition-all cursor-pointer ${
                 visitLogged ? "ring-4 ring-neutral-400/40" : ""
               }`}
               title="Record Scale Visit Log"
               aria-label="Record Scale Visit Log"
             >
-              <PawIcon className="w-5 h-5 fill-current" />
-              <span className="text-[12.5px] font-bold">Record Visit</span>
+              <PawIcon className="w-4 h-4 fill-current" />
+              <span className="text-[12px] font-bold">Record Visit</span>
             </button>
 
             {/* Zero Tare Dark Circle */}
@@ -612,11 +612,11 @@ function LiveStation({
               type="button"
               onClick={() => handleCommand("tare", "Scale Zeroed (Tare)")}
               disabled={!isStationOnline || commandCooldown}
-              className="w-14 h-14 rounded-full border border-neutral-400/30 dark:border-white/20 bg-white/70 dark:bg-white/10 hover:bg-white dark:hover:bg-white/20 text-neutral-900 dark:text-white flex items-center justify-center shadow-md active:scale-95 transition-all disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
+              className="w-11 h-11 sm:w-12 sm:h-12 rounded-full border border-neutral-400/30 dark:border-white/20 bg-white/70 dark:bg-white/10 hover:bg-white dark:hover:bg-white/20 text-neutral-900 dark:text-white flex items-center justify-center shadow-sm active:scale-95 transition-all disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
               title="Zero Scale (Tare HX711)"
               aria-label="Zero Scale (Tare HX711)"
             >
-              <TareIcon className="w-5 h-5" />
+              <TareIcon className="w-4 h-4" />
             </button>
           </div>
         </div>
@@ -627,12 +627,12 @@ function LiveStation({
         <div
           className={`${
             mobileActiveCard === 2 ? "flex" : "hidden lg:flex"
-          } flex-col justify-between rounded-[36px] bg-[#EFECE3] dark:bg-[#1A202C] border border-black/[0.06] dark:border-white/[0.08] shadow-[0_8px_30px_rgb(0,0,0,0.04)] p-6 sm:p-7 min-h-[660px] transition-all`}
+          } flex-col justify-between rounded-[28px] lg:rounded-[32px] bg-[#FAF7F0] dark:bg-[#161B26] border border-black/[0.06] dark:border-white/[0.08] shadow-[0_4px_24px_rgb(0,0,0,0.03)] p-4 sm:p-5 xl:p-6 h-full min-h-0 overflow-hidden transition-all`}
         >
           {/* Top Header & Diagnostics Action */}
-          <div>
-            <div className="flex items-center justify-between gap-3">
-              <span className="text-[11px] font-bold uppercase tracking-widest text-neutral-500 dark:text-neutral-400">
+          <div className="shrink-0">
+            <div className="flex items-center justify-between gap-2">
+              <span className="text-[10px] font-bold uppercase tracking-widest text-neutral-500 dark:text-neutral-400">
                 Automation &amp; Records
               </span>
 
@@ -640,18 +640,18 @@ function LiveStation({
                 <button
                   type="button"
                   onClick={onOpenDiagnostics}
-                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white dark:bg-white/10 hover:bg-neutral-100 dark:hover:bg-white/15 text-neutral-800 dark:text-white text-[11px] font-bold border border-black/[0.05] dark:border-white/10 transition-all active:scale-95 cursor-pointer"
+                  className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-white dark:bg-white/10 hover:bg-neutral-100 dark:hover:bg-white/15 text-neutral-800 dark:text-white text-[10.5px] font-bold border border-black/[0.05] dark:border-white/10 transition-all active:scale-95 cursor-pointer"
                   title="Open Hardware Diagnostics"
                 >
-                  <ChipIcon className="w-3.5 h-3.5" />
+                  <ChipIcon className="w-3 h-3" />
                   <span>Diagnostics</span>
                 </button>
               )}
             </div>
 
             {/* Big Headline */}
-            <div className="mt-3 mb-4">
-              <h2 className="text-[38px] sm:text-[44px] font-extrabold tracking-tight text-neutral-900 dark:text-white leading-[1.05]">
+            <div className="mt-2 mb-2">
+              <h2 className="text-[26px] sm:text-[30px] xl:text-[36px] font-extrabold tracking-tight text-neutral-900 dark:text-white leading-[1.05]">
                 Your
                 <br />
                 Collection
@@ -659,11 +659,11 @@ function LiveStation({
             </div>
 
             {/* Filter Pill Tabs (All / Routine / Visits) */}
-            <div className="flex items-center gap-2 mb-4">
+            <div className="flex items-center gap-1.5 mb-2">
               <button
                 type="button"
                 onClick={() => setSelectedTab("all")}
-                className={`py-2 px-4 rounded-full text-[12px] font-bold transition-all ${
+                className={`py-1 px-3 rounded-full text-[11px] font-bold transition-all ${
                   selectedTab === "all"
                     ? "bg-neutral-900 text-white dark:bg-white dark:text-neutral-900 shadow-sm"
                     : "border border-neutral-300 dark:border-white/20 text-neutral-700 dark:text-neutral-300 hover:bg-black/5 dark:hover:bg-white/5"
@@ -674,7 +674,7 @@ function LiveStation({
               <button
                 type="button"
                 onClick={() => setSelectedTab("routine")}
-                className={`py-2 px-4 rounded-full text-[12px] font-bold transition-all ${
+                className={`py-1 px-3 rounded-full text-[11px] font-bold transition-all ${
                   selectedTab === "routine"
                     ? "bg-neutral-900 text-white dark:bg-white dark:text-neutral-900 shadow-sm"
                     : "border border-neutral-300 dark:border-white/20 text-neutral-700 dark:text-neutral-300 hover:bg-black/5 dark:hover:bg-white/5"
@@ -685,7 +685,7 @@ function LiveStation({
               <button
                 type="button"
                 onClick={() => setSelectedTab("visits")}
-                className={`py-2 px-4 rounded-full text-[12px] font-bold transition-all ${
+                className={`py-1 px-3 rounded-full text-[11px] font-bold transition-all ${
                   selectedTab === "visits"
                     ? "bg-neutral-900 text-white dark:bg-white dark:text-neutral-900 shadow-sm"
                     : "border border-neutral-300 dark:border-white/20 text-neutral-700 dark:text-neutral-300 hover:bg-black/5 dark:hover:bg-white/5"
@@ -697,29 +697,29 @@ function LiveStation({
           </div>
 
           {/* ── Tab Content: Routine Automation or Recent Visits ── */}
-          <div className="flex-1 flex flex-col justify-between overflow-hidden">
+          <div className="flex-1 flex flex-col justify-between overflow-hidden min-h-0">
             {selectedTab === "routine" || selectedTab === "all" ? (
-              <form onSubmit={handleSaveRoutine} className="space-y-4">
+              <form onSubmit={handleSaveRoutine} className="space-y-2.5">
                 {/* Station Clock HUD */}
-                <div className="flex items-center justify-between p-3.5 rounded-[22px] bg-[#E3DFD4] dark:bg-[#151A24] border border-black/[0.04] dark:border-white/[0.06]">
-                  <div className="flex items-center gap-2">
-                    <ClockIcon className="w-4 h-4 text-neutral-600 dark:text-neutral-300" />
-                    <span className="text-[12px] font-semibold text-neutral-700 dark:text-neutral-300">
+                <div className="flex items-center justify-between p-2.5 rounded-[18px] bg-[#E3DFD4] dark:bg-[#151A24] border border-black/[0.04] dark:border-white/[0.06]">
+                  <div className="flex items-center gap-1.5">
+                    <ClockIcon className="w-3.5 h-3.5 text-neutral-600 dark:text-neutral-300" />
+                    <span className="text-[11.5px] font-semibold text-neutral-700 dark:text-neutral-300">
                       Station Clock
                     </span>
                   </div>
-                  <span className="text-[13px] font-bold font-mono text-neutral-900 dark:text-white">
+                  <span className="text-[12px] font-bold font-mono text-neutral-900 dark:text-white">
                     {scheduleData?.clock || "--:--"}
                   </span>
                 </div>
 
                 {/* Automatic Dispense Switch */}
-                <div className="flex items-center justify-between p-3.5 rounded-[22px] bg-[#E3DFD4] dark:bg-[#151A24] border border-black/[0.04] dark:border-white/[0.06]">
+                <div className="flex items-center justify-between p-2.5 rounded-[18px] bg-[#E3DFD4] dark:bg-[#151A24] border border-black/[0.04] dark:border-white/[0.06]">
                   <div>
-                    <span className="text-[12.5px] font-bold text-neutral-900 dark:text-white block">
+                    <span className="text-[12px] font-bold text-neutral-900 dark:text-white block">
                       Automatic Feeder
                     </span>
-                    <span className="text-[11px] text-neutral-500 dark:text-neutral-400">
+                    <span className="text-[10px] text-neutral-500 dark:text-neutral-400">
                       {enabledRoutine ? "Active on station" : "Disabled"}
                     </span>
                   </div>
@@ -732,36 +732,36 @@ function LiveStation({
                       setEnabledRoutine(!enabledRoutine);
                     }}
                     disabled={!isStationOnline}
-                    className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out disabled:opacity-40 ${
+                    className={`relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out disabled:opacity-40 ${
                       enabledRoutine ? "bg-neutral-900 dark:bg-white" : "bg-neutral-300 dark:bg-white/20"
                     }`}
                     role="switch"
                     aria-checked={enabledRoutine}
                   >
                     <span
-                      className={`pointer-events-none inline-block h-5 w-5 transform rounded-full ${
-                        enabledRoutine ? "bg-white dark:bg-neutral-900 translate-x-5" : "bg-white translate-x-0"
+                      className={`pointer-events-none inline-block h-4 w-4 transform rounded-full ${
+                        enabledRoutine ? "bg-white dark:bg-neutral-900 translate-x-4" : "bg-white translate-x-0"
                       } shadow ring-0 transition duration-200 ease-in-out`}
                     />
                   </button>
                 </div>
 
                 {/* Dispense Times Pill List */}
-                <div className="space-y-2">
+                <div className="space-y-1.5">
                   <div className="flex items-center justify-between">
-                    <span className="text-[11px] font-bold uppercase tracking-wider text-neutral-500 dark:text-neutral-400">
+                    <span className="text-[10.5px] font-bold uppercase tracking-wider text-neutral-500 dark:text-neutral-400">
                       Feeding Times
                     </span>
-                    <span className="text-[10px] font-mono text-neutral-500">
+                    <span className="text-[9.5px] font-mono text-neutral-500">
                       {routineTimes.length} of 6
                     </span>
                   </div>
 
-                  <div className="grid grid-cols-2 gap-2">
+                  <div className="grid grid-cols-2 gap-1.5">
                     {routineTimes.map((t, idx) => (
                       <div
                         key={idx}
-                        className="flex items-center justify-between px-3 py-2 rounded-2xl bg-white dark:bg-[#151A24] border border-black/[0.05] dark:border-white/10"
+                        className="flex items-center justify-between px-2.5 py-1 rounded-xl bg-white dark:bg-[#151A24] border border-black/[0.05] dark:border-white/10"
                       >
                         <input
                           type="time"
@@ -773,7 +773,7 @@ function LiveStation({
                             next[idx] = e.target.value;
                             setRoutineTimes(next);
                           }}
-                          className="font-mono font-bold text-[13px] bg-transparent text-neutral-900 dark:text-white focus:outline-none w-20"
+                          className="font-mono font-bold text-[12px] bg-transparent text-neutral-900 dark:text-white focus:outline-none w-18"
                         />
                         <button
                           type="button"
@@ -783,9 +783,9 @@ function LiveStation({
                             setRoutineTimes(routineTimes.filter((_, i) => i !== idx));
                           }}
                           disabled={!isStationOnline || routineTimes.length <= 1}
-                          className="text-neutral-400 hover:text-rose-500 transition-colors p-1"
+                          className="text-neutral-400 hover:text-rose-500 transition-colors p-0.5"
                         >
-                          <CloseIcon className="w-3.5 h-3.5" />
+                          <CloseIcon className="w-3 h-3" />
                         </button>
                       </div>
                     ))}
@@ -799,7 +799,7 @@ function LiveStation({
                           setRoutineTimes([...routineTimes, "12:00"]);
                         }}
                         disabled={!isStationOnline}
-                        className="py-2 px-3 rounded-2xl border border-dashed border-neutral-400/60 dark:border-white/20 text-neutral-700 dark:text-neutral-300 text-[12px] font-bold hover:bg-black/5 dark:hover:bg-white/5 transition-all text-center"
+                        className="py-1 px-2 rounded-xl border border-dashed border-neutral-400/60 dark:border-white/20 text-neutral-700 dark:text-neutral-300 text-[11px] font-bold hover:bg-black/5 dark:hover:bg-white/5 transition-all text-center"
                       >
                         + Add Time
                       </button>
@@ -811,7 +811,7 @@ function LiveStation({
                 <button
                   type="submit"
                   disabled={!isStationOnline}
-                  className="w-full py-3 px-4 rounded-full bg-neutral-900 text-white dark:bg-white dark:text-neutral-900 text-[13px] font-bold shadow-md hover:opacity-90 active:scale-95 transition-all disabled:opacity-40 disabled:cursor-not-allowed"
+                  className="w-full py-2.5 px-4 rounded-full bg-neutral-900 text-white dark:bg-white dark:text-neutral-900 text-[12px] font-bold shadow-md hover:opacity-90 active:scale-95 transition-all disabled:opacity-40 disabled:cursor-not-allowed"
                 >
                   Save Routine
                 </button>
@@ -820,43 +820,43 @@ function LiveStation({
 
             {/* Visit Collection Feed (Scale Platform Visits) */}
             {(selectedTab === "visits" || selectedTab === "all") && (
-              <div className="mt-4 space-y-2.5">
+              <div className="mt-2 space-y-1.5 flex-1 min-h-0 flex flex-col justify-end">
                 <div className="flex items-center justify-between">
-                  <span className="text-[11px] font-bold uppercase tracking-wider text-neutral-500 dark:text-neutral-400">
+                  <span className="text-[10.5px] font-bold uppercase tracking-wider text-neutral-500 dark:text-neutral-400">
                     Platform Visits (Scale Log)
                   </span>
-                  <span className="text-[10px] font-mono text-neutral-400">
+                  <span className="text-[9.5px] font-mono text-neutral-400">
                     {catVisits.length} recorded
                   </span>
                 </div>
 
-                <div className="space-y-2 max-h-[220px] overflow-y-auto pr-1">
+                <div className="space-y-1.5 max-h-[140px] sm:max-h-[160px] xl:max-h-[190px] overflow-y-auto pr-1">
                   {catVisits.map((v, idx) => (
                     <div
                       key={v.id || idx}
-                      className="p-3 rounded-[24px] bg-[#D7E5C1] dark:bg-[#202E1B] text-[#243F14] dark:text-[#CBE5A8] flex items-center justify-between shadow-sm transition-all hover:scale-[1.01]"
+                      className="p-2.5 rounded-[18px] bg-[#D7E5C1] dark:bg-[#202E1B] text-[#243F14] dark:text-[#CBE5A8] flex items-center justify-between shadow-sm transition-all hover:scale-[1.01]"
                     >
-                      <div className="flex items-center gap-2.5">
-                        <div className="w-9 h-9 rounded-full bg-white/40 dark:bg-white/10 flex items-center justify-center font-bold">
-                          <CatIcon className="w-4 h-4 fill-current" />
+                      <div className="flex items-center gap-2">
+                        <div className="w-7 h-7 rounded-full bg-white/40 dark:bg-white/10 flex items-center justify-center font-bold">
+                          <CatIcon className="w-3.5 h-3.5 fill-current" />
                         </div>
                         <div>
                           <div className="flex items-center gap-1.5">
-                            <span className="text-[12.5px] font-bold">
+                            <span className="text-[12px] font-bold">
                               {catName} on Scale
                             </span>
-                            <span className="text-[9px] px-1.5 py-0.2 rounded-full bg-white/50 dark:bg-white/20 font-mono">
+                            <span className="text-[8.5px] px-1.5 py-0.2 rounded-full bg-white/50 dark:bg-white/20 font-mono">
                               Scale Log
                             </span>
                           </div>
-                          <span className="text-[10.5px] opacity-80 block font-mono">
+                          <span className="text-[10px] opacity-80 block font-mono">
                             {formatTimeAgo(v.visit_start)} · {v.peak_weight_g.toFixed(0)}g
                           </span>
                         </div>
                       </div>
 
-                      <div className="w-8 h-8 rounded-full bg-neutral-900 text-white dark:bg-white dark:text-neutral-900 flex items-center justify-center shadow-sm">
-                        <ArrowRightIcon className="w-3.5 h-3.5" />
+                      <div className="w-7 h-7 rounded-full bg-neutral-900 text-white dark:bg-white dark:text-neutral-900 flex items-center justify-center shadow-sm">
+                        <ArrowRightIcon className="w-3 h-3" />
                       </div>
                     </div>
                   ))}
