@@ -328,18 +328,22 @@ export default function HardwareDiagnosticsDrawer({
                   <div className="mt-3 p-3.5 rounded-2xl bg-amber-500/10 border border-amber-500/20 text-neutral-800 dark:text-neutral-200 space-y-2">
                     <div className="flex items-center gap-1.5 text-amber-700 dark:text-amber-400 font-bold text-[12px]">
                       <ShieldIcon className="w-4 h-4" />
-                      <span>Vercel / HTTPS Mixed Content Protection</span>
+                      <span>Chrome Private Network Access (PNA) Block</span>
                     </div>
                     <p className="text-[11px] leading-relaxed text-neutral-600 dark:text-neutral-300">
-                      Chrome blocks direct connections from cloud HTTPS websites to local home Wi-Fi IPs (<code className="font-mono px-1 py-0.5 rounded bg-black/5 dark:bg-white/10">{esp32Host}</code>) by default.
+                      Google Chrome blocks public HTTPS websites from querying home Wi-Fi IPs (<code className="font-mono px-1 py-0.5 rounded bg-black/5 dark:bg-white/10">{esp32Host}</code>) due to strict Private Network Access security checks.
                     </p>
                     <div className="text-[11px] space-y-1 pt-1.5 border-t border-amber-500/20 text-neutral-700 dark:text-neutral-200">
-                      <div className="font-semibold text-neutral-900 dark:text-white">To enable connection in Chrome:</div>
-                      <ol className="list-decimal list-inside space-y-1 pl-1 text-[10.5px]">
-                        <li>Click the <b>tune / site settings icon</b> left of the URL in Chrome</li>
-                        <li>Click <b>Site settings</b></li>
-                        <li>Change <b>Insecure content</b> from Block to <b>Allow</b></li>
-                        <li>Refresh this page</li>
+                      <div className="font-semibold text-neutral-900 dark:text-white">To allow Chrome to connect to your local ESP32:</div>
+                      <ol className="list-decimal list-inside space-y-1.5 pl-1 text-[10.5px]">
+                        <li>
+                          Open a new tab in Chrome and go to:
+                          <div className="font-mono bg-black/5 dark:bg-white/10 px-2 py-1 rounded my-1 text-[10px] select-all">
+                            chrome://flags/#block-insecure-private-network-requests
+                          </div>
+                        </li>
+                        <li>Set <b>Block insecure private network requests</b> to <b>Disabled</b></li>
+                        <li>Click <b>Relaunch</b> at the bottom of Chrome, then reopen this page</li>
                       </ol>
                     </div>
                   </div>

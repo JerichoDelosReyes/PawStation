@@ -338,6 +338,12 @@ export function StationProvider({ children }: { children: ReactNode }) {
       if (!isMounted) return;
 
       const wsUrl = buildWsUrl(esp32Host);
+      // Modern browsers forbid unencrypted ws:// on https:// origins with an immediate SecurityError DOMException.
+      // Skip WebSocket and rely cleanly on HTTP polling when on an HTTPS origin.
+      if (typeof window !== "undefined" && window.location.protocol === "https:" && wsUrl.startsWith("ws://")) {
+        return;
+      }
+
       try {
         const ws = new WebSocket(wsUrl);
         wsRef.current = ws;
