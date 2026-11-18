@@ -522,12 +522,22 @@ void loop() {
   if (now - lastTelemetryTime >= 1000) {
     lastTelemetryTime = now;
 
-    // Read Load Cell
-    if (scale.wait_ready_timeout(40)) {
-      scaleOk = true;
-      weightG = scale.get_units(1);
+    // Read Load Cell (Wait up to 150ms for 10Hz conversion cycle)
+    if (scale.wait_ready_timeout(150)) {
+      if (!scaleOk) {
+        scale.set_scale(CALIBRATION_FACTOR);
+        scale.tare(3);
+        scaleOk = true;
+      }
       rawValue = scale.read();
-      if (weightG < 0) weightG = 0;
+      float delta = (float)(rawValue - scale.get_offset());
+      float rawWeight = delta / CALIBRATION_FACTOR;
+      // Filter micro noise around 0, but preserve true negative readings so wiring polarity can be debugged
+      if (fabs(rawWeight) < 2.0) {
+        weightG = 0.0;
+      } else {
+        weightG = rawWeight;
+      }
     } else {
       scaleOk = false;
     }
