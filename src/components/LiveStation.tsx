@@ -623,11 +623,11 @@ function LiveStation({
                 <button
                   type="button"
                   onClick={onOpenDiagnostics}
-                  className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-white dark:bg-white/10 hover:bg-neutral-100 dark:hover:bg-white/15 text-neutral-800 dark:text-white text-[10.5px] font-bold border border-black/[0.05] dark:border-white/10 transition-all active:scale-95 cursor-pointer"
-                  title="Open Hardware Diagnostics"
+                  className="w-8 h-8 rounded-full bg-white dark:bg-white/10 hover:bg-neutral-100 dark:hover:bg-white/15 text-neutral-800 dark:text-white flex items-center justify-center shadow-sm border border-black/[0.05] dark:border-white/10 transition-all active:scale-95 cursor-pointer"
+                  title="Hardware Diagnostics & Pinout"
+                  aria-label="Hardware Diagnostics & Pinout"
                 >
-                  <ChipIcon className="w-3 h-3" />
-                  <span>Diagnostics</span>
+                  <ChipIcon className="w-3.5 h-3.5" />
                 </button>
               )}
             </div>
