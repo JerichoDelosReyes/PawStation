@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import ConsoleNavbar from "@/components/ConsoleNavbar";
 import LiveStation from "@/components/LiveStation";
 import HardwareDiagnosticsDrawer from "@/components/HardwareDiagnosticsDrawer";
@@ -28,10 +29,18 @@ const CAT_BREEDS = [
 ];
 
 function DashboardContent() {
-  const { user, catProfile, setCatProfile } = useAuth();
+  const { user, loading, catProfile, setCatProfile } = useAuth();
+  const router = useRouter();
   const { stationStatus } = useStationStatus();
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isDiagnosticsOpen, setIsDiagnosticsOpen] = useState(false);
+
+  // Security: Guard console against unauthenticated access
+  useEffect(() => {
+    if (!loading && !user) {
+      router.replace("/?auth=login");
+    }
+  }, [loading, user, router]);
 
   const displayCatName = catProfile?.catName || user?.user_metadata?.cat_name || "Whiskers";
   const displayCatBreed = catProfile?.catBreed || user?.user_metadata?.cat_breed || "Domestic Longhair";
@@ -70,6 +79,23 @@ function DashboardContent() {
       setIsSaving(false);
     }
   };
+
+  if (loading) {
+    return (
+      <div className="w-full h-[100dvh] flex items-center justify-center bg-[var(--frame-bg)] text-white">
+        <div className="flex flex-col items-center gap-3">
+          <div className="w-7 h-7 rounded-full border-2 border-white/20 border-t-white animate-spin" />
+          <span className="text-[12px] font-semibold text-neutral-400 tracking-wider uppercase">
+            Securing Console Session...
+          </span>
+        </div>
+      </div>
+    );
+  }
+
+  if (!user) {
+    return null;
+  }
 
   return (
     <div className="w-full h-[100dvh] max-h-[100dvh] bg-[var(--frame-bg)] text-white select-none p-0 flex flex-col overflow-hidden selection:bg-neutral-900 selection:text-white dark:selection:bg-white dark:selection:text-black transition-colors duration-200">

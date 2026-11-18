@@ -267,7 +267,11 @@ export default function AuthModal() {
 
     setIsSubmitting(true);
     try {
-      const { error } = await supabase.auth.resetPasswordForEmail(cleanEmail);
+      const redirectOrigin =
+        typeof window !== "undefined" ? `${window.location.origin}/?auth=login` : undefined;
+      const { error } = await supabase.auth.resetPasswordForEmail(cleanEmail, {
+        redirectTo: redirectOrigin,
+      });
       if (error) {
         setErrorMessage(error.message);
       } else {

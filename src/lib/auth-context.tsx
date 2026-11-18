@@ -54,12 +54,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [authModalMode, setAuthModalMode] = useState<"login" | "signup">("login");
 
-  // Load saved cat profile from localStorage cache on initial client load
+  // Load saved cat profile from localStorage cache on initial client load (with schema & sanitization validation)
   useEffect(() => {
     try {
       const savedProfile = localStorage.getItem("pawstation-cat-profile");
       if (savedProfile) {
-        setCatProfileState(JSON.parse(savedProfile));
+        const parsed = JSON.parse(savedProfile);
+        if (parsed && typeof parsed === "object" && typeof parsed.catName === "string") {
+          setCatProfileState({
+            catName: sanitizeString(parsed.catName),
+            catBreed: sanitizeString(parsed.catBreed || "Domestic Shorthair"),
+            stationName: sanitizeString(parsed.stationName || "PawStation Unit 1"),
+          });
+        }
       }
     } catch {
       /* ignore storage errors */
