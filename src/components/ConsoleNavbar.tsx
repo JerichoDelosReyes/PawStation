@@ -32,8 +32,10 @@ function ConsoleNavbar({
   const isDark = theme === "dark";
   const router = useRouter();
   const [profileOpen, setProfileOpen] = useState(false);
-  const dropdownRef = useRef<HTMLDivElement>(null);
-  const triggerRef = useRef<HTMLButtonElement>(null);
+  const mobileDropdownRef = useRef<HTMLDivElement>(null);
+  const desktopDropdownRef = useRef<HTMLDivElement>(null);
+  const mobileTriggerRef = useRef<HTMLButtonElement>(null);
+  const desktopTriggerRef = useRef<HTMLButtonElement>(null);
 
   const isOnline = stationStatus === "online";
   const isConnecting = stationStatus === "connecting";
@@ -41,12 +43,18 @@ function ConsoleNavbar({
   // Close dropdown when clicking outside or pressing Escape
   useEffect(() => {
     function handleClickOutside(event: MouseEvent | TouchEvent) {
-      if (
-        dropdownRef.current &&
-        !dropdownRef.current.contains(event.target as Node) &&
-        triggerRef.current &&
-        !triggerRef.current.contains(event.target as Node)
-      ) {
+      const target = event.target as Node | null;
+      if (!target) return;
+
+      const isInsideDropdown =
+        (mobileDropdownRef.current && mobileDropdownRef.current.contains(target)) ||
+        (desktopDropdownRef.current && desktopDropdownRef.current.contains(target));
+
+      const isInsideTrigger =
+        (mobileTriggerRef.current && mobileTriggerRef.current.contains(target)) ||
+        (desktopTriggerRef.current && desktopTriggerRef.current.contains(target));
+
+      if (!isInsideDropdown && !isInsideTrigger) {
         setProfileOpen(false);
       }
     }
@@ -104,7 +112,7 @@ function ConsoleNavbar({
             <button
               type="button"
               onClick={onOpenDiagnostics}
-              className="p-1.5 rounded-full bg-white/10 hover:bg-white/15 text-white border border-white/10 transition-all active:scale-95"
+              className="p-1.5 rounded-full bg-white/10 hover:bg-white/15 text-white border border-white/10 transition-all active:scale-95 cursor-pointer"
               title="Hardware Diagnostics"
               aria-label="Hardware Diagnostics"
             >
@@ -112,9 +120,10 @@ function ConsoleNavbar({
             </button>
           )}
           <button
+            ref={mobileTriggerRef}
             type="button"
             onClick={() => setProfileOpen((prev) => !prev)}
-            className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/10 hover:bg-white/15 text-white border border-white/10 transition-all active:scale-95"
+            className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/10 hover:bg-white/15 text-white border border-white/10 transition-all active:scale-95 cursor-pointer"
             aria-expanded={profileOpen}
             aria-label="Open Cat Profile Menu"
           >
@@ -149,9 +158,27 @@ function ConsoleNavbar({
           {/* Mobile Profile Dropdown Window */}
           {profileOpen && (
             <div
-              ref={dropdownRef}
-              className="absolute right-0 top-[42px] z-50 w-72 rounded-2xl bg-white dark:bg-[#161B26] text-neutral-900 dark:text-white border border-black/10 dark:border-white/10 shadow-2xl p-4 transition-all"
+              ref={mobileDropdownRef}
+              className="absolute right-0 top-[42px] z-50 w-72 sm:w-80 max-w-[calc(100vw-2rem)] max-h-[calc(100dvh-4rem)] overflow-y-auto overscroll-contain select-auto rounded-2xl bg-white dark:bg-[#161B26] text-neutral-900 dark:text-white border border-black/10 dark:border-white/10 shadow-2xl p-4 transition-all"
             >
+              {/* Window Header / Close Button */}
+              <div className="flex items-center justify-between mb-3 pb-2.5 border-b border-black/[0.06] dark:border-white/[0.08]">
+                <div className="flex items-center gap-1.5">
+                  <span className="text-[11px] font-bold uppercase tracking-wider text-accent-amber">
+                    Cat Station Profile
+                  </span>
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setProfileOpen(false)}
+                  className="p-1 rounded-lg hover:bg-neutral-100 dark:hover:bg-white/10 text-neutral-400 hover:text-neutral-700 dark:hover:text-white transition-colors cursor-pointer"
+                  aria-label="Close Profile Menu"
+                >
+                  <CloseIcon className="w-3.5 h-3.5" />
+                </button>
+              </div>
+
               {/* Cat Profile Content */}
               <div className="flex items-start gap-3 mb-3">
                 <div className="w-11 h-11 rounded-xl bg-accent-amber/15 text-accent-amber flex items-center justify-center shrink-0 border border-accent-amber/25 shadow-inner">
@@ -178,7 +205,7 @@ function ConsoleNavbar({
                 <button
                   type="button"
                   onClick={handleEditClick}
-                  className="flex-1 py-1.5 px-3 rounded-lg bg-neutral-100 hover:bg-neutral-200 dark:bg-white/10 dark:hover:bg-white/15 text-neutral-800 dark:text-neutral-200 text-[11.5px] font-semibold text-center transition-colors"
+                  className="flex-1 py-1.5 px-3 rounded-lg bg-neutral-100 hover:bg-neutral-200 dark:bg-white/10 dark:hover:bg-white/15 text-neutral-800 dark:text-neutral-200 text-[11.5px] font-semibold text-center transition-colors cursor-pointer"
                 >
                   Edit Profile
                 </button>
@@ -189,7 +216,7 @@ function ConsoleNavbar({
                       setProfileOpen(false);
                       onOpenDiagnostics();
                     }}
-                    className="flex items-center justify-center gap-1.5 py-1.5 px-3 rounded-lg bg-neutral-100 hover:bg-neutral-200 dark:bg-white/10 dark:hover:bg-white/15 text-neutral-800 dark:text-neutral-200 text-[11.5px] font-semibold transition-colors"
+                    className="flex items-center justify-center gap-1.5 py-1.5 px-3 rounded-lg bg-neutral-100 hover:bg-neutral-200 dark:bg-white/10 dark:hover:bg-white/15 text-neutral-800 dark:text-neutral-200 text-[11.5px] font-semibold transition-colors cursor-pointer"
                     title="Hardware Diagnostics"
                   >
                     <ChipIcon className="w-3.5 h-3.5" />
@@ -230,7 +257,7 @@ function ConsoleNavbar({
                   <button
                     type="button"
                     onClick={() => setTheme("light")}
-                    className={`flex items-center justify-center gap-1.5 py-1.5 px-2 rounded-lg text-[11.5px] font-semibold transition-all duration-200 ${
+                    className={`flex items-center justify-center gap-1.5 py-1.5 px-2 rounded-lg text-[11.5px] font-semibold transition-all duration-200 cursor-pointer ${
                       !isDark
                         ? "bg-white text-neutral-900 shadow-sm border border-black/[0.04]"
                         : "text-neutral-500 hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-white"
@@ -242,7 +269,7 @@ function ConsoleNavbar({
                   <button
                     type="button"
                     onClick={() => setTheme("dark")}
-                    className={`flex items-center justify-center gap-1.5 py-1.5 px-2 rounded-lg text-[11.5px] font-semibold transition-all duration-200 ${
+                    className={`flex items-center justify-center gap-1.5 py-1.5 px-2 rounded-lg text-[11.5px] font-semibold transition-all duration-200 cursor-pointer ${
                       isDark
                         ? "bg-[#1E2433] text-white shadow-sm border border-white/10"
                         : "text-neutral-500 hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-white"
@@ -260,7 +287,7 @@ function ConsoleNavbar({
                   <button
                     type="button"
                     onClick={handleSignOutAndReturnHome}
-                    className="flex items-center justify-between w-full px-2.5 py-1.5 rounded-lg text-[12px] font-medium text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-500/10 transition-colors"
+                    className="flex items-center justify-between w-full px-2.5 py-1.5 rounded-lg text-[12px] font-medium text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-500/10 transition-colors cursor-pointer"
                   >
                     <span className="flex items-center gap-1.5">
                       <svg
@@ -284,7 +311,7 @@ function ConsoleNavbar({
                   <Link
                     href="/"
                     onClick={() => setProfileOpen(false)}
-                    className="flex items-center justify-between w-full px-2.5 py-1.5 rounded-lg text-[12px] font-medium text-neutral-700 dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-white/[0.08] transition-colors"
+                    className="flex items-center justify-between w-full px-2.5 py-1.5 rounded-lg text-[12px] font-medium text-neutral-700 dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-white/[0.08] transition-colors cursor-pointer"
                   >
                     <span className="flex items-center gap-1.5">
                       <svg
@@ -342,7 +369,7 @@ function ConsoleNavbar({
       {/* ─────────────────────────────────────────────────────────────
           3. DOCKED TOP-RIGHT NOTCH (CAT PROFILE WINDOW TRIGGER - LG+)
       ───────────────────────────────────────────────────────────── */}
-      <div className="hidden lg:flex absolute top-0 right-0 z-30 items-start select-none">
+      <div className="hidden lg:flex absolute top-0 right-0 z-40 items-start select-none">
         {/* Inverted Fillet Curve to Left of Notch */}
         <div className="text-[var(--frame-bg)]">
           <InverseCorner type="top-right-left" size={20} className="w-5 h-5 sm:w-6 sm:h-6" />
@@ -364,7 +391,7 @@ function ConsoleNavbar({
 
           {/* Profile Window Trigger Button */}
           <button
-            ref={triggerRef}
+            ref={desktopTriggerRef}
             type="button"
             onClick={() => setProfileOpen((prev) => !prev)}
             className="group flex items-center gap-2.5 px-3.5 py-1.5 rounded-full bg-white/10 hover:bg-white/15 text-white border border-white/10 transition-all active:scale-[0.98] cursor-pointer"
@@ -424,8 +451,8 @@ function ConsoleNavbar({
           ───────────────────────────────────────────────────────── */}
           {profileOpen && (
             <div
-              ref={dropdownRef}
-              className="absolute right-0 top-[60px] z-50 w-80 rounded-2xl bg-white dark:bg-[#161B26] text-neutral-900 dark:text-white border border-black/10 dark:border-white/10 shadow-[0_16px_48px_rgba(0,0,0,0.15)] dark:shadow-[0_20px_56px_rgba(0,0,0,0.6)] backdrop-blur-2xl p-5 overflow-hidden transition-all animate-in fade-in zoom-in-95 duration-150"
+              ref={desktopDropdownRef}
+              className="absolute right-0 top-[60px] z-50 w-80 max-h-[calc(100dvh-70px)] overflow-y-auto overscroll-contain select-auto rounded-2xl bg-white dark:bg-[#161B26] text-neutral-900 dark:text-white border border-black/10 dark:border-white/10 shadow-[0_16px_48px_rgba(0,0,0,0.15)] dark:shadow-[0_20px_56px_rgba(0,0,0,0.6)] backdrop-blur-2xl p-5 transition-all animate-in fade-in zoom-in-95 duration-150"
             >
               {/* Window Header / Close Button */}
               <div className="flex items-center justify-between mb-4 pb-3 border-b border-black/[0.06] dark:border-white/[0.08]">
@@ -438,7 +465,7 @@ function ConsoleNavbar({
                 <button
                   type="button"
                   onClick={() => setProfileOpen(false)}
-                  className="p-1 rounded-lg hover:bg-neutral-100 dark:hover:bg-white/10 text-neutral-400 hover:text-neutral-700 dark:hover:text-white transition-colors"
+                  className="p-1 rounded-lg hover:bg-neutral-100 dark:hover:bg-white/10 text-neutral-400 hover:text-neutral-700 dark:hover:text-white transition-colors cursor-pointer"
                   aria-label="Close Profile Menu"
                 >
                   <CloseIcon className="w-3.5 h-3.5" />
@@ -488,7 +515,7 @@ function ConsoleNavbar({
               <button
                 type="button"
                 onClick={handleEditClick}
-                className="w-full py-2 px-3.5 rounded-xl bg-neutral-900 hover:bg-neutral-800 text-white dark:bg-white dark:hover:bg-neutral-100 dark:text-neutral-900 text-[12px] font-semibold text-center shadow-sm transition-all active:scale-[0.98] mb-3.5"
+                className="w-full py-2 px-3.5 rounded-xl bg-neutral-900 hover:bg-neutral-800 text-white dark:bg-white dark:hover:bg-neutral-100 dark:text-neutral-900 text-[12px] font-semibold text-center shadow-sm transition-all active:scale-[0.98] mb-3.5 cursor-pointer"
               >
                 Edit Cat &amp; Station Profile
               </button>
@@ -514,7 +541,7 @@ function ConsoleNavbar({
                   <button
                     type="button"
                     onClick={() => setTheme("light")}
-                    className={`flex items-center justify-center gap-2 py-1.5 px-3 rounded-lg text-[12px] font-semibold transition-all duration-200 ${
+                    className={`flex items-center justify-center gap-2 py-1.5 px-3 rounded-lg text-[12px] font-semibold transition-all duration-200 cursor-pointer ${
                       !isDark
                         ? "bg-white text-neutral-900 shadow-sm border border-black/[0.04]"
                         : "text-neutral-500 hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-white"
@@ -526,7 +553,7 @@ function ConsoleNavbar({
                   <button
                     type="button"
                     onClick={() => setTheme("dark")}
-                    className={`flex items-center justify-center gap-2 py-1.5 px-3 rounded-lg text-[12px] font-semibold transition-all duration-200 ${
+                    className={`flex items-center justify-center gap-2 py-1.5 px-3 rounded-lg text-[12px] font-semibold transition-all duration-200 cursor-pointer ${
                       isDark
                         ? "bg-[#1E2433] text-white shadow-sm border border-white/10"
                         : "text-neutral-500 hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-white"
@@ -544,7 +571,7 @@ function ConsoleNavbar({
                   <button
                     type="button"
                     onClick={handleSignOutAndReturnHome}
-                    className="group flex items-center justify-between w-full px-3 py-2 rounded-xl text-[12.5px] font-medium text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-500/10 transition-colors"
+                    className="group flex items-center justify-between w-full px-3 py-2 rounded-xl text-[12.5px] font-medium text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-500/10 transition-colors cursor-pointer"
                   >
                     <span className="flex items-center gap-2">
                       <svg
@@ -570,7 +597,7 @@ function ConsoleNavbar({
                   <Link
                     href="/"
                     onClick={() => setProfileOpen(false)}
-                    className="group flex items-center justify-between w-full px-3 py-2 rounded-xl text-[12.5px] font-medium text-neutral-700 dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-white/[0.08] transition-colors"
+                    className="group flex items-center justify-between w-full px-3 py-2 rounded-xl text-[12.5px] font-medium text-neutral-700 dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-white/[0.08] transition-colors cursor-pointer"
                   >
                     <span className="flex items-center gap-2">
                       <svg
@@ -598,7 +625,7 @@ function ConsoleNavbar({
         </div>
       </div>
       {/* Inverted Fillet Curve Below Right Notch */}
-      <div className="hidden lg:block absolute right-0 top-[56px] z-30 text-[var(--frame-bg)]">
+      <div className="hidden lg:block absolute right-0 top-[56px] z-40 text-[var(--frame-bg)]">
         <InverseCorner type="top-right-bottom" size={20} className="w-5 h-5 sm:w-6 sm:h-6" />
       </div>
     </>

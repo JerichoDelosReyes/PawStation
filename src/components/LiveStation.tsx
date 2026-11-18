@@ -90,7 +90,7 @@ function LiveStation({
   const [lastAction, setLastAction] = useState<string | null>(null);
   const [commandCooldown, setCommandCooldown] = useState(false);
   const [selectedTab, setSelectedTab] = useState<"all" | "routine" | "visits">("all");
-  const [mobileActiveCard, setMobileActiveCard] = useState<0 | 1 | 2>(0);
+  const [mobileActiveCard, setMobileActiveCard] = useState<0 | 1 | 2>(1);
   const [visitLogged, setVisitLogged] = useState(false);
 
   // Routine schedule form state
@@ -289,7 +289,7 @@ function LiveStation({
               : "text-neutral-600 dark:text-neutral-400"
           }`}
         >
-          Feeder Status
+          Companion
         </button>
         <button
           type="button"
@@ -300,7 +300,7 @@ function LiveStation({
               : "text-neutral-600 dark:text-neutral-400"
           }`}
         >
-          Companion
+          Feeder Status
         </button>
         <button
           type="button"
@@ -320,177 +320,11 @@ function LiveStation({
       ───────────────────────────────────────────────────────────── */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 lg:gap-5 xl:gap-6 items-stretch max-w-[1540px] mx-auto w-full h-full flex-1 min-h-0 overflow-hidden">
         {/* ═══════════════════════════════════════════════════════════
-            CARD 1: FEEDER STATUS (Hardware Sculpture & Pods)
+            CARD 1: COMPANION STATUS & 24-BIT PLATFORM SCALE (HX711)
         ═══════════════════════════════════════════════════════════ */}
         <div
           className={`${
             mobileActiveCard === 0 ? "flex" : "hidden lg:flex"
-          } flex-col justify-between rounded-[28px] lg:rounded-[32px] bg-[#FAF7F0] dark:bg-[#161B26] border border-black/[0.06] dark:border-white/[0.08] shadow-[0_4px_24px_rgb(0,0,0,0.03)] p-4 sm:p-5 xl:p-6 h-full min-h-0 overflow-hidden transition-all`}
-        >
-          {/* Top Pill Header */}
-          <div className="flex items-center justify-between gap-2 shrink-0">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-neutral-900 text-white dark:bg-white dark:text-neutral-900 shadow-sm">
-              <div className="w-4 h-4 rounded-full bg-amber-400/20 text-amber-300 flex items-center justify-center">
-                <PawIcon className="w-2.5 h-2.5 fill-current" />
-              </div>
-              <span className="text-[11px] font-bold tracking-tight">
-                {isStationOnline
-                  ? isDemoMode
-                    ? "PawStation (Demo)"
-                    : "PawStation Online"
-                  : "Station Offline"}
-              </span>
-            </div>
-
-            {onOpenDiagnostics && (
-              <button
-                type="button"
-                onClick={onOpenDiagnostics}
-                className="w-8 h-8 rounded-full bg-white dark:bg-white/10 hover:bg-neutral-100 dark:hover:bg-white/15 text-neutral-800 dark:text-white flex items-center justify-center shadow-sm border border-black/[0.05] dark:border-white/10 transition-all active:scale-95 cursor-pointer"
-                title="Hardware Diagnostics & Pinout"
-                aria-label="Hardware Diagnostics & Pinout"
-              >
-                <ChipIcon className="w-3.5 h-3.5" />
-              </button>
-            )}
-          </div>
-
-          {/* Big Display Title */}
-          <div className="mt-2 mb-1 shrink-0">
-            <h2 className="text-[26px] sm:text-[30px] xl:text-[36px] font-extrabold tracking-tight text-neutral-900 dark:text-white leading-[1.05]">
-              Feeder
-              <br />
-              Status
-            </h2>
-          </div>
-
-          {/* ── Central PawStation 3D Hardware Sculpture ── */}
-          <div className="relative my-auto py-1 flex flex-col items-center justify-center min-h-0">
-            {/* Real PawStation Hardware 3D Sculpture with Transparent Alpha & Ground Contact Shadow */}
-            <div className="relative z-10 w-full max-w-[280px] sm:max-w-[330px] h-[135px] sm:h-[155px] xl:h-[180px] flex items-center justify-center my-auto transform-gpu scale-100 sm:scale-105">
-              {/* Natural Ground Contact Shadow */}
-              <div className="absolute bottom-1 left-1/2 -translate-x-1/2 w-[76%] h-3.5 bg-black/[0.08] dark:bg-black/50 rounded-full blur-[8px] pointer-events-none" />
-
-              <div className="relative w-full h-full flex items-center justify-center">
-                <Image
-                  src="/hero-figure-light-transparent.webp"
-                  alt="PawStation Physical Hardware Sculpture"
-                  width={600}
-                  height={350}
-                  priority
-                  className="w-full h-full object-contain pointer-events-none select-none dark:hidden"
-                />
-                <Image
-                  src="/hero-figure-dark-transparent.webp"
-                  alt="PawStation Physical Hardware Sculpture"
-                  width={600}
-                  height={350}
-                  priority
-                  className="w-full h-full object-contain pointer-events-none select-none hidden dark:block"
-                />
-              </div>
-            </div>
-
-            {/* Hardware Pods: Left = Water Moisture Probe, Right = Food Chute Servo */}
-            <div className="w-full grid grid-cols-2 gap-2.5 sm:gap-3 mt-2 shrink-0">
-              {/* Left Pod: Moisture Sensor Reservoir Status */}
-              <div className="rounded-[20px] sm:rounded-[24px] bg-[#B9CEC8] dark:bg-[#1E302C] p-3 text-[#163831] dark:text-[#A7D4CB] flex flex-col justify-between transition-colors shadow-sm">
-                <div className="flex items-center justify-between">
-                  <div className="w-6 h-6 rounded-full bg-white/40 dark:bg-white/10 flex items-center justify-center">
-                    <WaterDropIcon className="w-3.5 h-3.5 fill-current" />
-                  </div>
-                  <span className="text-[9.5px] font-bold uppercase tracking-wider opacity-75">
-                    Reservoir
-                  </span>
-                </div>
-                <div className="mt-2">
-                  <div className="flex items-center gap-1.5">
-                    <span
-                      className={`w-1.5 h-1.5 rounded-full ${
-                        isWaterLow ? "bg-rose-500 animate-pulse" : "bg-emerald-600"
-                      }`}
-                    />
-                    <span className="text-[14px] sm:text-[16px] font-black leading-tight tracking-tight">
-                      {isWaterLow ? "Water Low" : "Water OK"}
-                    </span>
-                  </div>
-                  <span className="text-[10px] font-semibold opacity-85 block mt-0.5 leading-snug">
-                    LM393 Probe
-                  </span>
-                </div>
-              </div>
-
-              {/* Right Pod: Dry Food Dispenser Chute */}
-              <div className="rounded-[20px] sm:rounded-[24px] bg-[#F8E39D] dark:bg-[#382F16] p-3 text-[#473409] dark:text-[#F8E09D] flex flex-col justify-between transition-colors shadow-sm">
-                <div className="flex items-center justify-between">
-                  <div className="w-6 h-6 rounded-full bg-white/40 dark:bg-white/10 flex items-center justify-center">
-                    <KibbleIcon className="w-3.5 h-3.5 fill-current" />
-                  </div>
-                  <span className="text-[9.5px] font-bold uppercase tracking-wider opacity-75">
-                    Dispenser
-                  </span>
-                </div>
-                <div className="mt-2">
-                  <div className="flex items-center gap-1.5">
-                    <span
-                      className={`w-1.5 h-1.5 rounded-full ${
-                        telemetry?.dispensing ? "bg-amber-600 animate-pulse" : "bg-emerald-600"
-                      }`}
-                    />
-                    <span className="text-[14px] sm:text-[16px] font-black leading-tight tracking-tight">
-                      {telemetry?.dispensing ? "Dispensing" : "Chute Ready"}
-                    </span>
-                  </div>
-                  <span className="text-[10px] font-semibold opacity-85 block mt-0.5 leading-snug">
-                    SG90 Servo
-                  </span>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* ── Manual Actuation Black Pill Controls ── */}
-          <div className="space-y-1.5 mt-2 shrink-0">
-            <div className="grid grid-cols-2 gap-2">
-              <button
-                type="button"
-                onClick={() => handleCommand("dispense", "Dispensing Food (Chute Cycle)")}
-                disabled={!isStationOnline || telemetry?.dispensing || commandCooldown}
-                className="py-2.5 sm:py-3 px-3 rounded-full bg-neutral-900 text-white dark:bg-white dark:text-neutral-900 hover:opacity-95 text-[11.5px] sm:text-[12px] font-bold tracking-tight shadow-md flex items-center justify-center gap-1.5 active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed transition-all"
-              >
-                <KibbleIcon className="w-3.5 h-3.5 fill-current" />
-                <span>{telemetry?.dispensing ? "Dispensing..." : "Dispense Food"}</span>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => handleCommand("pump", "Running Fountain (3s)")}
-                disabled={!isStationOnline || telemetry?.pump !== "OFF" || isWaterLow || commandCooldown}
-                className="py-2.5 sm:py-3 px-3 rounded-full bg-[#A8C4BD] text-[#163831] dark:bg-[#2A3E39] dark:text-[#B2E0D6] hover:opacity-95 text-[11.5px] sm:text-[12px] font-bold tracking-tight shadow-md flex items-center justify-center gap-1.5 active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed transition-all"
-              >
-                <PumpIcon className="w-3.5 h-3.5" />
-                <span>{telemetry?.pump !== "OFF" ? "Pump Running" : "Run Fountain"}</span>
-              </button>
-            </div>
-
-            {/* Bottom Shelf: Station Timing & Pump Status */}
-            <div className="pt-2 border-t border-black/[0.06] dark:border-white/[0.06] flex items-center justify-between text-[10.5px] text-neutral-600 dark:text-neutral-400">
-              <span className="font-semibold uppercase tracking-wider text-[9.5px]">
-                Routine Status
-              </span>
-              <span className="font-mono">
-                {scheduleData?.lastAuto ? `Last feed: ${scheduleData.lastAuto}` : "Chute ready"}
-              </span>
-            </div>
-          </div>
-        </div>
-
-        {/* ═══════════════════════════════════════════════════════════
-            CARD 2: COMPANION STATUS & 24-BIT PLATFORM SCALE (HX711)
-        ═══════════════════════════════════════════════════════════ */}
-        <div
-          className={`${
-            mobileActiveCard === 1 ? "flex" : "hidden lg:flex"
           } flex-col justify-between rounded-[28px] lg:rounded-[32px] bg-[#FAF7F0] dark:bg-[#161B26] border border-black/[0.06] dark:border-white/[0.08] shadow-[0_4px_24px_rgb(0,0,0,0.03)] p-4 sm:p-5 xl:p-6 h-full min-h-0 overflow-hidden relative transition-all`}
         >
           {/* Top Pill Header & Edit Shortcut */}
@@ -622,6 +456,172 @@ function LiveStation({
         </div>
 
         {/* ═══════════════════════════════════════════════════════════
+            CARD 2: FEEDER STATUS (Hardware Sculpture & Pods)
+        ═══════════════════════════════════════════════════════════ */}
+        <div
+          className={`${
+            mobileActiveCard === 1 ? "flex" : "hidden lg:flex"
+          } flex-col justify-between rounded-[28px] lg:rounded-[32px] bg-[#FAF7F0] dark:bg-[#161B26] border border-black/[0.06] dark:border-white/[0.08] shadow-[0_4px_24px_rgb(0,0,0,0.03)] p-4 sm:p-5 xl:p-6 h-full min-h-0 overflow-hidden transition-all`}
+        >
+          {/* Top Pill Header */}
+          <div className="flex items-center justify-between gap-2 shrink-0">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-neutral-900 text-white dark:bg-white dark:text-neutral-900 shadow-sm">
+              <div className="w-4 h-4 rounded-full bg-amber-400/20 text-amber-300 flex items-center justify-center">
+                <PawIcon className="w-2.5 h-2.5 fill-current" />
+              </div>
+              <span className="text-[11px] font-bold tracking-tight">
+                {isStationOnline
+                  ? isDemoMode
+                    ? "PawStation (Demo)"
+                    : "PawStation Online"
+                  : "Station Offline"}
+              </span>
+            </div>
+
+            {onOpenDiagnostics && (
+              <button
+                type="button"
+                onClick={onOpenDiagnostics}
+                className="w-8 h-8 rounded-full bg-white dark:bg-white/10 hover:bg-neutral-100 dark:hover:bg-white/15 text-neutral-800 dark:text-white flex items-center justify-center shadow-sm border border-black/[0.05] dark:border-white/10 transition-all active:scale-95 cursor-pointer"
+                title="Hardware Diagnostics & Pinout"
+                aria-label="Hardware Diagnostics & Pinout"
+              >
+                <ChipIcon className="w-3.5 h-3.5" />
+              </button>
+            )}
+          </div>
+
+          {/* Big Display Title */}
+          <div className="mt-2 mb-1 shrink-0">
+            <h2 className="text-[26px] sm:text-[30px] xl:text-[36px] font-extrabold tracking-tight text-neutral-900 dark:text-white leading-[1.05]">
+              Feeder
+              <br />
+              Status
+            </h2>
+          </div>
+
+          {/* ── Central PawStation 3D Hardware Sculpture ── */}
+          <div className="relative flex-1 flex flex-col items-center justify-center min-h-0 pt-2 pb-5 sm:pb-6 xl:pb-7">
+            {/* Real PawStation Hardware 3D Sculpture */}
+            <div className="relative z-10 w-full max-w-[360px] sm:max-w-[430px] xl:max-w-[490px] 2xl:max-w-[530px] h-[190px] sm:h-[230px] xl:h-[270px] 2xl:h-[295px] flex items-center justify-center transform-gpu scale-105 sm:scale-110 xl:scale-115 -translate-y-1 sm:-translate-y-2">
+              <div className="relative w-full h-full flex items-center justify-center">
+                <Image
+                  src="/hero-figure-light-transparent.webp"
+                  alt="PawStation Physical Hardware Sculpture"
+                  width={600}
+                  height={350}
+                  priority
+                  className="w-full h-full object-contain pointer-events-none select-none dark:hidden drop-shadow-sm"
+                />
+                <Image
+                  src="/hero-figure-dark-transparent.webp"
+                  alt="PawStation Physical Hardware Sculpture"
+                  width={600}
+                  height={350}
+                  priority
+                  className="w-full h-full object-contain pointer-events-none select-none hidden dark:block drop-shadow-sm"
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* ── Bottom Section: Hardware Pods + Manual Controls ── */}
+          <div className="shrink-0 space-y-2 sm:space-y-2.5">
+            {/* Hardware Pods: Left = Water Moisture Probe, Right = Food Chute Servo */}
+            <div className="w-full grid grid-cols-2 gap-2.5 sm:gap-3">
+              {/* Left Pod: Moisture Sensor Reservoir Status */}
+              <div className="rounded-[20px] sm:rounded-[24px] bg-[#B9CEC8] dark:bg-[#1E302C] p-3 text-[#163831] dark:text-[#A7D4CB] flex flex-col justify-between transition-colors shadow-sm">
+                <div className="flex items-center justify-between">
+                  <div className="w-6 h-6 rounded-full bg-white/40 dark:bg-white/10 flex items-center justify-center">
+                    <WaterDropIcon className="w-3.5 h-3.5 fill-current" />
+                  </div>
+                  <span className="text-[9.5px] font-bold uppercase tracking-wider opacity-75">
+                    Reservoir
+                  </span>
+                </div>
+                <div className="mt-2">
+                  <div className="flex items-center gap-1.5">
+                    <span
+                      className={`w-1.5 h-1.5 rounded-full ${
+                        isWaterLow ? "bg-rose-500 animate-pulse" : "bg-emerald-600"
+                      }`}
+                    />
+                    <span className="text-[14px] sm:text-[16px] font-black leading-tight tracking-tight">
+                      {isWaterLow ? "Water Low" : "Water OK"}
+                    </span>
+                  </div>
+                  <span className="text-[10px] font-semibold opacity-85 block mt-0.5 leading-snug">
+                    LM393 Probe
+                  </span>
+                </div>
+              </div>
+
+              {/* Right Pod: Dry Food Dispenser Chute */}
+              <div className="rounded-[20px] sm:rounded-[24px] bg-[#F8E39D] dark:bg-[#382F16] p-3 text-[#473409] dark:text-[#F8E09D] flex flex-col justify-between transition-colors shadow-sm">
+                <div className="flex items-center justify-between">
+                  <div className="w-6 h-6 rounded-full bg-white/40 dark:bg-white/10 flex items-center justify-center">
+                    <KibbleIcon className="w-3.5 h-3.5 fill-current" />
+                  </div>
+                  <span className="text-[9.5px] font-bold uppercase tracking-wider opacity-75">
+                    Dispenser
+                  </span>
+                </div>
+                <div className="mt-2">
+                  <div className="flex items-center gap-1.5">
+                    <span
+                      className={`w-1.5 h-1.5 rounded-full ${
+                        telemetry?.dispensing ? "bg-amber-600 animate-pulse" : "bg-emerald-600"
+                      }`}
+                    />
+                    <span className="text-[14px] sm:text-[16px] font-black leading-tight tracking-tight">
+                      {telemetry?.dispensing ? "Dispensing" : "Chute Ready"}
+                    </span>
+                  </div>
+                  <span className="text-[10px] font-semibold opacity-85 block mt-0.5 leading-snug">
+                    SG90 Servo
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            {/* ── Manual Actuation Black Pill Controls ── */}
+            <div className="space-y-1.5">
+              <div className="grid grid-cols-2 gap-2">
+                <button
+                  type="button"
+                  onClick={() => handleCommand("dispense", "Dispensing Food (Chute Cycle)")}
+                  disabled={!isStationOnline || telemetry?.dispensing || commandCooldown}
+                  className="py-2.5 sm:py-3 px-3 rounded-full bg-neutral-900 text-white dark:bg-white dark:text-neutral-900 hover:opacity-95 text-[11.5px] sm:text-[12px] font-bold tracking-tight shadow-md flex items-center justify-center gap-1.5 active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed transition-all"
+                >
+                  <KibbleIcon className="w-3.5 h-3.5 fill-current" />
+                  <span>{telemetry?.dispensing ? "Dispensing..." : "Dispense Food"}</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => handleCommand("pump", "Running Fountain (3s)")}
+                  disabled={!isStationOnline || telemetry?.pump !== "OFF" || isWaterLow || commandCooldown}
+                  className="py-2.5 sm:py-3 px-3 rounded-full bg-[#A8C4BD] text-[#163831] dark:bg-[#2A3E39] dark:text-[#B2E0D6] hover:opacity-95 text-[11.5px] sm:text-[12px] font-bold tracking-tight shadow-md flex items-center justify-center gap-1.5 active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed transition-all"
+                >
+                  <PumpIcon className="w-3.5 h-3.5" />
+                  <span>{telemetry?.pump !== "OFF" ? "Pump Running" : "Run Fountain"}</span>
+                </button>
+              </div>
+
+              {/* Bottom Shelf: Station Timing & Pump Status */}
+              <div className="pt-2 border-t border-black/[0.06] dark:border-white/[0.06] flex items-center justify-between text-[10.5px] text-neutral-600 dark:text-neutral-400">
+                <span className="font-semibold uppercase tracking-wider text-[9.5px]">
+                  Routine Status
+                </span>
+                <span className="font-mono">
+                  {scheduleData?.lastAuto ? `Last feed: ${scheduleData.lastAuto}` : "Chute ready"}
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* ═══════════════════════════════════════════════════════════
             CARD 3: ROUTINE AUTOMATION & VISIT COLLECTION
         ═══════════════════════════════════════════════════════════ */}
         <div
@@ -697,7 +697,11 @@ function LiveStation({
           </div>
 
           {/* ── Tab Content: Routine Automation or Recent Visits ── */}
-          <div className="flex-1 flex flex-col justify-between overflow-hidden min-h-0">
+          <div
+            className={`flex-1 flex flex-col ${
+              selectedTab === "all" ? "justify-between" : "justify-start"
+            } overflow-hidden min-h-0`}
+          >
             {selectedTab === "routine" || selectedTab === "all" ? (
               <form onSubmit={handleSaveRoutine} className="space-y-2.5">
                 {/* Station Clock HUD */}
@@ -820,7 +824,11 @@ function LiveStation({
 
             {/* Visit Collection Feed (Scale Platform Visits) */}
             {(selectedTab === "visits" || selectedTab === "all") && (
-              <div className="mt-2 space-y-1.5 flex-1 min-h-0 flex flex-col justify-end">
+              <div
+                className={`space-y-1.5 flex-1 min-h-0 flex flex-col ${
+                  selectedTab === "all" ? "mt-2 justify-end" : "justify-start"
+                }`}
+              >
                 <div className="flex items-center justify-between">
                   <span className="text-[10.5px] font-bold uppercase tracking-wider text-neutral-500 dark:text-neutral-400">
                     Platform Visits (Scale Log)
@@ -830,7 +838,13 @@ function LiveStation({
                   </span>
                 </div>
 
-                <div className="space-y-1.5 max-h-[140px] sm:max-h-[160px] xl:max-h-[190px] overflow-y-auto pr-1">
+                <div
+                  className={`space-y-1.5 overflow-y-auto pr-1 ${
+                    selectedTab === "visits"
+                      ? "flex-1 min-h-0"
+                      : "max-h-[140px] sm:max-h-[160px] xl:max-h-[190px]"
+                  }`}
+                >
                   {catVisits.map((v, idx) => (
                     <div
                       key={v.id || idx}
