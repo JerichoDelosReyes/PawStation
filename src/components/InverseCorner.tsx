@@ -113,24 +113,28 @@ export default function InverseCorner({
       break;
   }
 
-  // Exact geometric paths
+  // Exact geometric paths with subpixel anti-aliasing bleeds on straight mounting edges
   let pathD = "";
   switch (quadrant) {
     case "tl":
       // Fills (0,0) corner, concave circular scoop from (r,0) to (0,r) around center (r,r)
-      pathD = `M 0,0 L ${r},0 A ${r},${r} 0 0 0 0,${r} Z`;
+      // Extend straight mounting edges by 1.5px to eliminate subpixel rounding gaps on Retina/Vercel
+      pathD = `M -1.5,-1.5 L ${r},-1.5 L ${r},0 A ${r},${r} 0 0 0 0,${r} L -1.5,${r} Z`;
       break;
     case "tr":
       // Fills (r,0) corner, concave circular scoop from (r,r) to (0,0) around center (0,r)
-      pathD = `M ${r},0 L ${r},${r} A ${r},${r} 0 0 0 0,0 Z`;
+      // Extend straight mounting edges (right and top) by 1.5px to eliminate subpixel rounding gaps
+      pathD = `M ${r + 1.5},-1.5 L ${r + 1.5},${r} L ${r},${r} A ${r},${r} 0 0 0 0,0 L 0,-1.5 Z`;
       break;
     case "br":
       // Fills (r,r) corner, concave circular scoop from (0,r) to (r,0) around center (0,0)
-      pathD = `M 0,${r} A ${r},${r} 0 0 0 ${r},0 L ${r},${r} Z`;
+      // Extend straight mounting edges (right and bottom) by 1.5px
+      pathD = `M 0,${r} A ${r},${r} 0 0 0 ${r},0 L ${r + 1.5},0 L ${r + 1.5},${r + 1.5} L 0,${r + 1.5} Z`;
       break;
     case "bl":
       // Fills (0,r) corner, concave circular scoop from (0,0) to (r,r) around center (r,0)
-      pathD = `M 0,0 A ${r},${r} 0 0 0 ${r},${r} L 0,${r} Z`;
+      // Extend straight mounting edges (left and bottom) by 1.5px
+      pathD = `M -1.5,0 L 0,0 A ${r},${r} 0 0 0 ${r},${r} L ${r},${r + 1.5} L -1.5,${r + 1.5} Z`;
       break;
   }
 
@@ -139,7 +143,7 @@ export default function InverseCorner({
       width={r}
       height={r}
       viewBox={`0 0 ${r} ${r}`}
-      className={`block pointer-events-none select-none ${className}`}
+      className={`block pointer-events-none select-none overflow-visible ${className}`}
       xmlns="http://www.w3.org/2000/svg"
     >
       <path d={pathD} fill="currentColor" />

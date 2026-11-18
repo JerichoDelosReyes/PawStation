@@ -374,12 +374,12 @@ function ConsoleNavbar({
           </Link>
         </div>
         {/* Inverted Fillet Curve to Right of Notch */}
-        <div className="text-[var(--frame-bg)]">
+        <div className="text-[var(--frame-bg)] -ml-[1.5px] relative z-10 shrink-0">
           <InverseCorner type="top-left-right" size={20} className="w-5 h-5 sm:w-6 sm:h-6" />
         </div>
       </div>
       {/* Inverted Fillet Curve Below Logo Notch */}
-      <div className="hidden lg:block absolute left-0 top-[56px] sm:top-[70px] z-30 text-[var(--frame-bg)]">
+      <div className="hidden lg:block absolute left-0 top-[55px] sm:top-[69px] z-30 text-[var(--frame-bg)]">
         <InverseCorner type="top-left-bottom" size={20} className="w-5 h-5 sm:w-6 sm:h-6" />
       </div>
 
@@ -388,7 +388,7 @@ function ConsoleNavbar({
       ───────────────────────────────────────────────────────────── */}
       <div className="hidden lg:flex absolute top-0 right-0 z-40 items-start select-none">
         {/* Inverted Fillet Curve to Left of Notch */}
-        <div className="text-[var(--frame-bg)]">
+        <div className="text-[var(--frame-bg)] -mr-[1.5px] relative z-10 shrink-0">
           <InverseCorner type="top-right-left" size={20} className="w-5 h-5 sm:w-6 sm:h-6" />
         </div>
         <div className="bg-[var(--frame-bg)] h-[56px] sm:h-[70px] pl-4 pr-3.5 sm:pl-8 sm:pr-6 rounded-bl-[20px] sm:rounded-bl-[28px] flex items-center gap-2 sm:gap-2.5 relative">
@@ -647,7 +647,7 @@ function ConsoleNavbar({
         </div>
       </div>
       {/* Inverted Fillet Curve Below Right Notch */}
-      <div className="hidden lg:block absolute right-0 top-[56px] sm:top-[70px] z-40 text-[var(--frame-bg)]">
+      <div className="hidden lg:block absolute right-0 top-[55px] sm:top-[69px] z-40 text-[var(--frame-bg)]">
         <InverseCorner type="top-right-bottom" size={20} className="w-5 h-5 sm:w-6 sm:h-6" />
       </div>
     </>
