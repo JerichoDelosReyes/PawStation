@@ -183,6 +183,7 @@
   },
   "active": "7dbc362d75ef2a51",
   "lastOpenFiles": [
+    "supabase/migrations/20261118000002_security_hardening_tables_and_rls.sql",
     "public/hero-figure-dark-transparent.webp",
     "public/hero-figure-light-transparent.webp",
     "src/components/HardwareDiagnosticsDrawer.tsx",
@@ -227,7 +228,6 @@
     "node_modules/stats-gl/README.md",
     "public/prototype.png",
     "src/app/icon.svg",
-    "node_modules/@supabase/phoenix/priv/static/phoenix.png",
-    "node_modules/@supabase/phoenix/priv/static/phoenix-orange.png"
+    "node_modules/@supabase/phoenix/priv/static/phoenix.png"
   ]
 }

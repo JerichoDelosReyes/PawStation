@@ -35,7 +35,76 @@ export interface ScheduleTelemetryData {
 }
 
 export type StationStatus = "online" | "offline" | "connecting";
-export type StationCommand = "dispense" | "pump" | "tare";
+export const ALLOWED_STATION_COMMANDS = ["dispense", "pump", "tare"] as const;
+export type StationCommand = (typeof ALLOWED_STATION_COMMANDS)[number];
+
+export function isAllowedStationCommand(cmd: unknown): cmd is StationCommand {
+  return typeof cmd === "string" && (ALLOWED_STATION_COMMANDS as readonly string[]).includes(cmd);
+}
+
+/**
+ * Validates ESP32 station host to prevent SSRF, connection poisoning, and injection attacks.
+ * Accepts IPv4 addresses (LAN/loopback), valid mDNS hostnames (.local), or localhost, with optional port 1-65535.
+ */
+export function isValidStationHost(input: string): boolean {
+  if (!input || typeof input !== "string") return false;
+  const trimmed = input.trim();
+  if (trimmed.length === 0 || trimmed.length > 253) return false;
+
+  // Strip protocol prefix if provided
+  const hostNoProto = trimmed.replace(/^(ws:\/\/|wss:\/\/|http:\/\/|https:\/\/)/i, "");
+
+  // Separate host and optional port
+  const [hostPart, portPart, ...extra] = hostNoProto.split(":");
+  if (extra.length > 0) return false;
+
+  if (portPart !== undefined) {
+    if (!/^\d{1,5}$/.test(portPart)) return false;
+    const portNum = parseInt(portPart, 10);
+    if (portNum < 1 || portNum > 65535) return false;
+  }
+
+  // Reject paths, query strings, fragments, userinfo, control chars
+  if (/[\/\?\#\@\s\\'"<>]/.test(hostPart)) return false;
+
+  // Check IPv4 format: 4 octets 0-255
+  const ipv4Regex = /^(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})$/;
+  const ipMatch = hostPart.match(ipv4Regex);
+  if (ipMatch) {
+    const octets = [
+      parseInt(ipMatch[1], 10),
+      parseInt(ipMatch[2], 10),
+      parseInt(ipMatch[3], 10),
+      parseInt(ipMatch[4], 10),
+    ];
+    return octets.every((octet) => octet >= 0 && octet <= 255);
+  }
+
+  // Check standard hostname / mDNS domain (e.g. pawstation.local, localhost)
+  const hostnameRegex =
+    /^(?=.{1,253}$)(localhost|[a-zA-Z0-9]([a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(\.[a-zA-Z0-9]([a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*)$/;
+  return hostnameRegex.test(hostPart);
+}
+
+export function sanitizeStationHost(input: string): string {
+  const trimmed = input.trim();
+  if (!isValidStationHost(trimmed)) {
+    return "";
+  }
+  return trimmed.replace(/^(ws:\/\/|wss:\/\/|http:\/\/|https:\/\/)/i, "").replace(/\/+$/, "");
+}
+
+/**
+ * Validates feeding schedule string to prevent memory corruption or injection in ESP32 firmware parser.
+ * Supports patterns like "08:00,18:00", "1|08:00,18:00", "0|08:00,18:00", or "0|".
+ */
+export function isValidScheduleString(schedule: string): boolean {
+  if (!schedule || typeof schedule !== "string") return false;
+  const trimmed = schedule.trim();
+  if (trimmed.length > 80) return false;
+  const pattern = /^(([01]\|)?([01]\d|2[0-3]):[0-5]\d(,\s*([01]\d|2[0-3]):[0-5]\d)*|0\|?)$/;
+  return pattern.test(trimmed);
+}
 
 export interface StationStatusContextValue {
   stationStatus: StationStatus;
@@ -50,8 +119,6 @@ export interface StationStatusContextValue {
   isBrokerConfigured: boolean; // Compatibility alias
   esp32Host: string;
   setEsp32Host: (host: string) => void;
-  isDemoMode: boolean;
-  setIsDemoMode: (demo: boolean) => void;
 }
 
 export interface StationContextValue extends StationStatusContextValue {
@@ -97,13 +164,12 @@ function buildHttpUrl(host: string, path: string): string {
 
 export function StationProvider({ children }: { children: ReactNode }) {
   const [esp32Host, setEsp32HostState] = useState<string>(DEFAULT_ENV_HOST);
-  const [isDemoMode, setIsDemoMode] = useState<boolean>(!DEFAULT_ENV_HOST);
   const [telemetry, setTelemetry] = useState<TelemetryData | null>(null);
   const [scheduleData, setScheduleData] = useState<ScheduleTelemetryData | null>(null);
   const [stationStatus, setStationStatus] = useState<StationStatus>(
-    DEFAULT_ENV_HOST ? "connecting" : "online"
+    DEFAULT_ENV_HOST ? "connecting" : "offline"
   );
-  const [isStationOnline, setIsStationOnline] = useState<boolean>(!DEFAULT_ENV_HOST);
+  const [isStationOnline, setIsStationOnline] = useState<boolean>(false);
   const [stationError, setStationError] = useState<string | null>(
     DEFAULT_ENV_HOST ? null : "ESP32 host unconfigured"
   );
@@ -116,121 +182,61 @@ export function StationProvider({ children }: { children: ReactNode }) {
   const watchdogTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const reconnectTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const pollTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
-  const demoIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  const lastCommandTimesRef = useRef<{ [key: string]: number }>({});
 
   // Sync saved host from localStorage if available in browser
   useEffect(() => {
     if (typeof window !== "undefined") {
       const saved = localStorage.getItem("pawstation_esp32_host");
-      if (saved && saved.trim() !== DEFAULT_ENV_HOST) {
-        setEsp32HostState(saved.trim());
+      if (saved && isValidStationHost(saved.trim())) {
+        const sanitized = sanitizeStationHost(saved.trim());
+        if (sanitized !== DEFAULT_ENV_HOST) {
+          setEsp32HostState(sanitized);
+        }
+      } else if (saved) {
+        localStorage.removeItem("pawstation_esp32_host");
       }
     }
   }, []);
 
   const setEsp32Host = useCallback((host: string) => {
     const trimmed = host.trim();
-    setEsp32HostState(trimmed);
-    if (typeof window !== "undefined") {
-      if (trimmed) {
-        localStorage.setItem("pawstation_esp32_host", trimmed);
-      } else {
+    if (!trimmed) {
+      setEsp32HostState("");
+      setStationError("ESP32 host unconfigured");
+      setStatusMessage("ESP32 host unconfigured");
+      if (typeof window !== "undefined") {
         localStorage.removeItem("pawstation_esp32_host");
-      }
-    }
-  }, []);
-
-  // ──────────────────────────────────────────────────────────────────────────
-  // MOCK / DEMO MODE SIMULATION
-  // Keeps the dashboard fully interactive when hardware is unconfigured or offline
-  // ──────────────────────────────────────────────────────────────────────────
-  useEffect(() => {
-    if (!isDemoMode) {
-      if (demoIntervalRef.current) {
-        clearInterval(demoIntervalRef.current);
-        demoIntervalRef.current = null;
       }
       return;
     }
 
-    // Set initial realistic telemetry
-    setTelemetry((prev) => {
-      if (prev) return prev;
-      return {
-        weight: 42.5,
-        scaleOk: true,
-        cat: false,
-        visits: 3,
-        water: 78,
-        waterLow: false,
-        pump: "OFF",
-        dispensing: false,
-        rssi: -58,
-        clock: formatCurrentTime(),
-        timeOk: true,
-        sched: "08:00,18:00",
-        lastAuto: "08:00",
-      };
-    });
+    if (!isValidStationHost(trimmed)) {
+      setStationError("Invalid host address format");
+      setStatusMessage("Invalid host address format");
+      return;
+    }
 
-    setScheduleData((prev) => {
-      if (prev) return prev;
-      return {
-        sched: "08:00,18:00",
-        clock: formatCurrentTime(),
-        timeOk: true,
-        lastAuto: "08:00",
-      };
-    });
-
-    setIsStationOnline(true);
-    setStationStatus("online");
-    setStatusMessage("ESP32 Direct Wi-Fi (Demo)");
-
-    // Periodic gentle clock update
-    demoIntervalRef.current = setInterval(() => {
-      const currentTime = formatCurrentTime();
-      setTelemetry((prev) => {
-        if (!prev) return null;
-        // Minor realistic load cell noise (+/- 0.05g)
-        const jitter = (Math.random() - 0.5) * 0.1;
-        const newWeight = Math.max(0, parseFloat((prev.weight + jitter).toFixed(1)));
-        return {
-          ...prev,
-          clock: currentTime,
-          weight: newWeight,
-        };
-      });
-
-      setScheduleData((prev) => {
-        if (!prev) return null;
-        return {
-          ...prev,
-          clock: currentTime,
-        };
-      });
-    }, 1000);
-
-    return () => {
-      if (demoIntervalRef.current) {
-        clearInterval(demoIntervalRef.current);
-        demoIntervalRef.current = null;
-      }
-    };
-  }, [isDemoMode]);
+    const sanitized = sanitizeStationHost(trimmed);
+    setEsp32HostState(sanitized);
+    if (typeof window !== "undefined") {
+      localStorage.setItem("pawstation_esp32_host", sanitized);
+    }
+  }, []);
 
   // ──────────────────────────────────────────────────────────────────────────
   // DIRECT ESP32 WI-FI CONNECTION (WEBSOCKET + HTTP REST)
   // ──────────────────────────────────────────────────────────────────────────
   useEffect(() => {
     if (!esp32Host) {
-      setIsDemoMode(true);
+      setStationStatus("offline");
+      setIsStationOnline(false);
       setStationError("ESP32 host unconfigured");
       setStatusMessage("ESP32 host unconfigured");
       return;
     }
 
-    setIsDemoMode(false);
     setStationStatus("connecting");
     setStatusMessage("connecting");
     setStationError(null);
@@ -389,45 +395,22 @@ export function StationProvider({ children }: { children: ReactNode }) {
   // ──────────────────────────────────────────────────────────────────────────
   const sendCommand = useCallback(
     (command: StationCommand) => {
-      // Demo / Mock Mode Execution
-      if (isDemoMode) {
-        if (command === "dispense") {
-          setTelemetry((prev) => (prev ? { ...prev, dispensing: true } : prev));
-          setTimeout(() => {
-            setTelemetry((prev) =>
-              prev
-                ? {
-                    ...prev,
-                    dispensing: false,
-                    weight: parseFloat((prev.weight + 15.0).toFixed(1)),
-                  }
-                : prev
-            );
-          }, 1500);
-        } else if (command === "pump") {
-          setTelemetry((prev) => (prev ? { ...prev, pump: "RUNNING" } : prev));
-          setTimeout(() => {
-            setTelemetry((prev) => (prev ? { ...prev, pump: "STOPPING" } : prev));
-          }, 2400);
-          setTimeout(() => {
-            setTelemetry((prev) =>
-              prev
-                ? {
-                    ...prev,
-                    pump: "OFF",
-                    water: Math.max(0, prev.water - 1),
-                  }
-                : prev
-            );
-          }, 3000);
-        } else if (command === "tare") {
-          setTelemetry((prev) => (prev ? { ...prev, weight: 0.0 } : prev));
-        }
+      // Security: Validate against strictly allowed commands enum
+      if (!isAllowedStationCommand(command)) {
+        console.warn(`[Security] Rejected unauthorized station command: ${command}`);
         return;
       }
 
       // Live ESP32 Wi-Fi Execution
       if (!isStationOnline) return;
+
+      // Rate limit / debouncing guard: min 1000ms cooldown per command to prevent actuator burnout & flooding
+      const now = Date.now();
+      const lastExec = lastCommandTimesRef.current[command] || 0;
+      if (now - lastExec < 1000) {
+        return;
+      }
+      lastCommandTimesRef.current[command] = now;
 
       // 1. Try WebSocket
       if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
@@ -439,7 +422,7 @@ export function StationProvider({ children }: { children: ReactNode }) {
       }
 
       // 2. HTTP POST fallback to /api/command
-      if (esp32Host) {
+      if (esp32Host && isValidStationHost(esp32Host)) {
         fetch(buildHttpUrl(esp32Host, "/api/command"), {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -449,7 +432,7 @@ export function StationProvider({ children }: { children: ReactNode }) {
         });
       }
     },
-    [isDemoMode, isStationOnline, esp32Host]
+    [isStationOnline, esp32Host]
   );
 
   // ──────────────────────────────────────────────────────────────────────────
@@ -457,14 +440,14 @@ export function StationProvider({ children }: { children: ReactNode }) {
   // ──────────────────────────────────────────────────────────────────────────
   const publishSchedule = useCallback(
     (scheduleString: string) => {
-      setLastSentSchedule(scheduleString);
-
-      // Demo Mode Execution
-      if (isDemoMode) {
-        setTelemetry((prev) => (prev ? { ...prev, sched: scheduleString } : prev));
-        setScheduleData((prev) => (prev ? { ...prev, sched: scheduleString } : prev));
+      const trimmed = scheduleString.trim();
+      // Security: Validate schedule format before dispatching to ESP32 firmware parser
+      if (!isValidScheduleString(trimmed)) {
+        console.warn(`[Security] Rejected invalid schedule string: ${scheduleString}`);
         return;
       }
+
+      setLastSentSchedule(trimmed);
 
       // Live ESP32 Wi-Fi Execution
       if (!isStationOnline) return;
@@ -472,24 +455,24 @@ export function StationProvider({ children }: { children: ReactNode }) {
       if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
         try {
           wsRef.current.send(
-            JSON.stringify({ type: "schedule", schedule: scheduleString })
+            JSON.stringify({ type: "schedule", schedule: trimmed })
           );
         } catch {
           // Fall through to HTTP POST
         }
       }
 
-      if (esp32Host) {
+      if (esp32Host && isValidStationHost(esp32Host)) {
         fetch(buildHttpUrl(esp32Host, "/api/schedule"), {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ schedule: scheduleString }),
+          body: JSON.stringify({ schedule: trimmed }),
         }).catch(() => {
           /* Safely handled */
         });
       }
     },
-    [isDemoMode, isStationOnline, esp32Host]
+    [isStationOnline, esp32Host]
   );
 
   const statusValue = useMemo<StationStatusContextValue>(
@@ -506,8 +489,6 @@ export function StationProvider({ children }: { children: ReactNode }) {
       isBrokerConfigured: Boolean(esp32Host), // Compatibility alias
       esp32Host,
       setEsp32Host,
-      isDemoMode,
-      setIsDemoMode,
     }),
     [
       stationStatus,
@@ -519,7 +500,6 @@ export function StationProvider({ children }: { children: ReactNode }) {
       lastSentSchedule,
       esp32Host,
       setEsp32Host,
-      isDemoMode,
     ]
   );
 
@@ -644,14 +624,23 @@ export function createStationClient(
   }
 
   function sendCommand(command: StationCommand | string) {
+    if (!isAllowedStationCommand(command)) {
+      onError?.(`Rejected unauthorized command: ${command}`);
+      return;
+    }
     if (ws && ws.readyState === WebSocket.OPEN) {
       ws.send(JSON.stringify({ cmd: command, command }));
     }
   }
 
   function sendSchedule(scheduleString: string) {
+    const trimmed = scheduleString.trim();
+    if (!isValidScheduleString(trimmed)) {
+      onError?.(`Rejected invalid schedule format: ${scheduleString}`);
+      return;
+    }
     if (ws && ws.readyState === WebSocket.OPEN) {
-      ws.send(JSON.stringify({ type: "schedule", schedule: scheduleString }));
+      ws.send(JSON.stringify({ type: "schedule", schedule: trimmed }));
     }
   }
 

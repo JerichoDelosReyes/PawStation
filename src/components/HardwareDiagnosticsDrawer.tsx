@@ -15,7 +15,7 @@ import {
   CheckIcon,
   RefreshIcon,
 } from "./Icons";
-import { usePawStation } from "@/lib/station";
+import { usePawStation, isValidStationHost } from "@/lib/station";
 
 interface HardwareDiagnosticsDrawerProps {
   isOpen: boolean;
@@ -94,17 +94,17 @@ export default function HardwareDiagnosticsDrawer({
     sendCommand,
     esp32Host,
     setEsp32Host,
-    isDemoMode,
-    setIsDemoMode,
   } = usePawStation();
 
   const [hostInput, setHostInput] = useState(esp32Host || "pawstation.local");
   const [hostSaved, setHostSaved] = useState(false);
+  const [hostError, setHostError] = useState<string | null>(null);
   const [rawView, setRawView] = useState(false);
   const [cooldown, setCooldown] = useState(false);
 
   useEffect(() => {
     setHostInput(esp32Host || "pawstation.local");
+    setHostError(null);
   }, [esp32Host]);
 
   // Handle ESC key to close
@@ -120,7 +120,13 @@ export default function HardwareDiagnosticsDrawer({
 
   const handleSaveHost = (e: React.FormEvent) => {
     e.preventDefault();
-    setEsp32Host(hostInput.trim());
+    const trimmed = hostInput.trim();
+    if (trimmed && !isValidStationHost(trimmed)) {
+      setHostError("Invalid host. Enter an IP (e.g. 192.168.4.1) or mDNS (e.g. pawstation.local)");
+      return;
+    }
+    setHostError(null);
+    setEsp32Host(trimmed);
     setHostSaved(true);
     setTimeout(() => setHostSaved(false), 2000);
   };
@@ -227,7 +233,10 @@ export default function HardwareDiagnosticsDrawer({
                     <input
                       type="text"
                       value={hostInput}
-                      onChange={(e) => setHostInput(e.target.value)}
+                      onChange={(e) => {
+                        setHostInput(e.target.value);
+                        if (hostError) setHostError(null);
+                      }}
                       placeholder="e.g. pawstation.local or 192.168.1.120"
                       className="flex-1 px-3.5 py-2 rounded-full border border-black/10 dark:border-white/10 bg-[#FBF9F5] dark:bg-[#121620] text-[13px] font-mono focus:outline-none focus:ring-2 focus:ring-neutral-900 dark:focus:ring-white transition-all"
                     />
@@ -238,34 +247,12 @@ export default function HardwareDiagnosticsDrawer({
                       {hostSaved ? "Saved" : "Save"}
                     </button>
                   </div>
+                  {hostError && (
+                    <p className="text-[11px] text-rose-600 dark:text-rose-400 font-medium px-1">
+                      {hostError}
+                    </p>
+                  )}
                 </form>
-
-                {/* Demo Mode Toggle */}
-                <div className="flex items-center justify-between pt-3 border-t border-black/[0.04] dark:border-white/[0.06]">
-                  <div>
-                    <span className="text-[12.5px] font-bold text-neutral-900 dark:text-white block">
-                      Demo Telemetry Mode
-                    </span>
-                    <span className="text-[11px] text-neutral-500 dark:text-neutral-400">
-                      Simulate live cat visits, food bowl &amp; fluidics
-                    </span>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={() => setIsDemoMode(!isDemoMode)}
-                    className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out ${
-                      isDemoMode ? "bg-neutral-900 dark:bg-white" : "bg-neutral-300 dark:bg-white/20"
-                    }`}
-                    role="switch"
-                    aria-checked={isDemoMode}
-                  >
-                    <span
-                      className={`pointer-events-none inline-block h-5 w-5 transform rounded-full ${
-                        isDemoMode ? "bg-white dark:bg-neutral-900 translate-x-5" : "bg-white translate-x-0"
-                      } shadow ring-0 transition duration-200 ease-in-out`}
-                    />
-                  </button>
-                </div>
               </div>
 
               {/* Real-Time RF & Sensor Calibration */}

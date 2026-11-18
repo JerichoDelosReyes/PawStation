@@ -60,7 +60,6 @@ function LiveStation({
     sendCommand,
     publishSchedule,
     lastSentSchedule,
-    isDemoMode,
   } = usePawStation();
 
   const scheduleData = useScheduleTelemetry();
@@ -470,11 +469,7 @@ function LiveStation({
                 <PawIcon className="w-2.5 h-2.5 fill-current" />
               </div>
               <span className="text-[11px] font-bold tracking-tight">
-                {isStationOnline
-                  ? isDemoMode
-                    ? "PawStation (Demo)"
-                    : "PawStation Online"
-                  : "Station Offline"}
+                {isStationOnline ? "PawStation Online" : "Station Offline"}
               </span>
             </div>
 
