@@ -58,6 +58,23 @@ export function sanitizeStationHost(input: string): string {
 }
 
 /**
+ * Detects if a host points to a private local-network address (e.g. 192.168.x.x, 10.x.x.x, .local, localhost)
+ */
+export function isPrivateHost(input: string): boolean {
+  if (!input) return false;
+  const clean = input
+    .trim()
+    .replace(/^(ws:\/\/|wss:\/\/|http:\/\/|https:\/\/)/i, "")
+    .split(":")[0];
+  if (clean === "localhost" || clean.endsWith(".local")) return true;
+  if (/^127\./.test(clean)) return true;
+  if (/^192\.168\./.test(clean)) return true;
+  if (/^10\./.test(clean)) return true;
+  if (/^172\.(1[6-9]|2\d|3[01])\./.test(clean)) return true;
+  return false;
+}
+
+/**
  * Validates feeding schedule string to prevent memory corruption or injection in ESP32 firmware parser.
  * Supports patterns like "08:00,18:00", "1|08:00,18:00", "0|08:00,18:00", or "0|".
  */

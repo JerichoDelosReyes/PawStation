@@ -15,7 +15,7 @@ import {
   CheckIcon,
   RefreshIcon,
 } from "./Icons";
-import { usePawStation, isValidStationHost } from "@/lib/station";
+import { usePawStation, isValidStationHost, isPrivateHost } from "@/lib/station";
 
 interface HardwareDiagnosticsDrawerProps {
   isOpen: boolean;
@@ -105,6 +105,15 @@ export default function HardwareDiagnosticsDrawer({
   const [hostError, setHostError] = useState<string | null>(null);
   const [rawView, setRawView] = useState(false);
   const [cooldown, setCooldown] = useState(false);
+  const [isHttps, setIsHttps] = useState(false);
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      setIsHttps(window.location.protocol === "https:");
+    }
+  }, []);
+
+  const showHttpsNotice = isHttps && isPrivateHost(esp32Host) && !isStationOnline;
 
   useEffect(() => {
     setHostInput(esp32Host || "pawstation.local");
@@ -150,7 +159,7 @@ export default function HardwareDiagnosticsDrawer({
       const data = await res.json().catch(() => null);
       if (res.ok && data?.success) {
         setHostSaved(true);
-        setSaveSuccessMsg(data.savedToFile ? "Saved to .env & Connected" : "Host Updated & Connected");
+        setSaveSuccessMsg("Host Updated & Connected");
         setTimeout(() => {
           setHostSaved(false);
           setSaveSuccessMsg(null);
@@ -270,14 +279,9 @@ export default function HardwareDiagnosticsDrawer({
 
                 {/* Host Editor */}
                 <form onSubmit={handleSaveHost} className="space-y-2">
-                  <div className="flex items-center justify-between">
-                    <label className="block text-[12px] font-semibold text-neutral-700 dark:text-neutral-300">
-                      ESP32 Host Address (Direct Wi-Fi / mDNS)
-                    </label>
-                    <span className="text-[10px] font-mono text-neutral-400">
-                      Updates .env &amp; Live Link
-                    </span>
-                  </div>
+                  <label className="block text-[12px] font-semibold text-neutral-700 dark:text-neutral-300">
+                    ESP32 Host Address (Direct Wi-Fi / mDNS)
+                  </label>
                   <div className="flex gap-2">
                     <input
                       type="text"
@@ -319,6 +323,27 @@ export default function HardwareDiagnosticsDrawer({
                     </p>
                   )}
                 </form>
+
+                {showHttpsNotice && (
+                  <div className="mt-3 p-3.5 rounded-2xl bg-amber-500/10 border border-amber-500/20 text-neutral-800 dark:text-neutral-200 space-y-2">
+                    <div className="flex items-center gap-1.5 text-amber-700 dark:text-amber-400 font-bold text-[12px]">
+                      <ShieldIcon className="w-4 h-4" />
+                      <span>Vercel / HTTPS Mixed Content Protection</span>
+                    </div>
+                    <p className="text-[11px] leading-relaxed text-neutral-600 dark:text-neutral-300">
+                      Chrome blocks direct connections from cloud HTTPS websites to local home Wi-Fi IPs (<code className="font-mono px-1 py-0.5 rounded bg-black/5 dark:bg-white/10">{esp32Host}</code>) by default.
+                    </p>
+                    <div className="text-[11px] space-y-1 pt-1.5 border-t border-amber-500/20 text-neutral-700 dark:text-neutral-200">
+                      <div className="font-semibold text-neutral-900 dark:text-white">To enable connection in Chrome:</div>
+                      <ol className="list-decimal list-inside space-y-1 pl-1 text-[10.5px]">
+                        <li>Click the <b>tune / site settings icon</b> left of the URL in Chrome</li>
+                        <li>Click <b>Site settings</b></li>
+                        <li>Change <b>Insecure content</b> from Block to <b>Allow</b></li>
+                        <li>Refresh this page</li>
+                      </ol>
+                    </div>
+                  </div>
+                )}
               </div>
 
               {/* Real-Time RF & Sensor Calibration */}

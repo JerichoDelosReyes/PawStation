@@ -43,6 +43,7 @@ export {
   isValidStationHost,
   sanitizeStationHost,
   isValidScheduleString,
+  isPrivateHost,
   type StationCommand,
 } from "./station-validation";
 
@@ -52,6 +53,7 @@ import {
   isValidStationHost,
   sanitizeStationHost,
   isValidScheduleString,
+  isPrivateHost,
   type StationCommand,
 } from "./station-validation";
 
@@ -380,25 +382,31 @@ export function StationProvider({ children }: { children: ReactNode }) {
       if (!isMounted || !esp32Host) return;
       if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) return;
 
-      // 1. Try Next.js server proxy first (bypasses browser PNA, CORS, and mixed-content boundaries)
-      try {
-        const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 1800);
-        const res = await fetch(
-          `/api/station/telemetry?host=${encodeURIComponent(esp32Host)}`,
-          { signal: controller.signal }
-        );
-        clearTimeout(timeoutId);
-        if (res.ok) {
-          const text = await res.text();
-          handleTelemetryFrame(text);
-          return;
+      const isHttps = typeof window !== "undefined" && window.location.protocol === "https:";
+      const isPrivate = isPrivateHost(esp32Host);
+
+      // 1. Try Next.js server proxy first (for localhost where dev server is on the same local network)
+      // On cloud deployments (Vercel over HTTPS), cloud lambdas in AWS cannot reach private LAN IPs.
+      if (!isHttps || !isPrivate) {
+        try {
+          const controller = new AbortController();
+          const timeoutId = setTimeout(() => controller.abort(), 1800);
+          const res = await fetch(
+            `/api/station/telemetry?host=${encodeURIComponent(esp32Host)}`,
+            { signal: controller.signal }
+          );
+          clearTimeout(timeoutId);
+          if (res.ok) {
+            const text = await res.text();
+            handleTelemetryFrame(text);
+            return;
+          }
+        } catch {
+          // Fall through to direct fetch
         }
-      } catch {
-        // Fall through to direct fetch
       }
 
-      // 2. Direct fetch fallback
+      // 2. Direct fetch fallback from browser to local ESP32 IP
       try {
         const controller = new AbortController();
         const timeoutId = setTimeout(() => controller.abort(), 1800);
