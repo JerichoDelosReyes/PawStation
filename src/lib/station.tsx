@@ -391,25 +391,22 @@ export function StationProvider({ children }: { children: ReactNode }) {
       const isHttps = typeof window !== "undefined" && window.location.protocol === "https:";
       const isPrivate = isPrivateHost(esp32Host);
 
-      // 1. Try Next.js server proxy first (for localhost where dev server is on the same local network)
-      // On cloud deployments (Vercel over HTTPS), cloud lambdas in AWS cannot reach private LAN IPs.
-      if (!isHttps || !isPrivate) {
-        try {
-          const controller = new AbortController();
-          const timeoutId = setTimeout(() => controller.abort(), 1800);
-          const res = await fetch(
-            `/api/station/telemetry?host=${encodeURIComponent(esp32Host)}`,
-            { signal: controller.signal }
-          );
-          clearTimeout(timeoutId);
-          if (res.ok) {
-            const text = await res.text();
-            handleTelemetryFrame(text);
-            return;
-          }
-        } catch {
-          // Fall through to direct fetch
+      // 1. Try Next.js server proxy & Cloud Relay (guaranteed HTTPS delivery for Vercel & mobile)
+      try {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 2000);
+        const res = await fetch(
+          `/api/station/telemetry?host=${encodeURIComponent(esp32Host)}`,
+          { signal: controller.signal }
+        );
+        clearTimeout(timeoutId);
+        if (res.ok) {
+          const text = await res.text();
+          handleTelemetryFrame(text);
+          return;
         }
+      } catch {
+        // Fall through to direct fetch
       }
 
       // 2. Direct fetch fallback from browser to local ESP32 IP

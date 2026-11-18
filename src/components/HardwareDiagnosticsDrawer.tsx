@@ -324,30 +324,20 @@ export default function HardwareDiagnosticsDrawer({
                   )}
                 </form>
 
-                {showHttpsNotice && (
-                  <div className="mt-3 p-3.5 rounded-2xl bg-amber-500/10 border border-amber-500/20 text-neutral-800 dark:text-neutral-200 space-y-2">
-                    <div className="flex items-center gap-1.5 text-amber-700 dark:text-amber-400 font-bold text-[12px]">
+                <div className="mt-3 p-3.5 rounded-2xl bg-sky-500/10 border border-sky-500/20 text-neutral-800 dark:text-neutral-200 space-y-1.5">
+                  <div className="flex items-center justify-between text-[12px]">
+                    <span className="flex items-center gap-1.5 font-bold text-sky-700 dark:text-sky-400">
                       <ShieldIcon className="w-4 h-4" />
-                      <span>Chrome Private Network Access (PNA) Block</span>
-                    </div>
-                    <p className="text-[11px] leading-relaxed text-neutral-600 dark:text-neutral-300">
-                      Google Chrome blocks public HTTPS websites from querying home Wi-Fi IPs (<code className="font-mono px-1 py-0.5 rounded bg-black/5 dark:bg-white/10">{esp32Host}</code>) due to strict Private Network Access security checks.
-                    </p>
-                    <div className="text-[11px] space-y-1 pt-1.5 border-t border-amber-500/20 text-neutral-700 dark:text-neutral-200">
-                      <div className="font-semibold text-neutral-900 dark:text-white">To allow Chrome to connect to your local ESP32:</div>
-                      <ol className="list-decimal list-inside space-y-1.5 pl-1 text-[10.5px]">
-                        <li>
-                          Open a new tab in Chrome and go to:
-                          <div className="font-mono bg-black/5 dark:bg-white/10 px-2 py-1 rounded my-1 text-[10px] select-all">
-                            chrome://flags/#block-insecure-private-network-requests
-                          </div>
-                        </li>
-                        <li>Set <b>Block insecure private network requests</b> to <b>Disabled</b></li>
-                        <li>Click <b>Relaunch</b> at the bottom of Chrome, then reopen this page</li>
-                      </ol>
-                    </div>
+                      <span>Supabase Cloud Relay Active</span>
+                    </span>
+                    <span className="text-[10.5px] font-mono text-emerald-600 dark:text-emerald-400 font-semibold bg-emerald-500/10 px-2 py-0.5 rounded-full">
+                      Zero-PNA Mobile Ready
+                    </span>
                   </div>
-                )}
+                  <p className="text-[11px] leading-relaxed text-neutral-600 dark:text-neutral-300">
+                    Commands and telemetry sync seamlessly over encrypted HTTPS via Supabase, enabling reliable control from any phone (iOS Safari &amp; Android) on Wi-Fi or cellular data.
+                  </p>
+                </div>
               </div>
 
               {/* Real-Time RF & Sensor Calibration */}

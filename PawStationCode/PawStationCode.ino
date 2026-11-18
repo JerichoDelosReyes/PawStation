@@ -13,6 +13,8 @@
 #include <HX711.h>
 #include <ESP32Servo.h>
 #include <time.h>
+#include <HTTPClient.h>
+#include <WiFiClientSecure.h>
 
 // ==============================================================================
 // 1. PIN CONFIGURATION
@@ -40,6 +42,14 @@ const long  GMT_OFFSET_SEC      = 8 * 3600;  // Adjust to your timezone offset i
 const int   DAYLIGHT_OFFSET_SEC = 0;
 const char* NTP_SERVER_1        = "pool.ntp.org";
 const char* NTP_SERVER_2        = "time.google.com";
+
+// ==============================================================================
+// 2.1 CLOUD RELAY CONFIGURATION (ZERO-PNA MOBILE CONTROL)
+// ==============================================================================
+// Target endpoint on your deployed Vercel application
+const char* CLOUD_SYNC_URL = "https://paw-station.vercel.app/api/station/cloud-sync";
+unsigned long lastCloudSyncTime = 0;
+const unsigned long CLOUD_SYNC_INTERVAL_MS = 1500; // Poll cloud every 1.5 seconds
 
 // ==============================================================================
 // 3. HARDWARE & CALIBRATION CONSTANTS
@@ -368,6 +378,47 @@ const char index_html[] PROGMEM = R"rawliteral(
 )rawliteral";
 
 // ==============================================================================
+// 9.1 SUPABASE / VERCEL CLOUD RELAY (ZERO-PNA MOBILE SYNC)
+// ==============================================================================
+void syncWithCloud() {
+  if (WiFi.status() != WL_CONNECTED) return;
+
+  WiFiClientSecure client;
+  client.setInsecure(); // Fast TLS handshake without cert pinning
+
+  HTTPClient https;
+  if (!https.begin(client, CLOUD_SYNC_URL)) {
+    return;
+  }
+
+  https.addHeader("Content-Type", "application/json");
+  https.setTimeout(2500);
+
+  String payload = buildTelemetryJson();
+  int httpCode = https.POST(payload);
+
+  if (httpCode == 200) {
+    String response = https.getString();
+    // Parse pending command e.g. "command":"dispense"
+    int cmdIdx = response.indexOf("\"command\":\"");
+    if (cmdIdx != -1) {
+      int start = cmdIdx + 11;
+      int end = response.indexOf("\"", start);
+      if (end != -1) {
+        String cmd = response.substring(start, end);
+        if (cmd.length() > 0 && cmd != "null") {
+          Serial.print("[Cloud] Executing queued command from mobile: ");
+          Serial.println(cmd);
+          parseAndExecuteCommand(cmd);
+        }
+      }
+    }
+  }
+
+  https.end();
+}
+
+// ==============================================================================
 // 10. SETUP INITIALIZATION
 // ==============================================================================
 void setup() {
@@ -545,5 +596,11 @@ void loop() {
     webSocket.broadcastTXT(payload);
 
     digitalWrite(STATUS_LED, !digitalRead(STATUS_LED));
+  }
+
+  // 6. Background Cloud Relay Sync (Runs every 1.5s for Zero-PNA Mobile Control)
+  if (now - lastCloudSyncTime >= CLOUD_SYNC_INTERVAL_MS) {
+    lastCloudSyncTime = now;
+    syncWithCloud();
   }
 }
