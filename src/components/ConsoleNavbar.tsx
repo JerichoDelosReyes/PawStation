@@ -8,6 +8,7 @@ import InverseCorner from "./InverseCorner";
 import ThemeTogglePill from "./ThemeTogglePill";
 import { useAuth } from "@/lib/auth-context";
 import { useTheme } from "./ThemeProvider";
+import { dbSync } from "@/lib/database-sync";
 import type { StationStatus } from "@/lib/station";
 
 interface ConsoleNavbarProps {
@@ -39,6 +40,14 @@ function ConsoleNavbar({
 
   const isOnline = stationStatus === "online";
   const isConnecting = stationStatus === "connecting";
+
+  const [cloudSync, setCloudSync] = useState({ isOnline: true, pendingCount: 0 });
+
+  useEffect(() => {
+    return dbSync.subscribe((online, pending) => {
+      setCloudSync({ isOnline: online, pendingCount: pending });
+    });
+  }, []);
 
   // Close dropdown when clicking outside or pressing Escape
   useEffect(() => {
@@ -197,6 +206,19 @@ function ConsoleNavbar({
                   <p className="text-[11px] font-medium text-neutral-400 dark:text-neutral-500 truncate mt-0.5">
                     {stationName}
                   </p>
+                  <div className="flex items-center gap-1.5 mt-1">
+                    {cloudSync.isOnline && cloudSync.pendingCount === 0 ? (
+                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 text-[9.5px] font-semibold border border-emerald-500/20">
+                        <span className="w-1 h-1 rounded-full bg-emerald-500" />
+                        Supabase Synced
+                      </span>
+                    ) : (
+                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-700 dark:text-amber-400 text-[9.5px] font-semibold border border-amber-500/20">
+                        <span className="w-1 h-1 rounded-full bg-amber-500" />
+                        Offline ({cloudSync.pendingCount} queued)
+                      </span>
+                    )}
+                  </div>
                 </div>
               </div>
 
@@ -478,10 +500,17 @@ function ConsoleNavbar({
                     {catBreed}
                   </p>
                   <div className="flex items-center gap-1.5 mt-1">
-                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 text-[10px] font-semibold border border-emerald-500/20">
-                      <span className="w-1 h-1 rounded-full bg-emerald-500" />
-                      Station Synced
-                    </span>
+                    {cloudSync.isOnline && cloudSync.pendingCount === 0 ? (
+                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 text-[10px] font-semibold border border-emerald-500/20">
+                        <span className="w-1 h-1 rounded-full bg-emerald-500" />
+                        Supabase Synced
+                      </span>
+                    ) : (
+                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-700 dark:text-amber-400 text-[10px] font-semibold border border-amber-500/20">
+                        <span className="w-1 h-1 rounded-full bg-amber-500" />
+                        Offline ({cloudSync.pendingCount} queued)
+                      </span>
+                    )}
                   </div>
                 </div>
               </div>

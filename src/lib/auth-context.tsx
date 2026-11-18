@@ -3,6 +3,7 @@
 import { createContext, useContext, useEffect, useState } from "react";
 import type { User, Session } from "@supabase/supabase-js";
 import { supabase } from "./supabase";
+import { dbSync } from "./database-sync";
 
 export interface CatProfile {
   catName: string;
@@ -54,20 +55,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [authModalMode, setAuthModalMode] = useState<"login" | "signup">("login");
 
-  // Load saved cat profile from localStorage cache on initial client load (with schema & sanitization validation)
+  // Clean up any legacy localStorage profile cache on startup
   useEffect(() => {
     try {
-      const savedProfile = localStorage.getItem("pawstation-cat-profile");
-      if (savedProfile) {
-        const parsed = JSON.parse(savedProfile);
-        if (parsed && typeof parsed === "object" && typeof parsed.catName === "string") {
-          setCatProfileState({
-            catName: sanitizeString(parsed.catName),
-            catBreed: sanitizeString(parsed.catBreed || "Domestic Shorthair"),
-            stationName: sanitizeString(parsed.stationName || "PawStation Unit 1"),
-          });
-        }
-      }
+      localStorage.removeItem("pawstation-cat-profile");
     } catch {
       /* ignore storage errors */
     }
@@ -77,7 +68,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     async function syncProfileFromDatabase(currentUserId: string, fallbackMeta?: Record<string, unknown>) {
       try {
-        // Attempt fetch from cat_profiles table
+        // Automatically ensure user has a registered station in database
+        dbSync.ensureUserStation(currentUserId, process.env.NEXT_PUBLIC_ESP32_HOST);
+
+        // Attempt fetch from cat_profiles table in Supabase
         const { data: dbProfile, error } = await supabase
           .from("cat_profiles")
           .select("cat_name, cat_breed, station_name")
@@ -91,11 +85,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             stationName: sanitizeString(dbProfile.station_name || "PawStation Unit 1"),
           };
           setCatProfileState(profile);
-          try {
-            localStorage.setItem("pawstation-cat-profile", JSON.stringify(profile));
-          } catch {
-            /* ignore */
-          }
           return;
         }
       } catch {
@@ -110,27 +99,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           stationName: sanitizeString((fallbackMeta.station_name as string) || "PawStation Unit 1"),
         };
         setCatProfileState(metaProfile);
-        try {
-          localStorage.setItem("pawstation-cat-profile", JSON.stringify(metaProfile));
-        } catch {
-          /* ignore */
-        }
 
-        // Asynchronously upsert to cat_profiles table for persistence
-        try {
-          await supabase.from("cat_profiles").upsert(
-            {
-              user_id: currentUserId,
-              cat_name: metaProfile.catName,
-              cat_breed: metaProfile.catBreed,
-              station_name: metaProfile.stationName,
-              updated_at: new Date().toISOString(),
-            },
-            { onConflict: "user_id" }
-          );
-        } catch {
-          /* table upsert non-blocking */
-        }
+        // Asynchronously sync to cat_profiles table in Supabase
+        dbSync.syncProfile(currentUserId, metaProfile);
       }
     }
 
@@ -219,17 +190,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     setCatProfileState(cleanProfile);
 
-    // Save to local storage cache
-    try {
-      localStorage.setItem("pawstation-cat-profile", JSON.stringify(cleanProfile));
-    } catch {
-      /* ignore */
-    }
-
-    // If authenticated, sync with user metadata and database table
+    // If authenticated, sync with Supabase (with offline fallback queue)
     if (user) {
       try {
-        // 1. Update user metadata
         await supabase.auth.updateUser({
           data: {
             cat_name: cleanProfile.catName,
@@ -237,21 +200,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             station_name: cleanProfile.stationName,
           },
         });
-
-        // 2. Upsert to cat_profiles table
-        await supabase.from("cat_profiles").upsert(
-          {
-            user_id: user.id,
-            cat_name: cleanProfile.catName,
-            cat_breed: cleanProfile.catBreed,
-            station_name: cleanProfile.stationName,
-            updated_at: new Date().toISOString(),
-          },
-          { onConflict: "user_id" }
-        );
       } catch {
-        /* database sync is non-blocking for UI responsiveness */
+        /* non-blocking auth metadata update */
       }
+
+      await dbSync.syncProfile(user.id, cleanProfile);
     }
   };
 

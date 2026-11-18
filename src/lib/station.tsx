@@ -185,17 +185,13 @@ export function StationProvider({ children }: { children: ReactNode }) {
 
   const lastCommandTimesRef = useRef<{ [key: string]: number }>({});
 
-  // Sync saved host from localStorage if available in browser
+  // Clean up legacy localStorage host cache on startup
   useEffect(() => {
     if (typeof window !== "undefined") {
-      const saved = localStorage.getItem("pawstation_esp32_host");
-      if (saved && isValidStationHost(saved.trim())) {
-        const sanitized = sanitizeStationHost(saved.trim());
-        if (sanitized !== DEFAULT_ENV_HOST) {
-          setEsp32HostState(sanitized);
-        }
-      } else if (saved) {
+      try {
         localStorage.removeItem("pawstation_esp32_host");
+      } catch {
+        /* ignore */
       }
     }
   }, []);
@@ -206,9 +202,6 @@ export function StationProvider({ children }: { children: ReactNode }) {
       setEsp32HostState("");
       setStationError("ESP32 host unconfigured");
       setStatusMessage("ESP32 host unconfigured");
-      if (typeof window !== "undefined") {
-        localStorage.removeItem("pawstation_esp32_host");
-      }
       return;
     }
 
@@ -220,9 +213,6 @@ export function StationProvider({ children }: { children: ReactNode }) {
 
     const sanitized = sanitizeStationHost(trimmed);
     setEsp32HostState(sanitized);
-    if (typeof window !== "undefined") {
-      localStorage.setItem("pawstation_esp32_host", sanitized);
-    }
   }, []);
 
   // ──────────────────────────────────────────────────────────────────────────

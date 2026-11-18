@@ -23,6 +23,8 @@ import {
 } from "./Icons";
 import { usePawStation, useScheduleTelemetry, type StationStatus } from "@/lib/station";
 import { supabase } from "@/lib/supabase";
+import { dbSync } from "@/lib/database-sync";
+import { useAuth } from "@/lib/auth-context";
 
 const MOBILE_NAV_TABS = [
   { id: 0 as const, label: "Companion", icon: CatIcon },
@@ -70,6 +72,7 @@ function LiveStation({
     lastSentSchedule,
   } = usePawStation();
 
+  const { user } = useAuth();
   const scheduleData = useScheduleTelemetry();
 
   // Local visits state
@@ -131,7 +134,7 @@ function LiveStation({
     }
   }, [scheduleData?.sched, lastSentSchedule, sentPayload]);
 
-  // Auto-record visits on feline presence transition (detected via 24-bit platform scale)
+  // Auto-record visits on feline presence transition (detected via platform scale)
   useEffect(() => {
     if (!telemetry) return;
     const wasCat = prevCatRef.current;
@@ -146,47 +149,62 @@ function LiveStation({
         duration_seconds: 30,
       };
 
-      if (isSupabaseConfigured) {
-        supabase
-          .from("cat_visits")
-          .insert({
-            visit_start: newVisit.visit_start,
-            peak_weight_g: newVisit.peak_weight_g,
-          })
-          .then(({ error }) => {
-            if (!error) {
-              setCatVisits((prev) => [newVisit, ...prev].slice(0, 8));
-            } else {
-              setCatVisits((prev) => [newVisit, ...prev].slice(0, 8));
-            }
-          });
-      } else {
-        setCatVisits((prev) => [newVisit, ...prev].slice(0, 8));
-      }
+      setCatVisits((prev) => [newVisit, ...prev].slice(0, 8));
+
+      // Record to Supabase with in-memory offline fallback
+      dbSync.recordVisit({
+        id: newVisit.id,
+        userId: user?.id,
+        visitStart: newVisit.visit_start,
+        peakWeightG: newVisit.peak_weight_g,
+        durationSeconds: newVisit.duration_seconds,
+      });
+
+      // Snapshot telemetry log on presence change
+      dbSync.logTelemetrySnapshot(telemetry);
     }
-  }, [telemetry?.cat, telemetry?.weight]);
+  }, [telemetry?.cat, telemetry?.weight, user?.id]);
+
+  // Periodic scale telemetry logging directly into Supabase (every 30s)
+  useEffect(() => {
+    if (!telemetry || !isStationOnline) return;
+
+    const interval = setInterval(() => {
+      if (telemetry) {
+        dbSync.logTelemetrySnapshot(telemetry);
+      }
+    }, 30000);
+
+    return () => clearInterval(interval);
+  }, [telemetry, isStationOnline]);
 
   // Initial fetch from Supabase
   useEffect(() => {
     if (!isSupabaseConfigured) return;
     let mounted = true;
-    supabase
+
+    let query = supabase
       .from("cat_visits")
       .select("*")
       .order("visit_start", { ascending: false })
-      .limit(8)
-      .then(({ data, error }) => {
-        if (!error && data && mounted) {
-          setCatVisits(
-            data.map((row: any) => ({
-              id: row.id,
-              visit_start: row.visit_start,
-              peak_weight_g: row.peak_weight_g,
-              duration_seconds: row.duration_seconds ?? null,
-            }))
-          );
-        }
-      });
+      .limit(8);
+
+    if (user?.id) {
+      query = query.or(`user_id.eq.${user.id},user_id.is.null`);
+    }
+
+    query.then(({ data, error }) => {
+      if (!error && data && mounted && data.length > 0) {
+        setCatVisits(
+          data.map((row: any) => ({
+            id: row.id,
+            visit_start: row.visit_start,
+            peak_weight_g: Number(row.peak_weight_g),
+            duration_seconds: row.duration_seconds ?? null,
+          }))
+        );
+      }
+    });
 
     const channel = supabase
       .channel("public:cat_visits_realtime")
@@ -200,10 +218,10 @@ function LiveStation({
             {
               id: newRow.id,
               visit_start: newRow.visit_start,
-              peak_weight_g: newRow.peak_weight_g,
+              peak_weight_g: Number(newRow.peak_weight_g),
               duration_seconds: newRow.duration_seconds ?? null,
             },
-            ...prev,
+            ...prev.filter((v) => v.id !== newRow.id),
           ].slice(0, 8));
         }
       )
@@ -213,13 +231,19 @@ function LiveStation({
       mounted = false;
       supabase.removeChannel(channel);
     };
-  }, []);
+  }, [user?.id]);
 
   const handleCommand = (cmd: "dispense" | "pump" | "tare", label: string) => {
     if (commandCooldown || !isStationOnline) return;
     setCommandCooldown(true);
     setLastAction(label);
     sendCommand(cmd);
+
+    // Audit command and log feeding events to Supabase
+    if (user) {
+      dbSync.logCommandAudit(cmd, user.id);
+    }
+
     setTimeout(() => {
       setCommandCooldown(false);
     }, 1200);
@@ -238,6 +262,16 @@ function LiveStation({
       duration_seconds: 25,
     };
     setCatVisits((prev) => [manualVisit, ...prev].slice(0, 8));
+
+    // Persist directly to Supabase with offline queue fallback
+    dbSync.recordVisit({
+      id: manualVisit.id,
+      userId: user?.id,
+      visitStart: manualVisit.visit_start,
+      peakWeightG: manualVisit.peak_weight_g,
+      durationSeconds: manualVisit.duration_seconds,
+    });
+
     setTimeout(() => setVisitLogged(false), 2000);
     setTimeout(() => setLastAction(null), 3000);
   };
