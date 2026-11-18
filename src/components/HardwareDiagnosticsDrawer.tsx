@@ -34,7 +34,7 @@ const hardwareSpecs = [
   {
     icon: ScaleIcon,
     label: "24-Bit Load Cell Amplifier",
-    detail: "HX711 with 10 kg aluminum bar load cell",
+    detail: "10 kg aluminum bar load cell with ADC",
     pin: "GPIO 18 / 19",
     pinRole: "SCK (Serial Clock) · DT (Serial Data)",
     accent: "text-amber-600 dark:text-amber-400 bg-amber-500/10",
@@ -289,7 +289,7 @@ export default function HardwareDiagnosticsDrawer({
                   className="w-full flex items-center justify-center gap-2 py-2.5 rounded-full border border-neutral-300 dark:border-white/15 bg-transparent hover:bg-black/5 dark:hover:bg-white/5 text-[12.5px] font-semibold text-neutral-900 dark:text-white transition-all active:scale-98 disabled:opacity-40 disabled:cursor-not-allowed"
                 >
                   <TareIcon className="w-4 h-4" />
-                  <span>Zero Scale (Tare HX711)</span>
+                  <span>Zero Scale (Tare)</span>
                 </button>
               </div>
 

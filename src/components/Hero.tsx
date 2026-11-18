@@ -199,13 +199,13 @@ export default function Hero() {
           ALL-BLACK MOBILE HEADER BAR (< lg)
       ───────────────────────────────────────────────────────────── */}
       <div className="lg:hidden w-full bg-[var(--frame-bg)] pb-2 flex flex-col z-40 relative">
-        <div className="w-full flex items-center justify-between px-2 py-1">
+        <div className="w-full flex items-center justify-between px-3 sm:px-4 py-3 sm:py-3.5 min-h-[58px] sm:min-h-[64px]">
           {/* Brand */}
-          <Link href="/" className="flex items-center gap-2 group" aria-label="PawStation Home">
-            <div className="w-7 h-7 rounded-lg bg-white flex items-center justify-center text-black shadow-sm">
-              <PawIcon className="w-3.5 h-3.5 fill-current" />
+          <Link href="/" className="flex items-center gap-2.5 group" aria-label="PawStation Home">
+            <div className="w-8 h-8 rounded-xl bg-white flex items-center justify-center text-black shadow-sm">
+              <PawIcon className="w-4 h-4 fill-current" />
             </div>
-            <span className="text-[14px] font-bold tracking-tight uppercase text-white font-sans">
+            <span className="text-[15px] font-bold tracking-tight uppercase text-white font-sans">
               PawStation
             </span>
           </Link>
@@ -215,7 +215,7 @@ export default function Hero() {
             {user ? (
               <Link
                 href="/dashboard"
-                className="px-3 py-1.5 rounded-full bg-white text-black text-[11px] font-semibold flex items-center gap-1 shadow-sm"
+                className="px-3.5 py-2 rounded-full bg-white text-black text-[11.5px] font-semibold flex items-center gap-1 shadow-sm"
               >
                 <span>Dashboard</span>
                 <span className="text-[9px] font-bold">›</span>
@@ -224,7 +224,7 @@ export default function Hero() {
               <button
                 type="button"
                 onClick={() => openAuthModal("login")}
-                className="px-3.5 py-1.5 rounded-full bg-white text-black text-[11.5px] font-semibold flex items-center gap-1 shadow-sm active:scale-95 transition-transform"
+                className="px-4 py-2 rounded-full bg-white text-black text-[11.5px] font-semibold flex items-center gap-1 shadow-sm active:scale-95 transition-transform"
               >
                 <span>Log In</span>
                 <span className="text-[9px] font-bold">›</span>
@@ -235,7 +235,7 @@ export default function Hero() {
               type="button"
               onClick={() => setMobileMenuOpen((prev) => !prev)}
               aria-label="Toggle navigation menu"
-              className="w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 active:scale-95 flex items-center justify-center text-white border border-white/10 transition-all cursor-pointer touch-manipulation"
+              className="w-9 h-9 rounded-full bg-white/10 hover:bg-white/20 active:scale-95 flex items-center justify-center text-white border border-white/10 transition-all cursor-pointer touch-manipulation"
             >
               {mobileMenuOpen ? <CloseIcon className="w-4 h-4" /> : <MenuIcon className="w-4 h-4" />}
             </button>
@@ -292,7 +292,7 @@ export default function Hero() {
               1. DOCKED TOP-LEFT NOTCH (BRAND LOGO - DESKTOP ONLY)
           ───────────────────────────────────────────────────────── */}
           <div className="hidden lg:flex absolute top-0 left-0 z-30 items-start">
-            <div className="bg-[var(--frame-bg)] pt-2 pb-2 pl-3.5 pr-4 sm:pt-3 sm:pb-3 sm:pl-7 sm:pr-8 rounded-br-[20px] sm:rounded-br-[28px] flex items-center">
+            <div className="bg-[var(--frame-bg)] h-[56px] sm:h-[70px] pl-3.5 pr-4 sm:pl-7 sm:pr-8 rounded-br-[20px] sm:rounded-br-[28px] flex items-center">
               <Link href="/" className="flex items-center gap-2 sm:gap-3 group" aria-label="PawStation Home">
                 <div className="w-6 h-6 sm:w-8 sm:h-8 rounded-lg sm:rounded-xl bg-white flex items-center justify-center text-black shadow-sm transition-transform duration-200 group-hover:scale-105">
                   <PawIcon className="w-3 h-3 sm:w-4 sm:h-4 text-black fill-current" />
@@ -308,7 +308,7 @@ export default function Hero() {
             </div>
           </div>
           {/* Inverted Fillet Curve Below Logo Notch */}
-          <div className="hidden lg:block absolute left-0 top-[40px] sm:top-[56px] z-30 text-[var(--frame-bg)]">
+          <div className="hidden lg:block absolute left-0 top-[56px] sm:top-[70px] z-30 text-[var(--frame-bg)]">
             <InverseCorner type="top-left-bottom" size={20} className="w-5 h-5 sm:w-6 sm:h-6" />
           </div>
 
@@ -320,12 +320,12 @@ export default function Hero() {
             <div className="text-[var(--frame-bg)]">
               <InverseCorner type="top-right-left" size={20} className="w-5 h-5 sm:w-6 sm:h-6" />
             </div>
-            <div className="bg-[var(--frame-bg)] pt-2 pb-2 pl-4 pr-3.5 sm:pt-3 sm:pb-3 sm:pl-8 sm:pr-6 rounded-bl-[20px] sm:rounded-bl-[28px] flex items-center">
+            <div className="bg-[var(--frame-bg)] h-[56px] sm:h-[70px] pl-4 pr-3.5 sm:pl-8 sm:pr-6 rounded-bl-[20px] sm:rounded-bl-[28px] flex items-center">
               {user ? (
                 <div className="flex items-center gap-2 sm:gap-2.5">
                   <Link
                     href="/dashboard"
-                    className="group inline-flex items-center gap-1.5 sm:gap-2 px-3.5 sm:px-5 py-1.5 sm:py-2 rounded-full bg-white text-black hover:bg-[#F2EFE9] text-[11.5px] sm:text-[13px] font-semibold tracking-tight shadow-sm transition-all duration-200 active:scale-[0.98]"
+                    className="group inline-flex items-center gap-1.5 sm:gap-2 px-3.5 sm:px-5 py-1.5 sm:py-2.5 rounded-full bg-white text-black hover:bg-[#F2EFE9] text-[11.5px] sm:text-[13px] font-semibold tracking-tight shadow-sm transition-all duration-200 active:scale-[0.98]"
                   >
                     <span>Dashboard</span>
                     <span className="w-4 h-4 sm:w-4.5 sm:h-4.5 rounded-full bg-black text-white flex items-center justify-center text-[9px] font-bold">
@@ -344,7 +344,7 @@ export default function Hero() {
                 <button
                   type="button"
                   onClick={() => openAuthModal("login")}
-                  className="group inline-flex items-center gap-1.5 sm:gap-2.5 px-3.5 sm:px-6 py-1.5 sm:py-2 rounded-full bg-white text-black hover:bg-[#F2EFE9] text-[11.5px] sm:text-[13px] font-semibold tracking-tight shadow-sm transition-all duration-200 active:scale-[0.98]"
+                  className="group inline-flex items-center gap-1.5 sm:gap-2.5 px-3.5 sm:px-6 py-1.5 sm:py-2.5 rounded-full bg-white text-black hover:bg-[#F2EFE9] text-[11.5px] sm:text-[13px] font-semibold tracking-tight shadow-sm transition-all duration-200 active:scale-[0.98]"
                 >
                   <span>Log In</span>
                   <span className="w-4 h-4 sm:w-4.5 sm:h-4.5 rounded-full bg-black text-white flex items-center justify-center text-[8.5px] sm:text-[10px] font-bold transition-transform duration-200 group-hover:translate-x-0.5">
@@ -355,17 +355,17 @@ export default function Hero() {
             </div>
           </div>
           {/* Inverted Fillet Curve Below CTA Notch */}
-          <div className="hidden lg:block absolute right-0 top-[40px] sm:top-[56px] z-30 text-[var(--frame-bg)]">
+          <div className="hidden lg:block absolute right-0 top-[56px] sm:top-[70px] z-30 text-[var(--frame-bg)]">
             <InverseCorner type="top-right-bottom" size={20} className="w-5 h-5 sm:w-6 sm:h-6" />
           </div>
 
           {/* ─────────────────────────────────────────────────────────
               3. TOP-CENTER NAVIGATION PILL (RESPONSIVE LG+ TO AVOID NOTCH COLLISION)
           ───────────────────────────────────────────────────────── */}
-          <div className="relative z-20 w-full flex items-center justify-center pt-3 sm:pt-4 px-4 flex-shrink-0 pointer-events-none">
+          <div className="relative z-20 w-full flex items-center justify-center pt-3.5 sm:pt-4 px-4 flex-shrink-0 pointer-events-none">
             <nav
               aria-label="Main navigation"
-              className="hidden lg:flex items-center gap-1.5 xl:gap-2 px-3 xl:px-4 py-1.5 xl:py-2 rounded-full border border-black/15 dark:border-white/20 bg-white/45 dark:bg-black/30 backdrop-blur-md shadow-[0_2px_12px_rgba(0,0,0,0.03)] text-[13px] xl:text-[14px] font-medium text-neutral-800 dark:text-neutral-200 transition-all pointer-events-auto"
+              className="hidden lg:flex items-center gap-2 xl:gap-2.5 px-3.5 xl:px-4.5 py-2 xl:py-2.5 rounded-full border border-black/15 dark:border-white/20 bg-white/45 dark:bg-black/30 backdrop-blur-md shadow-[0_2px_12px_rgba(0,0,0,0.03)] text-[13.5px] xl:text-[14.5px] font-medium text-neutral-800 dark:text-neutral-200 transition-all pointer-events-auto"
             >
               {navLinks.map((link) => {
                 const isActive = activeNav === link.label;

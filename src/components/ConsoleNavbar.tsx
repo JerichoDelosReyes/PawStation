@@ -95,42 +95,42 @@ function ConsoleNavbar({
       {/* ─────────────────────────────────────────────────────────────
           1. MOBILE HEADER BAR (< lg)
       ───────────────────────────────────────────────────────────── */}
-      <div className="lg:hidden w-full bg-[var(--frame-bg)] text-white px-4 py-2.5 flex items-center justify-between z-40 relative border-b border-white/10 select-none">
+      <div className="lg:hidden w-full bg-[var(--frame-bg)] text-white px-4 sm:px-6 py-3.5 sm:py-4 min-h-[58px] sm:min-h-[64px] flex items-center justify-between z-40 relative border-b border-white/10 select-none">
         {/* Brand */}
-        <Link href="/" className="flex items-center gap-2 group" aria-label="PawStation Home">
-          <div className="w-7 h-7 rounded-lg bg-white flex items-center justify-center text-black shadow-sm transition-transform group-hover:scale-105">
-            <PawIcon className="w-3.5 h-3.5 text-black fill-current" />
+        <Link href="/" className="flex items-center gap-2.5 group" aria-label="PawStation Home">
+          <div className="w-8 h-8 rounded-xl bg-white flex items-center justify-center text-black shadow-sm transition-transform group-hover:scale-105">
+            <PawIcon className="w-4 h-4 text-black fill-current" />
           </div>
-          <span className="text-[13px] font-bold tracking-tight uppercase text-white font-sans">
+          <span className="text-[15px] font-bold tracking-tight uppercase text-white font-sans">
             PawStation
           </span>
         </Link>
 
         {/* Cat Profile Trigger Pill on Mobile */}
-        <div className="flex items-center gap-1.5 relative">
+        <div className="flex items-center gap-2 relative">
           {onOpenDiagnostics && (
             <button
               type="button"
               onClick={onOpenDiagnostics}
-              className="p-1.5 rounded-full bg-white/10 hover:bg-white/15 text-white border border-white/10 transition-all active:scale-95 cursor-pointer"
+              className="w-10 h-10 rounded-full bg-white/10 hover:bg-white/15 text-white border border-white/10 flex items-center justify-center transition-all active:scale-95 cursor-pointer shrink-0"
               title="Hardware Diagnostics"
               aria-label="Hardware Diagnostics"
             >
-              <ChipIcon className="w-3.5 h-3.5" />
+              <ChipIcon className="w-4 h-4" />
             </button>
           )}
           <button
             ref={mobileTriggerRef}
             type="button"
             onClick={() => setProfileOpen((prev) => !prev)}
-            className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/10 hover:bg-white/15 text-white border border-white/10 transition-all active:scale-95 cursor-pointer"
+            className="flex items-center gap-2 px-3.5 h-10 rounded-full bg-white/10 hover:bg-white/15 text-white border border-white/10 transition-all active:scale-95 cursor-pointer"
             aria-expanded={profileOpen}
             aria-label="Open Cat Profile Menu"
           >
-            <div className="w-5 h-5 rounded-full bg-accent-amber/20 text-accent-amber flex items-center justify-center">
-              <CatIcon className="w-3 h-3 fill-current" />
+            <div className="w-5.5 h-5.5 rounded-full bg-accent-amber/20 text-accent-amber flex items-center justify-center">
+              <CatIcon className="w-3.5 h-3.5 fill-current" />
             </div>
-            <span className="text-[12px] font-semibold text-white max-w-[100px] truncate">
+            <span className="text-[12.5px] font-semibold text-white max-w-[110px] truncate">
               {catName}
             </span>
             <span className="relative flex h-1.5 w-1.5">
@@ -341,19 +341,14 @@ function ConsoleNavbar({
           2. DOCKED TOP-LEFT NOTCH (BRAND LOGO - LG+)
       ───────────────────────────────────────────────────────────── */}
       <div className="hidden lg:flex absolute top-0 left-0 z-30 items-start select-none">
-        <div className="bg-[var(--frame-bg)] h-[56px] px-6 rounded-br-[24px] sm:rounded-br-[28px] flex items-center gap-3">
-          <Link href="/" className="flex items-center gap-3 group" aria-label="PawStation Home">
-            <div className="w-8 h-8 rounded-xl bg-white flex items-center justify-center text-black shadow-sm transition-transform duration-200 group-hover:scale-105">
-              <PawIcon className="w-4 h-4 text-black fill-current" />
+        <div className="bg-[var(--frame-bg)] h-[56px] sm:h-[70px] pl-3.5 pr-4 sm:pl-7 sm:pr-8 rounded-br-[20px] sm:rounded-br-[28px] flex items-center">
+          <Link href="/" className="flex items-center gap-2 sm:gap-3 group" aria-label="PawStation Home">
+            <div className="w-6 h-6 sm:w-8 sm:h-8 rounded-lg sm:rounded-xl bg-white flex items-center justify-center text-black shadow-sm transition-transform duration-200 group-hover:scale-105">
+              <PawIcon className="w-3 h-3 sm:w-4 sm:h-4 text-black fill-current" />
             </div>
-            <div className="flex items-center gap-2">
-              <span className="text-[15px] font-bold tracking-tight uppercase text-white font-sans leading-none">
-                PawStation
-              </span>
-              <span className="text-[10px] font-semibold uppercase px-2 py-0.5 rounded-full bg-white/10 text-neutral-300 border border-white/10 leading-none">
-                Console
-              </span>
-            </div>
+            <span className="text-[14px] sm:text-[17px] font-bold tracking-tight uppercase text-white font-sans">
+              PawStation
+            </span>
           </Link>
         </div>
         {/* Inverted Fillet Curve to Right of Notch */}
@@ -362,7 +357,7 @@ function ConsoleNavbar({
         </div>
       </div>
       {/* Inverted Fillet Curve Below Logo Notch */}
-      <div className="hidden lg:block absolute left-0 top-[56px] z-30 text-[var(--frame-bg)]">
+      <div className="hidden lg:block absolute left-0 top-[56px] sm:top-[70px] z-30 text-[var(--frame-bg)]">
         <InverseCorner type="top-left-bottom" size={20} className="w-5 h-5 sm:w-6 sm:h-6" />
       </div>
 
@@ -374,18 +369,16 @@ function ConsoleNavbar({
         <div className="text-[var(--frame-bg)]">
           <InverseCorner type="top-right-left" size={20} className="w-5 h-5 sm:w-6 sm:h-6" />
         </div>
-        <div className="bg-[var(--frame-bg)] h-[56px] pl-4 pr-5 rounded-bl-[24px] sm:rounded-bl-[28px] flex items-center gap-2 relative">
+        <div className="bg-[var(--frame-bg)] h-[56px] sm:h-[70px] pl-4 pr-3.5 sm:pl-8 sm:pr-6 rounded-bl-[20px] sm:rounded-bl-[28px] flex items-center gap-2 sm:gap-2.5 relative">
           {onOpenDiagnostics && (
             <button
               type="button"
               onClick={onOpenDiagnostics}
-              className="group flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/10 hover:bg-white/15 text-white border border-white/10 transition-all active:scale-[0.98] cursor-pointer"
-              title="Open Hardware Diagnostics & Pinout"
+              className="group inline-flex items-center justify-center w-[38px] h-[38px] sm:w-[46px] sm:h-[46px] rounded-full bg-white/10 hover:bg-white/15 text-white border border-white/10 shadow-sm transition-all duration-200 active:scale-[0.98] cursor-pointer shrink-0"
+              title="Hardware Diagnostics"
+              aria-label="Hardware Diagnostics"
             >
-              <ChipIcon className="w-3.5 h-3.5 text-neutral-300 group-hover:text-white transition-colors" />
-              <span className="hidden xl:inline text-[12px] font-semibold text-neutral-200 group-hover:text-white transition-colors">
-                Diagnostics
-              </span>
+              <ChipIcon className="w-4 h-4 sm:w-5 sm:h-5 text-neutral-300 group-hover:text-white transition-colors" />
             </button>
           )}
 
@@ -394,17 +387,17 @@ function ConsoleNavbar({
             ref={desktopTriggerRef}
             type="button"
             onClick={() => setProfileOpen((prev) => !prev)}
-            className="group flex items-center gap-2.5 px-3.5 py-1.5 rounded-full bg-white/10 hover:bg-white/15 text-white border border-white/10 transition-all active:scale-[0.98] cursor-pointer"
+            className="group inline-flex items-center gap-2 sm:gap-2.5 px-3.5 sm:px-5 h-[38px] sm:h-[46px] rounded-full bg-white/10 hover:bg-white/15 text-white border border-white/10 text-[11.5px] sm:text-[13px] font-semibold tracking-tight shadow-sm transition-all duration-200 active:scale-[0.98] cursor-pointer"
             aria-expanded={profileOpen}
             aria-label="Cat Profile Menu"
           >
             {/* Cat Avatar Micro Badge */}
-            <div className="w-6 h-6 rounded-full bg-accent-amber/20 text-accent-amber flex items-center justify-center border border-accent-amber/30 group-hover:scale-105 transition-transform">
-              <CatIcon className="w-3.5 h-3.5 fill-current" />
+            <div className="w-5 h-5 sm:w-6 sm:h-6 rounded-full bg-accent-amber/20 text-accent-amber flex items-center justify-center border border-accent-amber/30 group-hover:scale-105 transition-transform">
+              <CatIcon className="w-3 h-3 sm:w-3.5 sm:h-3.5 fill-current" />
             </div>
 
             {/* Cat Name */}
-            <span className="text-[13px] font-semibold text-white tracking-tight">
+            <span className="text-white tracking-tight">
               {catName}
             </span>
 
@@ -452,7 +445,7 @@ function ConsoleNavbar({
           {profileOpen && (
             <div
               ref={desktopDropdownRef}
-              className="absolute right-0 top-[60px] z-50 w-80 max-h-[calc(100dvh-70px)] overflow-y-auto overscroll-contain select-auto rounded-2xl bg-white dark:bg-[#161B26] text-neutral-900 dark:text-white border border-black/10 dark:border-white/10 shadow-[0_16px_48px_rgba(0,0,0,0.15)] dark:shadow-[0_20px_56px_rgba(0,0,0,0.6)] backdrop-blur-2xl p-5 transition-all animate-in fade-in zoom-in-95 duration-150"
+              className="absolute right-0 top-[62px] sm:top-[76px] z-50 w-80 max-h-[calc(100dvh-84px)] overflow-y-auto overscroll-contain select-auto rounded-2xl bg-white dark:bg-[#161B26] text-neutral-900 dark:text-white border border-black/10 dark:border-white/10 shadow-[0_16px_48px_rgba(0,0,0,0.15)] dark:shadow-[0_20px_56px_rgba(0,0,0,0.6)] backdrop-blur-2xl p-5 transition-all animate-in fade-in zoom-in-95 duration-150"
             >
               {/* Window Header / Close Button */}
               <div className="flex items-center justify-between mb-4 pb-3 border-b border-black/[0.06] dark:border-white/[0.08]">
@@ -625,7 +618,7 @@ function ConsoleNavbar({
         </div>
       </div>
       {/* Inverted Fillet Curve Below Right Notch */}
-      <div className="hidden lg:block absolute right-0 top-[56px] z-40 text-[var(--frame-bg)]">
+      <div className="hidden lg:block absolute right-0 top-[56px] sm:top-[70px] z-40 text-[var(--frame-bg)]">
         <InverseCorner type="top-right-bottom" size={20} className="w-5 h-5 sm:w-6 sm:h-6" />
       </div>
     </>

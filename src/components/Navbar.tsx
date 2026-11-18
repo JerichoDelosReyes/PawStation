@@ -35,19 +35,19 @@ export default function Navbar() {
 
   return (
     <header className="fixed top-0 left-0 right-0 z-40 px-4 sm:px-6 md:px-8 pt-3 sm:pt-4 pointer-events-none">
-      <div className="max-w-7xl mx-auto flex items-center justify-between h-14 px-5 rounded-full bg-white/80 dark:bg-[#141417]/85 backdrop-blur-xl border border-black/[0.08] dark:border-white/[0.1] shadow-[0_4px_20px_rgba(0,0,0,0.04)] dark:shadow-[0_8px_32px_rgba(0,0,0,0.4)] pointer-events-auto transition-colors duration-200">
+      <div className="max-w-7xl mx-auto flex items-center justify-between h-[68px] sm:h-[72px] px-6 sm:px-7 rounded-full bg-white/80 dark:bg-[#141417]/85 backdrop-blur-xl border border-black/[0.08] dark:border-white/[0.1] shadow-[0_4px_20px_rgba(0,0,0,0.04)] dark:shadow-[0_8px_32px_rgba(0,0,0,0.4)] pointer-events-auto transition-colors duration-200">
         {/* Brand Left: Clean White Logo */}
-        <Link href="/" className="flex items-center gap-2.5 group" aria-label="PawStation Home">
-          <div className="w-7 h-7 rounded-lg bg-white flex items-center justify-center text-black shadow-sm transition-transform group-hover:scale-105">
-            <PawIcon className="w-3.5 h-3.5 fill-current" />
+        <Link href="/" className="flex items-center gap-3 group" aria-label="PawStation Home">
+          <div className="w-8 h-8 rounded-xl bg-white flex items-center justify-center text-black shadow-sm transition-transform group-hover:scale-105">
+            <PawIcon className="w-4 h-4 fill-current" />
           </div>
-          <span className="text-[14px] font-bold tracking-tight uppercase text-black dark:text-white">
+          <span className="text-[15px] sm:text-[16px] font-bold tracking-tight uppercase text-black dark:text-white">
             PawStation
           </span>
         </Link>
 
         {/* Centered Desktop Navigation */}
-        <nav className="hidden md:flex items-center gap-1.5 sm:gap-2">
+        <nav className="hidden md:flex items-center gap-2 sm:gap-2.5">
           {navLinks.map((link) => {
             const isActive = activeNav === link.label;
             return (
@@ -58,7 +58,7 @@ export default function Navbar() {
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.91 }}
                 transition={{ type: "spring", stiffness: 450, damping: 24 }}
-                className={`relative px-3.5 py-1.5 rounded-full text-[13px] font-medium transition-colors duration-200 whitespace-nowrap select-none ${
+                className={`relative px-4 py-2 rounded-full text-[13.5px] font-medium transition-colors duration-200 whitespace-nowrap select-none ${
                   isActive
                     ? "text-black dark:text-white font-semibold"
                     : "text-[#4A4A4F] dark:text-[#A1A1AA] hover:text-black dark:hover:text-white"
@@ -84,7 +84,7 @@ export default function Navbar() {
             <div className="flex items-center gap-2">
               <Link
                 href="/dashboard"
-                className="group inline-flex items-center gap-2 px-4 py-2 rounded-full bg-black dark:bg-white text-white dark:text-black text-[12px] font-semibold tracking-tight shadow-sm hover:opacity-90 active:scale-[0.98] transition-all"
+                className="group inline-flex items-center gap-2 px-4.5 py-2.5 rounded-full bg-black dark:bg-white text-white dark:text-black text-[12.5px] font-semibold tracking-tight shadow-sm hover:opacity-90 active:scale-[0.98] transition-all"
               >
                 <span>Dashboard</span>
                 <span className="w-4 h-4 rounded-full bg-white dark:bg-black text-black dark:text-white flex items-center justify-center text-[9px] font-bold">
@@ -103,7 +103,7 @@ export default function Navbar() {
             <button
               type="button"
               onClick={() => openAuthModal("login")}
-              className="group inline-flex items-center gap-2 px-5 py-2 rounded-full bg-black dark:bg-white text-white dark:text-black text-[12px] font-semibold tracking-tight shadow-sm hover:opacity-90 active:scale-[0.98] transition-all"
+              className="group inline-flex items-center gap-2 px-5.5 py-2.5 rounded-full bg-black dark:bg-white text-white dark:text-black text-[12.5px] font-semibold tracking-tight shadow-sm hover:opacity-90 active:scale-[0.98] transition-all"
             >
               <span>Log In</span>
               <span className="w-4 h-4 rounded-full bg-white dark:bg-black text-black dark:text-white flex items-center justify-center text-[9px] font-bold transition-transform duration-200 group-hover:translate-x-0.5">
@@ -118,7 +118,7 @@ export default function Navbar() {
           {user ? (
             <Link
               href="/dashboard"
-              className="px-3 py-1.5 rounded-full bg-black dark:bg-white text-white dark:text-black text-[11px] font-semibold"
+              className="px-3.5 py-2 rounded-full bg-black dark:bg-white text-white dark:text-black text-[11.5px] font-semibold"
             >
               App
             </Link>
@@ -126,7 +126,7 @@ export default function Navbar() {
             <button
               type="button"
               onClick={() => openAuthModal("login")}
-              className="px-3.5 py-1.5 rounded-full bg-black dark:bg-white text-white dark:text-black text-[11px] font-semibold flex items-center gap-1.5"
+              className="px-4 py-2 rounded-full bg-black dark:bg-white text-white dark:text-black text-[11.5px] font-semibold flex items-center gap-1.5"
             >
               <span>Log In</span>
               <span>›</span>
@@ -137,7 +137,7 @@ export default function Navbar() {
             type="button"
             onClick={() => setOpen(!open)}
             aria-label="Toggle navigation menu"
-            className="w-8 h-8 rounded-full border border-black/10 dark:border-white/10 flex items-center justify-center text-black dark:text-white"
+            className="w-9 h-9 rounded-full border border-black/10 dark:border-white/10 flex items-center justify-center text-black dark:text-white"
           >
             {open ? <CloseIcon className="w-4 h-4" /> : <MenuIcon className="w-4 h-4" />}
           </button>

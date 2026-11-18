@@ -7,6 +7,7 @@ import {
   ScaleIcon,
   WaterDropIcon,
   KibbleIcon,
+  FeederIcon,
   PumpIcon,
   CatIcon,
   SignalIcon,
@@ -18,9 +19,16 @@ import {
   ArrowRightIcon,
   CloseIcon,
   RefreshIcon,
+  PencilIcon,
 } from "./Icons";
 import { usePawStation, useScheduleTelemetry, type StationStatus } from "@/lib/station";
 import { supabase } from "@/lib/supabase";
+
+const MOBILE_NAV_TABS = [
+  { id: 0 as const, label: "Companion", icon: CatIcon },
+  { id: 1 as const, label: "Feeder Status", icon: FeederIcon },
+  { id: 2 as const, label: "Routine Log", icon: ClockIcon },
+];
 
 interface CatVisit {
   id: string;
@@ -261,7 +269,7 @@ function LiveStation({
   const isWaterLow = telemetry?.waterLow ?? false;
 
   return (
-    <div className="w-full h-full flex-1 min-h-0 flex flex-col justify-center select-none overflow-hidden">
+    <div className="w-full h-full flex-1 min-h-0 flex flex-col justify-between select-none overflow-hidden relative">
       {/* ── Action Feedback Toast ── */}
       <AnimatePresence>
         {lastAction && (
@@ -277,49 +285,12 @@ function LiveStation({
         )}
       </AnimatePresence>
 
-      {/* ── Mobile Card Selector Tabs (< lg) ── */}
-      <div className="lg:hidden flex items-center justify-center gap-2 p-1 rounded-full bg-[#E8E4DA] dark:bg-[#1C2230] max-w-sm mx-auto w-full shrink-0 mb-2">
-        <button
-          type="button"
-          onClick={() => setMobileActiveCard(0)}
-          className={`flex-1 py-1.5 px-3 rounded-full text-[11.5px] font-bold transition-all ${
-            mobileActiveCard === 0
-              ? "bg-neutral-900 text-white dark:bg-white dark:text-neutral-900 shadow-sm"
-              : "text-neutral-600 dark:text-neutral-400"
-          }`}
-        >
-          Companion
-        </button>
-        <button
-          type="button"
-          onClick={() => setMobileActiveCard(1)}
-          className={`flex-1 py-1.5 px-3 rounded-full text-[11.5px] font-bold transition-all ${
-            mobileActiveCard === 1
-              ? "bg-neutral-900 text-white dark:bg-white dark:text-neutral-900 shadow-sm"
-              : "text-neutral-600 dark:text-neutral-400"
-          }`}
-        >
-          Feeder Status
-        </button>
-        <button
-          type="button"
-          onClick={() => setMobileActiveCard(2)}
-          className={`flex-1 py-1.5 px-3 rounded-full text-[11.5px] font-bold transition-all ${
-            mobileActiveCard === 2
-              ? "bg-neutral-900 text-white dark:bg-white dark:text-neutral-900 shadow-sm"
-              : "text-neutral-600 dark:text-neutral-400"
-          }`}
-        >
-          Routine &amp; Log
-        </button>
-      </div>
-
       {/* ─────────────────────────────────────────────────────────────
           RESPONSIVE CARD DECK: EXACT 1-PAGE ZERO-SCROLL WORKSTATION
       ───────────────────────────────────────────────────────────── */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 lg:gap-5 xl:gap-6 items-stretch max-w-[1540px] mx-auto w-full h-full flex-1 min-h-0 overflow-hidden">
         {/* ═══════════════════════════════════════════════════════════
-            CARD 1: COMPANION STATUS & 24-BIT PLATFORM SCALE (HX711)
+            CARD 1: COMPANION STATUS & PLATFORM SCALE
         ═══════════════════════════════════════════════════════════ */}
         <div
           className={`${
@@ -329,7 +300,7 @@ function LiveStation({
           {/* Top Pill Header & Edit Shortcut */}
           <div className="flex items-center justify-between gap-2 relative z-10 shrink-0">
             <span className="text-[10px] font-bold uppercase tracking-widest text-neutral-500 dark:text-neutral-400">
-              Platform Scale (HX711)
+              Platform Scale
             </span>
 
             {onOpenEditProfile && (
@@ -340,7 +311,7 @@ function LiveStation({
                 title="Edit Companion Profile"
                 aria-label="Edit Companion Profile"
               >
-                <CloseIcon className="w-3.5 h-3.5 rotate-45" />
+                <PencilIcon className="w-3.5 h-3.5" />
               </button>
             )}
           </div>
@@ -366,29 +337,29 @@ function LiveStation({
             />
 
             {/* Cat Avatar Container */}
-            <div className="relative z-10 w-24 h-24 sm:w-28 sm:h-28 xl:w-32 xl:h-32 rounded-full bg-gradient-to-tr from-[#D1C7BD] to-[#F5EFE6] dark:from-[#242C3C] dark:to-[#171D27] p-2 shadow-xl flex flex-col items-center justify-center border-4 border-white/60 dark:border-white/10">
+            <div className="relative z-10 w-32 h-32 sm:w-40 sm:h-40 xl:w-44 xl:h-44 rounded-full bg-gradient-to-tr from-[#D1C7BD] to-[#F5EFE6] dark:from-[#242C3C] dark:to-[#171D27] p-2 shadow-xl flex flex-col items-center justify-center border-4 border-white/60 dark:border-white/10">
               <div className="w-full h-full rounded-full bg-[#DFD7CE] dark:bg-[#1E2533] flex flex-col items-center justify-center relative overflow-hidden">
-                <CatIcon className="w-12 h-12 sm:w-14 sm:h-14 text-neutral-800 dark:text-neutral-200 fill-current" />
+                <CatIcon className="w-16 h-16 sm:w-20 sm:h-20 xl:w-24 xl:h-24 text-neutral-800 dark:text-neutral-200 fill-current" />
               </div>
             </div>
 
             {/* Cat Identity Pill Badge */}
-            <div className="mt-2 px-3 py-1 rounded-full bg-white/80 dark:bg-white/10 backdrop-blur-md border border-black/[0.05] dark:border-white/10 flex items-center gap-1.5 shadow-sm shrink-0">
-              <span className="text-[12px] font-bold text-neutral-900 dark:text-white">
+            <div className="mt-3 px-4 sm:px-5 py-1.5 sm:py-2 rounded-full bg-white/80 dark:bg-white/10 backdrop-blur-md border border-black/[0.05] dark:border-white/10 flex items-center gap-1.5 shadow-sm shrink-0">
+              <span className="text-[13.5px] sm:text-[15px] font-bold text-neutral-900 dark:text-white">
                 {catName}
               </span>
-              <span className="text-[10.5px] text-neutral-500 dark:text-neutral-400">
+              <span className="text-[12px] sm:text-[13px] text-neutral-500 dark:text-neutral-400">
                 · {catBreed}
               </span>
             </div>
 
             {/* Real-Time Acoustic / Presence Visualizer Bars */}
-            <div className="mt-2 flex items-center gap-1 h-4 shrink-0">
+            <div className="mt-3 flex items-center gap-1.5 h-6 shrink-0">
               {[4, 7, 12, 18, 14, 20, 10, 15, 8, 4].map((h, i) => (
                 <span
                   key={i}
-                  style={{ height: telemetry?.cat ? `${h}px` : "3px" }}
-                  className={`w-0.5 sm:w-1 rounded-full transition-all duration-300 ${
+                  style={{ height: telemetry?.cat ? `${h * 1.3}px` : "3.5px" }}
+                  className={`w-1 sm:w-1.5 rounded-full transition-all duration-300 ${
                     telemetry?.cat ? "bg-neutral-900 dark:bg-white" : "bg-neutral-300 dark:bg-white/20"
                   }`}
                 />
@@ -396,31 +367,28 @@ function LiveStation({
             </div>
 
             {/* Live Presence Pill */}
-            <div className="mt-1.5 shrink-0">
+            <div className="mt-2.5 shrink-0">
               {telemetry?.cat ? (
-                <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-emerald-500/15 text-emerald-800 dark:text-emerald-300 border border-emerald-500/30 text-[10.5px] font-bold">
-                  <span className="relative flex h-1.5 w-1.5">
+                <span className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-emerald-500/15 text-emerald-800 dark:text-emerald-300 border border-emerald-500/30 text-[11.5px] sm:text-[12px] font-bold">
+                  <span className="relative flex h-2 w-2">
                     <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
-                    <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-emerald-500" />
+                    <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500" />
                   </span>
                   <span>On Scale Platform</span>
                 </span>
               ) : (
-                <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-black/[0.05] dark:bg-white/[0.06] text-neutral-600 dark:text-neutral-400 text-[10.5px] font-medium">
+                <span className="inline-flex items-center gap-1 px-3.5 py-1 rounded-full bg-black/[0.05] dark:bg-white/[0.06] text-neutral-600 dark:text-neutral-400 text-[11.5px] sm:text-[12px] font-medium">
                   <span>Platform Clear</span>
                 </span>
               )}
             </div>
 
-            {/* Big 24-Bit Scale Weight (Cat on Platform) */}
-            <div className="mt-2 text-center shrink-0">
-              <span className="text-[32px] sm:text-[38px] xl:text-[42px] font-black tracking-tight leading-none text-neutral-900 dark:text-white font-mono tabular-nums">
+            {/* Big Scale Weight (Cat on Platform) */}
+            <div className="mt-2.5 text-center shrink-0">
+              <span className="text-[44px] sm:text-[54px] xl:text-[62px] font-black tracking-tight leading-none text-neutral-900 dark:text-white font-mono tabular-nums">
                 {telemetry ? `${telemetry.weight.toFixed(1)}` : "4200.0"}
-                <span className="text-[18px] ml-1 font-bold">g</span>
+                <span className="text-[20px] sm:text-[24px] ml-1.5 font-bold">g</span>
               </span>
-              <p className="text-[10px] text-neutral-500 dark:text-neutral-400 mt-0.5">
-                24-Bit Load Cell Platform
-              </p>
             </div>
           </div>
 
@@ -446,8 +414,8 @@ function LiveStation({
               onClick={() => handleCommand("tare", "Scale Zeroed (Tare)")}
               disabled={!isStationOnline || commandCooldown}
               className="w-11 h-11 sm:w-12 sm:h-12 rounded-full border border-neutral-400/30 dark:border-white/20 bg-white/70 dark:bg-white/10 hover:bg-white dark:hover:bg-white/20 text-neutral-900 dark:text-white flex items-center justify-center shadow-sm active:scale-95 transition-all disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
-              title="Zero Scale (Tare HX711)"
-              aria-label="Zero Scale (Tare HX711)"
+              title="Zero Scale (Tare)"
+              aria-label="Zero Scale (Tare)"
             >
               <TareIcon className="w-4 h-4" />
             </button>
@@ -569,7 +537,7 @@ function LiveStation({
                       }`}
                     />
                     <span className="text-[14px] sm:text-[16px] font-black leading-tight tracking-tight">
-                      {telemetry?.dispensing ? "Dispensing" : "Chute Ready"}
+                      {telemetry?.dispensing ? "Dispensing" : "Ready"}
                     </span>
                   </div>
                   <span className="text-[10px] font-semibold opacity-85 block mt-0.5 leading-snug">
@@ -584,7 +552,7 @@ function LiveStation({
               <div className="grid grid-cols-2 gap-2">
                 <button
                   type="button"
-                  onClick={() => handleCommand("dispense", "Dispensing Food (Chute Cycle)")}
+                  onClick={() => handleCommand("dispense", "Dispensing Food")}
                   disabled={!isStationOnline || telemetry?.dispensing || commandCooldown}
                   className="py-2.5 sm:py-3 px-3 rounded-full bg-neutral-900 text-white dark:bg-white dark:text-neutral-900 hover:opacity-95 text-[11.5px] sm:text-[12px] font-bold tracking-tight shadow-md flex items-center justify-center gap-1.5 active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed transition-all"
                 >
@@ -609,7 +577,7 @@ function LiveStation({
                   Routine Status
                 </span>
                 <span className="font-mono">
-                  {scheduleData?.lastAuto ? `Last feed: ${scheduleData.lastAuto}` : "Chute ready"}
+                  {scheduleData?.lastAuto ? `Last feed: ${scheduleData.lastAuto}` : "Ready"}
                 </span>
               </div>
             </div>
@@ -875,6 +843,55 @@ function LiveStation({
           </div>
         </div>
       </div>
+
+      {/* ─────────────────────────────────────────────────────────────
+          MOBILE IPHONE LIQUID GLASS NAVIGATION BAR (< lg ONLY)
+      ───────────────────────────────────────────────────────────── */}
+      <nav
+        role="tablist"
+        aria-label="Workstation view navigation"
+        className="lg:hidden shrink-0 pt-2.5 pb-[max(0.5rem,env(safe-area-inset-bottom))] w-full max-w-sm sm:max-w-md mx-auto z-30 select-none"
+      >
+        <div className="relative p-2 sm:p-2.5 rounded-full bg-white/70 dark:bg-[#151924]/70 backdrop-blur-2xl backdrop-saturate-[180%] border border-white/60 dark:border-white/[0.12] shadow-[0_10px_35px_rgba(0,0,0,0.08),0_2px_8px_rgba(0,0,0,0.04),inset_0_1px_1px_rgba(255,255,255,0.9),inset_0_-1px_1px_rgba(0,0,0,0.04)] dark:shadow-[0_12px_40px_rgba(0,0,0,0.55),0_2px_8px_rgba(0,0,0,0.3),inset_0_1px_1px_rgba(255,255,255,0.18),inset_0_-1px_1px_rgba(0,0,0,0.4)] flex items-center justify-between gap-1 sm:gap-1.5 overflow-hidden">
+          {/* Authentic iOS Liquid Glass Specular Top Highlight */}
+          <div className="pointer-events-none absolute inset-x-6 top-0 h-[1px] bg-gradient-to-r from-transparent via-white/80 dark:via-white/30 to-transparent" />
+
+          {MOBILE_NAV_TABS.map((tab) => {
+            const Icon = tab.icon;
+            const isActive = mobileActiveCard === tab.id;
+            return (
+              <button
+                key={tab.id}
+                type="button"
+                role="tab"
+                aria-selected={isActive}
+                onClick={() => setMobileActiveCard(tab.id)}
+                className={`relative flex-1 flex items-center justify-center gap-1.5 sm:gap-2 min-h-[46px] sm:min-h-[50px] py-2.5 sm:py-3 px-2 sm:px-3 rounded-full text-[12px] sm:text-[13px] font-bold tracking-tight transition-transform active:scale-[0.96] cursor-pointer focus:outline-none ${
+                  isActive
+                    ? "text-white dark:text-neutral-900"
+                    : "text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white"
+                }`}
+              >
+                {isActive && (
+                  <motion.div
+                    layoutId="mobileLiquidGlassActiveTab"
+                    transition={{
+                      type: "spring",
+                      stiffness: 450,
+                      damping: 35,
+                    }}
+                    className="absolute inset-0 rounded-full bg-neutral-900 dark:bg-white shadow-[0_4px_14px_rgba(0,0,0,0.2),inset_0_1px_0.5px_rgba(255,255,255,0.2)] dark:shadow-[0_4px_16px_rgba(255,255,255,0.22),inset_0_1px_0.5px_rgba(255,255,255,0.8)]"
+                  />
+                )}
+                <Icon className="w-4 h-4 shrink-0 relative z-10 transition-colors" />
+                <span className="relative z-10 whitespace-nowrap leading-none">
+                  {tab.label}
+                </span>
+              </button>
+            );
+          })}
+        </div>
+      </nav>
     </div>
   );
 }
