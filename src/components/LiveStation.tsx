@@ -582,8 +582,8 @@ function LiveStation({
 
                 <button
                   type="button"
-                  onClick={() => handleCommand("pump", "Running Fountain (3s)")}
-                  disabled={!isStationOnline || telemetry?.pump !== "OFF" || isWaterLow || commandCooldown}
+                  onClick={() => handleCommand("pump", isWaterLow ? "Fountain Test (3s - Low Level)" : "Running Fountain (3s)")}
+                  disabled={!isStationOnline || telemetry?.pump !== "OFF" || commandCooldown}
                   className="py-2.5 sm:py-3 px-3 rounded-full bg-[#A8C4BD] text-[#163831] dark:bg-[#2A3E39] dark:text-[#B2E0D6] hover:opacity-95 text-[11.5px] sm:text-[12px] font-bold tracking-tight shadow-md flex items-center justify-center gap-1.5 active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed transition-all"
                 >
                   <PumpIcon className="w-3.5 h-3.5" />

@@ -35,76 +35,24 @@ export interface ScheduleTelemetryData {
 }
 
 export type StationStatus = "online" | "offline" | "connecting";
-export const ALLOWED_STATION_COMMANDS = ["dispense", "pump", "tare"] as const;
-export type StationCommand = (typeof ALLOWED_STATION_COMMANDS)[number];
 
-export function isAllowedStationCommand(cmd: unknown): cmd is StationCommand {
-  return typeof cmd === "string" && (ALLOWED_STATION_COMMANDS as readonly string[]).includes(cmd);
-}
+export {
+  ALLOWED_STATION_COMMANDS,
+  isAllowedStationCommand,
+  isValidStationHost,
+  sanitizeStationHost,
+  isValidScheduleString,
+  type StationCommand,
+} from "./station-validation";
 
-/**
- * Validates ESP32 station host to prevent SSRF, connection poisoning, and injection attacks.
- * Accepts IPv4 addresses (LAN/loopback), valid mDNS hostnames (.local), or localhost, with optional port 1-65535.
- */
-export function isValidStationHost(input: string): boolean {
-  if (!input || typeof input !== "string") return false;
-  const trimmed = input.trim();
-  if (trimmed.length === 0 || trimmed.length > 253) return false;
-
-  // Strip protocol prefix if provided
-  const hostNoProto = trimmed.replace(/^(ws:\/\/|wss:\/\/|http:\/\/|https:\/\/)/i, "");
-
-  // Separate host and optional port
-  const [hostPart, portPart, ...extra] = hostNoProto.split(":");
-  if (extra.length > 0) return false;
-
-  if (portPart !== undefined) {
-    if (!/^\d{1,5}$/.test(portPart)) return false;
-    const portNum = parseInt(portPart, 10);
-    if (portNum < 1 || portNum > 65535) return false;
-  }
-
-  // Reject paths, query strings, fragments, userinfo, control chars
-  if (/[\/\?\#\@\s\\'"<>]/.test(hostPart)) return false;
-
-  // Check IPv4 format: 4 octets 0-255
-  const ipv4Regex = /^(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})$/;
-  const ipMatch = hostPart.match(ipv4Regex);
-  if (ipMatch) {
-    const octets = [
-      parseInt(ipMatch[1], 10),
-      parseInt(ipMatch[2], 10),
-      parseInt(ipMatch[3], 10),
-      parseInt(ipMatch[4], 10),
-    ];
-    return octets.every((octet) => octet >= 0 && octet <= 255);
-  }
-
-  // Check standard hostname / mDNS domain (e.g. pawstation.local, localhost)
-  const hostnameRegex =
-    /^(?=.{1,253}$)(localhost|[a-zA-Z0-9]([a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(\.[a-zA-Z0-9]([a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*)$/;
-  return hostnameRegex.test(hostPart);
-}
-
-export function sanitizeStationHost(input: string): string {
-  const trimmed = input.trim();
-  if (!isValidStationHost(trimmed)) {
-    return "";
-  }
-  return trimmed.replace(/^(ws:\/\/|wss:\/\/|http:\/\/|https:\/\/)/i, "").replace(/\/+$/, "");
-}
-
-/**
- * Validates feeding schedule string to prevent memory corruption or injection in ESP32 firmware parser.
- * Supports patterns like "08:00,18:00", "1|08:00,18:00", "0|08:00,18:00", or "0|".
- */
-export function isValidScheduleString(schedule: string): boolean {
-  if (!schedule || typeof schedule !== "string") return false;
-  const trimmed = schedule.trim();
-  if (trimmed.length > 80) return false;
-  const pattern = /^(([01]\|)?([01]\d|2[0-3]):[0-5]\d(,\s*([01]\d|2[0-3]):[0-5]\d)*|0\|?)$/;
-  return pattern.test(trimmed);
-}
+import {
+  ALLOWED_STATION_COMMANDS,
+  isAllowedStationCommand,
+  isValidStationHost,
+  sanitizeStationHost,
+  isValidScheduleString,
+  type StationCommand,
+} from "./station-validation";
 
 export interface StationStatusContextValue {
   stationStatus: StationStatus;
@@ -133,7 +81,7 @@ const StationStatusContext = createContext<StationStatusContextValue | null>(nul
 const StationTelemetryContext = createContext<TelemetryData | null>(null);
 const StationScheduleContext = createContext<ScheduleTelemetryData | null>(null);
 
-const DEFAULT_ENV_HOST = process.env.NEXT_PUBLIC_ESP32_HOST?.trim() || "";
+const DEFAULT_ENV_HOST = process.env.NEXT_PUBLIC_ESP32_HOST?.trim() || "192.168.0.118";
 
 function formatCurrentTime(): string {
   const now = new Date();
@@ -185,11 +133,17 @@ export function StationProvider({ children }: { children: ReactNode }) {
 
   const lastCommandTimesRef = useRef<{ [key: string]: number }>({});
 
-  // Clean up legacy localStorage host cache on startup
+  // Load saved host from localStorage if available in browser
   useEffect(() => {
     if (typeof window !== "undefined") {
       try {
-        localStorage.removeItem("pawstation_esp32_host");
+        const saved = localStorage.getItem("pawstation_esp32_host");
+        if (saved && isValidStationHost(saved.trim())) {
+          const sanitized = sanitizeStationHost(saved.trim());
+          if (sanitized) {
+            setEsp32HostState(sanitized);
+          }
+        }
       } catch {
         /* ignore */
       }
@@ -202,6 +156,13 @@ export function StationProvider({ children }: { children: ReactNode }) {
       setEsp32HostState("");
       setStationError("ESP32 host unconfigured");
       setStatusMessage("ESP32 host unconfigured");
+      if (typeof window !== "undefined") {
+        try {
+          localStorage.removeItem("pawstation_esp32_host");
+        } catch {
+          /* ignore */
+        }
+      }
       return;
     }
 
@@ -213,6 +174,13 @@ export function StationProvider({ children }: { children: ReactNode }) {
 
     const sanitized = sanitizeStationHost(trimmed);
     setEsp32HostState(sanitized);
+    if (typeof window !== "undefined") {
+      try {
+        localStorage.setItem("pawstation_esp32_host", sanitized);
+      } catch {
+        /* ignore */
+      }
+    }
   }, []);
 
   // ──────────────────────────────────────────────────────────────────────────
@@ -322,24 +290,16 @@ export function StationProvider({ children }: { children: ReactNode }) {
 
         ws.onerror = () => {
           if (!isMounted) return;
-          setStationError("cannot reach ESP32");
-          setStatusMessage("cannot reach ESP32");
+          // Keep attempting without prematurely locking out HTTP fallback
         };
 
         ws.onclose = () => {
           if (!isMounted) return;
-          setIsStationOnline(false);
-          setStationStatus("offline");
-          setStatusMessage("cannot reach ESP32");
-          // Schedule reconnect attempt
+          // Do not immediately force offline if telemetry is being received via HTTP proxy
           if (reconnectTimerRef.current) clearTimeout(reconnectTimerRef.current);
           reconnectTimerRef.current = setTimeout(connectWs, 3000);
         };
       } catch {
-        setStationError("cannot reach ESP32");
-        setStatusMessage("cannot reach ESP32");
-        setStationStatus("offline");
-        setIsStationOnline(false);
         if (reconnectTimerRef.current) clearTimeout(reconnectTimerRef.current);
         reconnectTimerRef.current = setTimeout(connectWs, 3000);
       }
@@ -347,14 +307,33 @@ export function StationProvider({ children }: { children: ReactNode }) {
 
     connectWs();
 
-    // Secondary HTTP telemetry poll fallback every 2.5s if WS is not open
-    pollTimerRef.current = setInterval(async () => {
+    // Hybrid HTTP telemetry poll (runs every 1.2s whenever WS is not actively delivering)
+    const pollTelemetry = async () => {
       if (!isMounted || !esp32Host) return;
       if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) return;
 
+      // 1. Try Next.js server proxy first (bypasses browser PNA, CORS, and mixed-content boundaries)
       try {
         const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 2000);
+        const timeoutId = setTimeout(() => controller.abort(), 1800);
+        const res = await fetch(
+          `/api/station/telemetry?host=${encodeURIComponent(esp32Host)}`,
+          { signal: controller.signal }
+        );
+        clearTimeout(timeoutId);
+        if (res.ok) {
+          const text = await res.text();
+          handleTelemetryFrame(text);
+          return;
+        }
+      } catch {
+        // Fall through to direct fetch
+      }
+
+      // 2. Direct fetch fallback
+      try {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 1800);
         const res = await fetch(buildHttpUrl(esp32Host, "/api/telemetry"), {
           signal: controller.signal,
         });
@@ -366,7 +345,10 @@ export function StationProvider({ children }: { children: ReactNode }) {
       } catch {
         // HTTP poll error handled by existing error/timeout state
       }
-    }, 2500);
+    };
+
+    pollTelemetry();
+    pollTimerRef.current = setInterval(pollTelemetry, 1200);
 
     return () => {
       isMounted = false;
@@ -402,24 +384,39 @@ export function StationProvider({ children }: { children: ReactNode }) {
       }
       lastCommandTimesRef.current[command] = now;
 
-      // 1. Try WebSocket
+      // 1. Try WebSocket (send both raw command and JSON for complete firmware compatibility)
       if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
         try {
           wsRef.current.send(JSON.stringify({ cmd: command, command }));
+          wsRef.current.send(command);
+          return;
         } catch {
-          // Fall through to HTTP POST fallback
+          // Fall through to proxy / HTTP
         }
       }
 
-      // 2. HTTP POST fallback to /api/command
+      // 2. Next.js server proxy (guaranteed delivery across private networks)
+      fetch("/api/station/command", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ command, host: esp32Host }),
+      }).catch(() => {});
+
+      // 3. Fallback direct HTTP calls (both dedicated endpoint and REST API)
       if (esp32Host && isValidStationHost(esp32Host)) {
+        // Dedicated zero-overhead route (/dispense, /pump, /tare)
+        fetch(buildHttpUrl(esp32Host, `/${command}`), {
+          method: "GET",
+          mode: "no-cors",
+        }).catch(() => {});
+
+        // Direct POST to /api/command
         fetch(buildHttpUrl(esp32Host, "/api/command"), {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ command }),
-        }).catch(() => {
-          /* Safely handled */
-        });
+          body: JSON.stringify({ command, cmd: command }),
+          mode: "no-cors",
+        }).catch(() => {});
       }
     },
     [isStationOnline, esp32Host]
@@ -448,19 +445,24 @@ export function StationProvider({ children }: { children: ReactNode }) {
             JSON.stringify({ type: "schedule", schedule: trimmed })
           );
         } catch {
-          // Fall through to HTTP POST
+          // Fall through to proxy / HTTP
         }
       }
 
-      if (esp32Host && isValidStationHost(esp32Host)) {
-        fetch(buildHttpUrl(esp32Host, "/api/schedule"), {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ schedule: trimmed }),
-        }).catch(() => {
-          /* Safely handled */
-        });
-      }
+      // Next.js server proxy fallback
+      fetch("/api/station/schedule", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ schedule: trimmed, host: esp32Host }),
+      }).catch(() => {
+        if (esp32Host && isValidStationHost(esp32Host)) {
+          fetch(buildHttpUrl(esp32Host, "/api/schedule"), {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ schedule: trimmed }),
+          }).catch(() => {});
+        }
+      });
     },
     [isStationOnline, esp32Host]
   );

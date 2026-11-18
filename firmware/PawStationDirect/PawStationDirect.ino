@@ -207,6 +207,7 @@ String buildTelemetryJson() {
 
   String json = "{";
   json += "\"weight\":" + String(weightG, 1) + ",";
+  json += "\"raw\":" + String(rawValue) + ",";
   json += "\"scaleOk\":" + String(scaleOk ? "true" : "false") + ",";
   json += "\"cat\":" + String(catPresent ? "true" : "false") + ",";
   json += "\"visits\":" + String(catVisits) + ",";
@@ -281,6 +282,7 @@ void setCorsHeaders() {
   server.sendHeader("Access-Control-Allow-Origin", "*");
   server.sendHeader("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
   server.sendHeader("Access-Control-Allow-Headers", "Content-Type");
+  server.sendHeader("Access-Control-Allow-Private-Network", "true");
 }
 
 void handleOptions() {
@@ -295,8 +297,17 @@ void handleTelemetry() {
 
 void handleCommandPost() {
   setCorsHeaders();
+  String body = "";
   if (server.hasArg("plain")) {
-    String body = server.arg("plain");
+    body = server.arg("plain");
+  } else if (server.hasArg("command")) {
+    body = server.arg("command");
+  } else if (server.hasArg("cmd")) {
+    body = server.arg("cmd");
+  } else if (server.hasArg("action")) {
+    body = server.arg("action");
+  }
+  if (body.length() > 0) {
     parseAndExecuteCommand(body);
   }
   server.send(200, "application/json", "{\"status\":\"ok\"}");
@@ -460,6 +471,14 @@ void setup() {
   });
   server.on("/api/telemetry", HTTP_GET, handleTelemetry);
   server.on("/api/telemetry", HTTP_OPTIONS, handleOptions);
+  server.on("/api/command", HTTP_GET, []() {
+    setCorsHeaders();
+    String cmd = server.hasArg("command") ? server.arg("command") : (server.hasArg("cmd") ? server.arg("cmd") : "");
+    if (cmd.length() > 0) {
+      parseAndExecuteCommand(cmd);
+    }
+    server.send(200, "application/json", "{\"status\":\"ok\"}");
+  });
   server.on("/api/command", HTTP_POST, handleCommandPost);
   server.on("/api/command", HTTP_OPTIONS, handleOptions);
   server.on("/api/schedule", HTTP_POST, handleSchedulePost);

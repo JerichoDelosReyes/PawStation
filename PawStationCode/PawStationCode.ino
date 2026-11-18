@@ -28,8 +28,8 @@
 // 2. WI-FI & TIME CONFIGURATION
 // ==============================================================================
 // >>> REPLACE WITH YOUR HOME 2.4 GHz WI-FI CREDENTIALS <<<
-const char* WIFI_SSID     = "DCS";
-const char* WIFI_PASSWORD = "k0mpyut3rStudi3s";
+const char* WIFI_SSID     = "MeowWhyfi";
+const char* WIFI_PASSWORD = "23434523";
 
 // Fallback SoftAP if Home Wi-Fi is unreachable
 const char* AP_SSID       = "PawStation-AP";
@@ -48,8 +48,8 @@ float CALIBRATION_FACTOR = 420.0;    // Tune with a known weight (e.g. 500g)
 const int CAT_WEIGHT_G   = 500;      // Grams threshold to detect cat visit
 const int LOW_WATER_RAW  = 1500;     // Raw ADC threshold: below this = low water
 
-const int SERVO_FILL_POS = 20;       // Resting fill angle
-const int SERVO_DROP_POS = 160;      // Dispense drop angle
+const int SERVO_FILL_POS = 0;       // Resting fill angle
+const int SERVO_DROP_POS = 55;      // Dispense drop angle
 const unsigned long DISPENSE_MS = 1200;
 
 // Pump PWM setup
@@ -196,6 +196,7 @@ String buildTelemetryJson() {
 
   String json = "{";
   json += "\"weight\":" + String(weightG, 1) + ",";
+  json += "\"raw\":" + String(rawValue) + ",";
   json += "\"scaleOk\":" + String(scaleOk ? "true" : "false") + ",";
   json += "\"cat\":" + String(catPresent ? "true" : "false") + ",";
   json += "\"visits\":" + String(catVisits) + ",";
@@ -268,6 +269,7 @@ void setCorsHeaders() {
   server.sendHeader("Access-Control-Allow-Origin", "*");
   server.sendHeader("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
   server.sendHeader("Access-Control-Allow-Headers", "Content-Type");
+  server.sendHeader("Access-Control-Allow-Private-Network", "true");
 }
 
 void handleOptions() {
@@ -282,8 +284,17 @@ void handleTelemetry() {
 
 void handleCommandPost() {
   setCorsHeaders();
+  String body = "";
   if (server.hasArg("plain")) {
-    String body = server.arg("plain");
+    body = server.arg("plain");
+  } else if (server.hasArg("command")) {
+    body = server.arg("command");
+  } else if (server.hasArg("cmd")) {
+    body = server.arg("cmd");
+  } else if (server.hasArg("action")) {
+    body = server.arg("action");
+  }
+  if (body.length() > 0) {
     parseAndExecuteCommand(body);
   }
   server.send(200, "application/json", "{\"status\":\"ok\"}");
@@ -444,6 +455,14 @@ void setup() {
   });
   server.on("/api/telemetry", HTTP_GET, handleTelemetry);
   server.on("/api/telemetry", HTTP_OPTIONS, handleOptions);
+  server.on("/api/command", HTTP_GET, []() {
+    setCorsHeaders();
+    String cmd = server.hasArg("command") ? server.arg("command") : (server.hasArg("cmd") ? server.arg("cmd") : "");
+    if (cmd.length() > 0) {
+      parseAndExecuteCommand(cmd);
+    }
+    server.send(200, "application/json", "{\"status\":\"ok\"}");
+  });
   server.on("/api/command", HTTP_POST, handleCommandPost);
   server.on("/api/command", HTTP_OPTIONS, handleOptions);
   server.on("/api/schedule", HTTP_POST, handleSchedulePost);
@@ -484,11 +503,22 @@ void loop() {
   if (now - lastTelemetryTime >= 1000) {
     lastTelemetryTime = now;
 
-    if (scale.wait_ready_timeout(40)) {
-      scaleOk = true;
-      weightG = scale.get_units(1);
+    // Wait up to 150ms for 10Hz HX711 conversion cycle (~100ms)
+    if (scale.wait_ready_timeout(150)) {
+      if (!scaleOk) {
+        scale.set_scale(CALIBRATION_FACTOR);
+        scale.tare(3);
+        scaleOk = true;
+      }
       rawValue = scale.read();
-      if (weightG < 0) weightG = 0;
+      float delta = (float)(rawValue - scale.get_offset());
+      float rawWeight = delta / CALIBRATION_FACTOR;
+      // Filter micro noise around 0, but preserve true negative readings so wiring polarity can be debugged
+      if (fabs(rawWeight) < 2.0) {
+        weightG = 0.0;
+      } else {
+        weightG = rawWeight;
+      }
     } else {
       scaleOk = false;
     }
