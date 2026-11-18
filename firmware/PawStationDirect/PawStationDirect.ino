@@ -52,7 +52,8 @@ const char* NTP_SERVER_2      = "time.google.com";
 // ======================================================================================
 // 3. HARDWARE & CALIBRATION CONSTANTS
 // ======================================================================================
-float CALIBRATION_FACTOR = 420.0;     // Tune with a known weight (e.g. 500g)
+// Use negative calibration factor (-420.0) so downward platform pressure produces positive weight
+float CALIBRATION_FACTOR = -420.0;    // Tune with a known weight (e.g. 500g)
 const int CAT_WEIGHT_G   = 500;       // Grams threshold to detect cat visit
 const int LOW_WATER_RAW  = 1500;      // Raw ADC threshold: below this = low water
 

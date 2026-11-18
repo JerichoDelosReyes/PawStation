@@ -94,6 +94,8 @@ export default function HardwareDiagnosticsDrawer({
     sendCommand,
     esp32Host,
     setEsp32Host,
+    scaleInverted,
+    setScaleInverted,
   } = usePawStation();
 
   const [hostInput, setHostInput] = useState(esp32Host || "pawstation.local");
@@ -365,16 +367,30 @@ export default function HardwareDiagnosticsDrawer({
                   </div>
                 </div>
 
-                {/* Tare Button */}
-                <button
-                  type="button"
-                  onClick={handleTare}
-                  disabled={!isStationOnline || cooldown}
-                  className="w-full flex items-center justify-center gap-2 py-2.5 rounded-full border border-neutral-300 dark:border-white/15 bg-transparent hover:bg-black/5 dark:hover:bg-white/5 text-[12.5px] font-semibold text-neutral-900 dark:text-white transition-all active:scale-98 disabled:opacity-40 disabled:cursor-not-allowed"
-                >
-                  <TareIcon className="w-4 h-4" />
-                  <span>Zero Scale (Tare)</span>
-                </button>
+                {/* Scale Actions: Tare & Polarity Toggle */}
+                <div className="flex gap-2">
+                  <button
+                    type="button"
+                    onClick={handleTare}
+                    disabled={!isStationOnline || cooldown}
+                    className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-full border border-neutral-300 dark:border-white/15 bg-transparent hover:bg-black/5 dark:hover:bg-white/5 text-[12px] font-semibold text-neutral-900 dark:text-white transition-all active:scale-98 disabled:opacity-40 disabled:cursor-not-allowed"
+                  >
+                    <TareIcon className="w-4 h-4" />
+                    <span>Zero Scale</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setScaleInverted(!scaleInverted)}
+                    className={`flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-full border text-[12px] font-semibold transition-all active:scale-98 ${
+                      scaleInverted
+                        ? "border-emerald-500/30 bg-emerald-500/10 text-emerald-700 dark:text-emerald-400"
+                        : "border-neutral-300 dark:border-white/15 text-neutral-700 dark:text-neutral-300 hover:bg-black/5 dark:hover:bg-white/5"
+                    }`}
+                    title="Invert reading sign if downward force produces negative numbers"
+                  >
+                    <span>Polarity: {scaleInverted ? "Inverted (+)" : "Normal (-)"}</span>
+                  </button>
+                </div>
               </div>
 
               {/* Hardware Topology Pinout Specifications */}

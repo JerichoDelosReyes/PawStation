@@ -68,6 +68,8 @@ export interface StationStatusContextValue {
   isBrokerConfigured: boolean; // Compatibility alias
   esp32Host: string;
   setEsp32Host: (host: string) => void;
+  scaleInverted: boolean;
+  setScaleInverted: (inverted: boolean) => void;
 }
 
 export interface StationContextValue extends StationStatusContextValue {
@@ -126,6 +128,32 @@ export function StationProvider({ children }: { children: ReactNode }) {
     DEFAULT_ENV_HOST ? "connecting" : "ESP32 host unconfigured"
   );
   const [lastSentSchedule, setLastSentSchedule] = useState<string | null>(null);
+  const [scaleInverted, setScaleInvertedState] = useState<boolean>(true);
+
+  // Load saved scale polarity preference
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      try {
+        const saved = localStorage.getItem("pawstation_scale_inverted");
+        if (saved !== null) {
+          setScaleInvertedState(saved === "true");
+        }
+      } catch {
+        /* ignore */
+      }
+    }
+  }, []);
+
+  const setScaleInverted = useCallback((inverted: boolean) => {
+    setScaleInvertedState(inverted);
+    if (typeof window !== "undefined") {
+      try {
+        localStorage.setItem("pawstation_scale_inverted", String(inverted));
+      } catch {
+        /* ignore */
+      }
+    }
+  }, []);
 
   const wsRef = useRef<WebSocket | null>(null);
   const watchdogTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -245,11 +273,23 @@ export function StationProvider({ children }: { children: ReactNode }) {
       try {
         const data = JSON.parse(rawText);
         if (data && typeof data === "object") {
+          let weightVal = typeof data.weight === "number" ? data.weight : 0;
+          // When scale polarity is reversed (e.g. load cell beam inverted or negative delta),
+          // rectify negative readings so downward pressure displays as positive grams
+          if (scaleInverted && weightVal < 0) {
+            weightVal = Math.abs(weightVal);
+          }
+          if (Math.abs(weightVal) < 2.0) {
+            weightVal = 0.0;
+          }
+
+          const isCat = Boolean(data.cat) || (Math.abs(weightVal) >= 500);
+
           const telemetryData: TelemetryData = {
-            weight: typeof data.weight === "number" ? data.weight : 0,
+            weight: weightVal,
             raw: typeof data.raw === "number" ? data.raw : (typeof data.rawValue === "number" ? data.rawValue : undefined),
             scaleOk: data.scaleOk !== undefined ? Boolean(data.scaleOk) : true,
-            cat: Boolean(data.cat),
+            cat: isCat,
             visits: typeof data.visits === "number" ? data.visits : 0,
             water: typeof data.water === "number" ? data.water : 0,
             waterLow: Boolean(data.waterLow),
@@ -509,6 +549,8 @@ export function StationProvider({ children }: { children: ReactNode }) {
       isBrokerConfigured: Boolean(esp32Host), // Compatibility alias
       esp32Host,
       setEsp32Host,
+      scaleInverted,
+      setScaleInverted,
     }),
     [
       stationStatus,
@@ -520,6 +562,8 @@ export function StationProvider({ children }: { children: ReactNode }) {
       lastSentSchedule,
       esp32Host,
       setEsp32Host,
+      scaleInverted,
+      setScaleInverted,
     ]
   );
 
