@@ -75,27 +75,8 @@ function LiveStation({
   const { user } = useAuth();
   const scheduleData = useScheduleTelemetry();
 
-  // Local visits state
-  const [catVisits, setCatVisits] = useState<CatVisit[]>([
-    {
-      id: "visit-1",
-      visit_start: new Date(Date.now() - 1000 * 60 * 18).toISOString(),
-      peak_weight_g: 4180,
-      duration_seconds: 42,
-    },
-    {
-      id: "visit-2",
-      visit_start: new Date(Date.now() - 1000 * 60 * 60 * 3).toISOString(),
-      peak_weight_g: 4210,
-      duration_seconds: 35,
-    },
-    {
-      id: "visit-3",
-      visit_start: new Date(Date.now() - 1000 * 60 * 60 * 8).toISOString(),
-      peak_weight_g: 4150,
-      duration_seconds: 58,
-    },
-  ]);
+  // Local visits state (starts empty for new accounts; populated from database or realtime telemetry)
+  const [catVisits, setCatVisits] = useState<CatVisit[]>([]);
 
   const [lastAction, setLastAction] = useState<string | null>(null);
   const [commandCooldown, setCommandCooldown] = useState(false);
@@ -190,19 +171,23 @@ function LiveStation({
       .limit(8);
 
     if (user?.id) {
-      query = query.or(`user_id.eq.${user.id},user_id.is.null`);
+      query = query.eq("user_id", user.id);
     }
 
     query.then(({ data, error }) => {
-      if (!error && data && mounted && data.length > 0) {
-        setCatVisits(
-          data.map((row: any) => ({
-            id: row.id,
-            visit_start: row.visit_start,
-            peak_weight_g: Number(row.peak_weight_g),
-            duration_seconds: row.duration_seconds ?? null,
-          }))
-        );
+      if (!error && mounted) {
+        if (data && data.length > 0) {
+          setCatVisits(
+            data.map((row: any) => ({
+              id: row.id,
+              visit_start: row.visit_start,
+              peak_weight_g: Number(row.peak_weight_g),
+              duration_seconds: row.duration_seconds ?? null,
+            }))
+          );
+        } else {
+          setCatVisits([]);
+        }
       }
     });
 
@@ -214,6 +199,7 @@ function LiveStation({
         (payload) => {
           if (!mounted) return;
           const newRow = payload.new as any;
+          if (user?.id && newRow.user_id && newRow.user_id !== user.id) return;
           setCatVisits((prev) => [
             {
               id: newRow.id,
@@ -842,35 +828,47 @@ function LiveStation({
                       : "max-h-[140px] sm:max-h-[160px] xl:max-h-[190px]"
                   }`}
                 >
-                  {catVisits.map((v, idx) => (
-                    <div
-                      key={v.id || idx}
-                      className="p-2.5 rounded-[18px] bg-[#D7E5C1] dark:bg-[#202E1B] text-[#243F14] dark:text-[#CBE5A8] flex items-center justify-between shadow-sm transition-all hover:scale-[1.01]"
-                    >
-                      <div className="flex items-center gap-2">
-                        <div className="w-7 h-7 rounded-full bg-white/40 dark:bg-white/10 flex items-center justify-center font-bold">
-                          <CatIcon className="w-3.5 h-3.5 fill-current" />
-                        </div>
-                        <div>
-                          <div className="flex items-center gap-1.5">
-                            <span className="text-[12px] font-bold">
-                              {catName} on Scale
-                            </span>
-                            <span className="text-[8.5px] px-1.5 py-0.2 rounded-full bg-white/50 dark:bg-white/20 font-mono">
-                              Scale Log
+                  {catVisits.length === 0 ? (
+                    <div className="py-5 px-3 rounded-[18px] bg-black/[0.02] dark:bg-white/[0.02] border border-dashed border-black/10 dark:border-white/10 flex flex-col items-center justify-center text-center gap-1 my-auto">
+                      <ScaleIcon className="w-4 h-4 text-neutral-400 dark:text-neutral-500" />
+                      <span className="text-[11.5px] font-semibold text-neutral-700 dark:text-neutral-300">
+                        No Platform Visits Yet
+                      </span>
+                      <span className="text-[10px] text-neutral-400 dark:text-neutral-500 max-w-[220px]">
+                        Visits will log automatically when {catName} steps on the scale.
+                      </span>
+                    </div>
+                  ) : (
+                    catVisits.map((v, idx) => (
+                      <div
+                        key={v.id || idx}
+                        className="p-2.5 rounded-[18px] bg-[#D7E5C1] dark:bg-[#202E1B] text-[#243F14] dark:text-[#CBE5A8] flex items-center justify-between shadow-sm transition-all hover:scale-[1.01]"
+                      >
+                        <div className="flex items-center gap-2">
+                          <div className="w-7 h-7 rounded-full bg-white/40 dark:bg-white/10 flex items-center justify-center font-bold">
+                            <CatIcon className="w-3.5 h-3.5 fill-current" />
+                          </div>
+                          <div>
+                            <div className="flex items-center gap-1.5">
+                              <span className="text-[12px] font-bold">
+                                {catName} on Scale
+                              </span>
+                              <span className="text-[8.5px] px-1.5 py-0.2 rounded-full bg-white/50 dark:bg-white/20 font-mono">
+                                Scale Log
+                              </span>
+                            </div>
+                            <span className="text-[10px] opacity-80 block font-mono">
+                              {formatTimeAgo(v.visit_start)} · {v.peak_weight_g.toFixed(0)}g
                             </span>
                           </div>
-                          <span className="text-[10px] opacity-80 block font-mono">
-                            {formatTimeAgo(v.visit_start)} · {v.peak_weight_g.toFixed(0)}g
-                          </span>
+                        </div>
+
+                        <div className="w-7 h-7 rounded-full bg-neutral-900 text-white dark:bg-white dark:text-neutral-900 flex items-center justify-center shadow-sm">
+                          <ArrowRightIcon className="w-3 h-3" />
                         </div>
                       </div>
-
-                      <div className="w-7 h-7 rounded-full bg-neutral-900 text-white dark:bg-white dark:text-neutral-900 flex items-center justify-center shadow-sm">
-                        <ArrowRightIcon className="w-3 h-3" />
-                      </div>
-                    </div>
-                  ))}
+                    ))
+                  )}
                 </div>
               </div>
             )}

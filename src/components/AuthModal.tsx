@@ -692,44 +692,17 @@ export default function AuthModal() {
                 {/* SIGN UP FORM (Aligned with cat_profiles & auth.users tables) */}
                 {mode === "signup" ? (
                   <form onSubmit={handleSignUp} className="space-y-2.5">
-                    {/* Database row 1: cat_name & cat_breed */}
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-2.5">
-                      <InputField
-                        label="Cat Name"
-                        type="text"
-                        value={catName}
-                        onChange={(e) => setCatName(e.target.value)}
-                        required
-                        placeholder="e.g. Whiskers"
-                      />
-                      <SelectField
-                        label="Cat Breed"
-                        value={catBreed}
-                        onChange={(e) => setCatBreed(e.target.value)}
-                        options={CAT_BREEDS}
-                      />
-                    </div>
+                    {/* Account credentials row 1: Email Address */}
+                    <InputField
+                      label="Email Address"
+                      type="email"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      required
+                      placeholder="name@example.com"
+                    />
 
-                    {/* Database row 2: station_name & email */}
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-2.5">
-                      <InputField
-                        label="Station Device Name"
-                        type="text"
-                        value={stationName}
-                        onChange={(e) => setStationName(e.target.value)}
-                        placeholder="PawStation Unit 1"
-                      />
-                      <InputField
-                        label="Email Address"
-                        type="email"
-                        value={email}
-                        onChange={(e) => setEmail(e.target.value)}
-                        required
-                        placeholder="name@example.com"
-                      />
-                    </div>
-
-                    {/* Database row 3: password */}
+                    {/* Account credentials row 2: Password with strength meter */}
                     <div>
                       <PasswordField
                         label="Password"
@@ -765,6 +738,33 @@ export default function AuthModal() {
                         </div>
                       )}
                     </div>
+
+                    {/* Companion row 3: Cat Name & Cat Breed */}
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-2.5">
+                      <InputField
+                        label="Cat Name"
+                        type="text"
+                        value={catName}
+                        onChange={(e) => setCatName(e.target.value)}
+                        required
+                        placeholder="e.g. Whiskers"
+                      />
+                      <SelectField
+                        label="Cat Breed"
+                        value={catBreed}
+                        onChange={(e) => setCatBreed(e.target.value)}
+                        options={CAT_BREEDS}
+                      />
+                    </div>
+
+                    {/* Hardware row 4: Station Device Name */}
+                    <InputField
+                      label="Station Device Name"
+                      type="text"
+                      value={stationName}
+                      onChange={(e) => setStationName(e.target.value)}
+                      placeholder="PawStation Unit 1"
+                    />
 
                     {/* Terms & Conditions and Privacy Policy Interactive Checkbox Row */}
                     <div className="flex items-start gap-2.5 pt-0.5 select-none">
