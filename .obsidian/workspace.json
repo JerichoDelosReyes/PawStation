@@ -183,6 +183,8 @@
   },
   "active": "7dbc362d75ef2a51",
   "lastOpenFiles": [
+    "src/app/api/station/host/route.ts",
+    "src/app/api/station/host",
     "src/lib/station-validation.ts",
     "src/app/api/station/schedule/route.ts",
     "src/app/api/station/schedule",
@@ -192,8 +194,6 @@
     "src/app/api/station/telemetry",
     "src/app/api/station",
     "src/app/api",
-    "src/lib/database-sync.ts",
-    "node_modules/@types/pg/lib/connection-parameters.d.ts",
     "node_modules/@types/pg/README.md",
     "node_modules/xtend/README.md",
     "node_modules/split2/README.md",

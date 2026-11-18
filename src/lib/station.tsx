@@ -13,6 +13,7 @@ import React, {
 
 export interface TelemetryData {
   weight: number;
+  raw?: number;
   scaleOk: boolean;
   cat: boolean;
   visits: number;
@@ -133,7 +134,7 @@ export function StationProvider({ children }: { children: ReactNode }) {
 
   const lastCommandTimesRef = useRef<{ [key: string]: number }>({});
 
-  // Load saved host from localStorage if available in browser
+  // Load saved host from localStorage or fetch server environment host
   useEffect(() => {
     if (typeof window !== "undefined") {
       try {
@@ -142,11 +143,30 @@ export function StationProvider({ children }: { children: ReactNode }) {
           const sanitized = sanitizeStationHost(saved.trim());
           if (sanitized) {
             setEsp32HostState(sanitized);
+            return;
           }
         }
       } catch {
         /* ignore */
       }
+
+      // If no valid localStorage value, synchronize with backend .env host
+      fetch("/api/station/host")
+        .then((res) => (res.ok ? res.json() : null))
+        .then((data) => {
+          if (data?.host && isValidStationHost(data.host)) {
+            const sanitized = sanitizeStationHost(data.host);
+            if (sanitized) {
+              setEsp32HostState(sanitized);
+              try {
+                localStorage.setItem("pawstation_esp32_host", sanitized);
+              } catch {
+                /* ignore */
+              }
+            }
+          }
+        })
+        .catch(() => {});
     }
   }, []);
 
@@ -181,6 +201,13 @@ export function StationProvider({ children }: { children: ReactNode }) {
         /* ignore */
       }
     }
+
+    // Persist to .env and server process environment in the background
+    fetch("/api/station/host", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ host: sanitized }),
+    }).catch(() => {});
   }, []);
 
   // ──────────────────────────────────────────────────────────────────────────
@@ -220,6 +247,7 @@ export function StationProvider({ children }: { children: ReactNode }) {
         if (data && typeof data === "object") {
           const telemetryData: TelemetryData = {
             weight: typeof data.weight === "number" ? data.weight : 0,
+            raw: typeof data.raw === "number" ? data.raw : (typeof data.rawValue === "number" ? data.rawValue : undefined),
             scaleOk: data.scaleOk !== undefined ? Boolean(data.scaleOk) : true,
             cat: Boolean(data.cat),
             visits: typeof data.visits === "number" ? data.visits : 0,

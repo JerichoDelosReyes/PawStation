@@ -98,6 +98,8 @@ export default function HardwareDiagnosticsDrawer({
 
   const [hostInput, setHostInput] = useState(esp32Host || "pawstation.local");
   const [hostSaved, setHostSaved] = useState(false);
+  const [isSavingHost, setIsSavingHost] = useState(false);
+  const [saveSuccessMsg, setSaveSuccessMsg] = useState<string | null>(null);
   const [hostError, setHostError] = useState<string | null>(null);
   const [rawView, setRawView] = useState(false);
   const [cooldown, setCooldown] = useState(false);
@@ -118,17 +120,57 @@ export default function HardwareDiagnosticsDrawer({
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [isOpen, onClose]);
 
-  const handleSaveHost = (e: React.FormEvent) => {
+  const handleSaveHost = async (e: React.FormEvent) => {
     e.preventDefault();
     const trimmed = hostInput.trim();
-    if (trimmed && !isValidStationHost(trimmed)) {
-      setHostError("Invalid host. Enter an IP (e.g. 192.168.4.1) or mDNS (e.g. pawstation.local)");
+    if (!trimmed) {
+      setHostError("Please enter an IP address or hostname.");
+      return;
+    }
+    if (!isValidStationHost(trimmed)) {
+      setHostError("Invalid host. Enter an IP (e.g. 192.168.0.118) or mDNS (e.g. pawstation.local)");
       return;
     }
     setHostError(null);
-    setEsp32Host(trimmed);
-    setHostSaved(true);
-    setTimeout(() => setHostSaved(false), 2000);
+    setIsSavingHost(true);
+
+    try {
+      // 1. Immediately apply to active station connection and localStorage
+      setEsp32Host(trimmed);
+
+      // 2. Persist to .env and server runtime
+      const res = await fetch("/api/station/host", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ host: trimmed }),
+      });
+
+      const data = await res.json().catch(() => null);
+      if (res.ok && data?.success) {
+        setHostSaved(true);
+        setSaveSuccessMsg(data.savedToFile ? "Saved to .env & Connected" : "Host Updated & Connected");
+        setTimeout(() => {
+          setHostSaved(false);
+          setSaveSuccessMsg(null);
+        }, 3000);
+      } else {
+        setHostSaved(true);
+        setSaveSuccessMsg("Connected");
+        setTimeout(() => {
+          setHostSaved(false);
+          setSaveSuccessMsg(null);
+        }, 3000);
+      }
+    } catch {
+      setHostSaved(true);
+      setSaveSuccessMsg("Connected (client)");
+      setTimeout(() => {
+        setHostSaved(false);
+        setSaveSuccessMsg(null);
+      }, 3000);
+    } finally {
+      setIsSavingHost(false);
+    }
   };
 
   const handleTare = () => {
@@ -226,27 +268,49 @@ export default function HardwareDiagnosticsDrawer({
 
                 {/* Host Editor */}
                 <form onSubmit={handleSaveHost} className="space-y-2">
-                  <label className="block text-[12px] font-semibold text-neutral-700 dark:text-neutral-300">
-                    ESP32 Host Address (Direct Wi-Fi / mDNS)
-                  </label>
+                  <div className="flex items-center justify-between">
+                    <label className="block text-[12px] font-semibold text-neutral-700 dark:text-neutral-300">
+                      ESP32 Host Address (Direct Wi-Fi / mDNS)
+                    </label>
+                    <span className="text-[10px] font-mono text-neutral-400">
+                      Updates .env &amp; Live Link
+                    </span>
+                  </div>
                   <div className="flex gap-2">
                     <input
                       type="text"
                       value={hostInput}
+                      disabled={isSavingHost}
                       onChange={(e) => {
                         setHostInput(e.target.value);
                         if (hostError) setHostError(null);
                       }}
-                      placeholder="e.g. pawstation.local or 192.168.1.120"
-                      className="flex-1 px-3.5 py-2 rounded-full border border-black/10 dark:border-white/10 bg-[#FBF9F5] dark:bg-[#121620] text-[13px] font-mono focus:outline-none focus:ring-2 focus:ring-neutral-900 dark:focus:ring-white transition-all"
+                      placeholder="e.g. 192.168.0.118 or pawstation.local"
+                      className="flex-1 px-3.5 py-2 rounded-full border border-black/10 dark:border-white/10 bg-[#FBF9F5] dark:bg-[#121620] text-[13px] font-mono focus:outline-none focus:ring-2 focus:ring-neutral-900 dark:focus:ring-white transition-all disabled:opacity-60"
                     />
                     <button
                       type="submit"
-                      className="px-4 py-2 rounded-full bg-neutral-900 text-white dark:bg-white dark:text-neutral-900 text-[12px] font-semibold hover:opacity-90 active:scale-95 transition-all"
+                      disabled={isSavingHost}
+                      className="px-4 py-2 rounded-full bg-neutral-900 text-white dark:bg-white dark:text-neutral-900 text-[12px] font-semibold hover:opacity-90 active:scale-95 transition-all disabled:opacity-50 flex items-center gap-1.5 min-w-[72px] justify-center"
                     >
-                      {hostSaved ? "Saved" : "Save"}
+                      {isSavingHost ? (
+                        <RefreshIcon className="w-3.5 h-3.5 animate-spin" />
+                      ) : hostSaved ? (
+                        <>
+                          <CheckIcon className="w-3.5 h-3.5" />
+                          <span>Saved</span>
+                        </>
+                      ) : (
+                        "Save"
+                      )}
                     </button>
                   </div>
+                  {saveSuccessMsg && (
+                    <p className="text-[11px] text-emerald-600 dark:text-emerald-400 font-medium px-1 flex items-center gap-1.5">
+                      <CheckIcon className="w-3.5 h-3.5" />
+                      <span>{saveSuccessMsg}</span>
+                    </p>
+                  )}
                   {hostError && (
                     <p className="text-[11px] text-rose-600 dark:text-rose-400 font-medium px-1">
                       {hostError}
@@ -272,12 +336,32 @@ export default function HardwareDiagnosticsDrawer({
                   </div>
 
                   <div className="p-3 rounded-2xl bg-[#FBF9F5] dark:bg-[#121620] border border-black/[0.04] dark:border-white/[0.06]">
-                    <span className="text-[10.5px] uppercase font-mono tracking-wider text-neutral-400 block">
-                      Scale Load Cell
-                    </span>
-                    <span className="text-[13px] font-bold font-mono text-neutral-900 dark:text-white mt-0.5 block">
-                      {telemetry ? `${telemetry.weight.toFixed(1)} g` : "--"}
-                    </span>
+                    <div className="flex items-center justify-between">
+                      <span className="text-[10.5px] uppercase font-mono tracking-wider text-neutral-400 block">
+                        Scale Load Cell
+                      </span>
+                      <span
+                        className={`text-[9.5px] font-semibold px-1.5 py-0.5 rounded-full ${
+                          telemetry
+                            ? telemetry.scaleOk
+                              ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400"
+                              : "bg-rose-500/10 text-rose-600 dark:text-rose-400"
+                            : "text-neutral-400"
+                        }`}
+                      >
+                        {telemetry ? (telemetry.scaleOk ? "HX711 OK" : "No Signal") : "--"}
+                      </span>
+                    </div>
+                    <div className="mt-1 flex items-baseline justify-between gap-1">
+                      <span className="text-[13px] font-bold font-mono text-neutral-900 dark:text-white block">
+                        {telemetry ? `${telemetry.weight.toFixed(1)} g` : "--"}
+                      </span>
+                      {telemetry?.raw !== undefined && (
+                        <span className="text-[10px] font-mono text-neutral-400 dark:text-neutral-500 truncate" title={`Raw ADC: ${telemetry.raw}`}>
+                          ADC: {telemetry.raw}
+                        </span>
+                      )}
+                    </div>
                   </div>
                 </div>
 

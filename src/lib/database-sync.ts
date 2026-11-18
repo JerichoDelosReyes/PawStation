@@ -35,7 +35,6 @@ class DatabaseSyncService {
       // Cleanup any legacy localStorage keys per user request
       try {
         localStorage.removeItem("pawstation-cat-profile");
-        localStorage.removeItem("pawstation_esp32_host");
       } catch {
         /* ignore */
       }
